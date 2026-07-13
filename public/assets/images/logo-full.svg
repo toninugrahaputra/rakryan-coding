@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 312" role="img" aria-label="Rakryan Coding">
+  <g fill="#D6AE32" fill-rule="evenodd">
+    <polygon points="3,0 43,0 43,12 64,12 64,0 94,0 94,12 116,12 116,0 155,0 138,44 22,44"></polygon>
+    <path d="M0,62 H159 V163 H0 V124 H120 V101 H0 Z"></path>
+    <rect x="0" y="182" width="159" height="38"></rect>
+    <polygon points="0,239 159,239 159,312 79,276 0,312"></polygon>
+  </g>
+  <g fill="#D6AE32" font-family="'Poppins','Plus Jakarta Sans',sans-serif" font-weight="700" font-size="92" letter-spacing="-2">
+    <text x="205" y="145">Rakryan</text>
+    <text x="205" y="250">Coding</text>
+  </g>
+</svg>
