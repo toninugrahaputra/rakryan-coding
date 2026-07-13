@@ -17,7 +17,7 @@ class XenditWebhookController extends Controller
         $expectedToken = config('services.xendit.callback_token');
 
         // Validasi callback token jika dikonfigurasi di .env
-        if ($expectedToken && $token !== $expectedToken) {
+        if (blank($expectedToken) || $token !== $expectedToken) {
             Log::warning('Xendit Webhook: Callback token mismatch.');
 
             return response()->json(['message' => 'Unauthorized'], 401);

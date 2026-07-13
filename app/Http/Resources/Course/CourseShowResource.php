@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Course;
 
+use App\Models\Category;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -28,46 +30,48 @@ class CourseShowResource extends JsonResource
 
         $userReview = null;
         if ($request->user()) {
-            $review = \App\Models\Review::where('user_id', $request->user()->id)
+            $review = Review::where('user_id', $request->user()->id)
                 ->where('course_id', $this->id)
                 ->first();
             if ($review) {
                 $userReview = [
-                    'rating'  => $review->rating,
-                    'tags'    => $review->tags,
+                    'rating' => $review->rating,
+                    'tags' => $review->tags,
                     'comment' => $review->comment,
                 ];
             }
         }
 
         return [
-            'id'                       => $this->id,
-            'title'                    => $this->title,
-            'slug'                     => $this->slug,
-            'description'              => $this->description,
-            'thumbnail'                => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
-            'category'                 => $this->whenLoaded('category', fn () => $this->category instanceof \App\Models\Category ? $this->category->name : null),
-            'is_published'             => $this->is_published,
-            'price'                    => $cheapestProduct?->price ?? null,
-            'price_strikethrough'      => $cheapestProduct?->price_strikethrough ?? null,
-            'is_free'                  => $cheapestProduct !== null && $cheapestProduct->price === 0,
-            'has_product'              => $cheapestProduct !== null,
-            'rating'                   => $averageRating,
-            'reviews_count'            => $ratingCount,
+            'id' => $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
+            'category' => $this->whenLoaded('category', fn () => $this->category instanceof Category ? $this->category->name : null),
+            'is_published' => $this->is_published,
+            'price' => $cheapestProduct?->price ?? null,
+            'price_strikethrough' => $cheapestProduct?->price_strikethrough ?? null,
+            'is_free' => $cheapestProduct !== null && $cheapestProduct->price === 0,
+            'has_product' => $cheapestProduct !== null,
+            'rating' => $averageRating,
+            'reviews_count' => $ratingCount,
             'completed_contents_count' => $completedCount,
-            'user_review'              => $userReview,
-            'contents'                 => $this->whenLoaded('contents', fn () => $this->contents
+            'user_review' => $userReview,
+            'contents' => $this->whenLoaded('contents', fn () => $this->contents
                 ->where('is_published', true)
                 ->map(fn ($content) => [
-                    'id'    => $content->id,
+                    'id' => $content->id,
+                    'section_name' => $content->section_name,
                     'title' => $content->title,
-                    'slug'  => $content->slug,
+                    'slug' => $content->slug,
+                    'sub_topics' => $content->sub_topics ? array_values(array_filter(array_map('trim', explode("\n", $content->sub_topics)))) : [],
                     'order' => $content->order,
                 ])
                 ->values()),
-            'gallery'                  => $this->whenLoaded('galleries', fn () => $this->galleries
+            'gallery' => $this->whenLoaded('galleries', fn () => $this->galleries
                 ->map(fn ($gallery) => [
-                    'id'  => $gallery->id,
+                    'id' => $gallery->id,
                     'url' => Storage::disk('public')->url($gallery->path),
                 ])
                 ->values()),

@@ -464,6 +464,21 @@ async function htmlToEditorBlocks(
         } else if (tag === 'p') {
             const hasImages = !!node.querySelector('img[src^="data:"]');
             if (hasImages && imageUploader) {
+                // Word/mammoth wraps images in <strong>/<em>/<u>/etc when the run has active
+                // formatting (e.g. an image inserted while bold was toggled on), so the <img>
+                // ends up nested instead of a direct child of <p>. Hoist it back out so the
+                // direct-child loop below can find it — otherwise cleanInline() silently
+                // strips it from the wrapper's HTML and the image is lost entirely.
+                [...node.querySelectorAll('img[src^="data:"]')].forEach((img) => {
+                    let ancestor: Element = img;
+                    while (ancestor.parentElement && ancestor.parentElement !== node) {
+                        ancestor = ancestor.parentElement;
+                    }
+                    if (ancestor !== img) {
+                        node.insertBefore(img, ancestor);
+                    }
+                });
+
                 let currentHtml = '';
                 for (const child of [...node.childNodes]) {
                     if (

@@ -7,6 +7,7 @@ use App\Actions\Order\CreateOrder;
 use App\Actions\User\HasPurchasedCourse;
 use App\Actions\Voucher\ApplyVoucher;
 use App\Actions\Voucher\RedeemVoucher;
+use App\Enums\OrderStatus;
 use App\Models\Course;
 use App\Models\Order;
 use App\Models\Product;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +27,7 @@ class OrderController extends Controller
     {
         $courseSlug = $request->query('course');
         if (! $courseSlug) {
-            return redirect()->route('courses.index')->with('error', 'Pilih kelas terlebih dahulu.');
+            return redirect()->route('courses.index')->with('error', 'Pilih course terlebih dahulu.');
         }
 
         $course = Course::where('slug', $courseSlug)->where('is_published', true)->firstOrFail();
@@ -33,12 +35,12 @@ class OrderController extends Controller
         // Cek jika sudah membeli
         $hasPurchased = app(HasPurchasedCourse::class)->handle($request->user(), $course);
         if ($hasPurchased) {
-            return redirect()->route('courses.show', $course->slug)->with('error', 'Anda sudah memiliki kelas ini.');
+            return redirect()->route('courses.show', $course->slug)->with('error', 'Anda sudah memiliki course ini.');
         }
 
         $product = $course->products()->where('is_published', true)->orderBy('price')->first();
         if (! $product) {
-            return redirect()->route('courses.show', $course->slug)->with('error', 'Kelas belum tersedia untuk dibeli.');
+            return redirect()->route('courses.show', $course->slug)->with('error', 'Course belum tersedia untuk dibeli.');
         }
 
         return Inertia::render('orders/create', [
@@ -109,7 +111,7 @@ class OrderController extends Controller
             }
 
             return redirect()->route('courses.show', $product->courses->first()->slug)
-                ->with('success', 'Pendaftaran kelas gratis berhasil!');
+                ->with('success', 'Pendaftaran course gratis berhasil!');
         }
 
         // Panggil Xendit Invoice
@@ -145,7 +147,7 @@ class OrderController extends Controller
         }
 
         // Simulasi Pembayaran Mock untuk Testing / Local
-        if ($request->query('mock_pay') == '1' && $order->status === \App\Enums\OrderStatus::Pending) {
+        if (app()->environment('local', 'testing') && $request->query('mock_pay') == '1' && $order->status === OrderStatus::Pending) {
             $adminUser = User::role('admin')->first() ?? User::first();
             if ($adminUser) {
                 app(ApproveOrder::class)->handle($order, $adminUser);
@@ -177,7 +179,7 @@ class OrderController extends Controller
                 'discount' => $result['discount'],
                 'message' => 'Voucher berhasil diterapkan!',
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'valid' => false,
                 'message' => $e->validator->errors()->first('voucher_code'),

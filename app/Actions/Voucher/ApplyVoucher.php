@@ -45,7 +45,7 @@ class ApplyVoucher
         }
 
         if ($voucher->per_user_limit !== null) {
-            $userUsage = $voucher->usages()->where('user_id', $user->id)->count();
+            $userUsage = $voucher->usages()->where('user_id', $user->id)->whereNotNull('order_id')->count();
 
             if ($userUsage >= $voucher->per_user_limit) {
                 $this->fail("Voucher hanya dapat digunakan {$voucher->per_user_limit} kali per pengguna.");

@@ -49,7 +49,7 @@ class CourseSeeder extends Seeder
                                 'id' => "block-{$i}",
                                 'type' => 'paragraph',
                                 'data' => [
-                                    'text' => "Ini adalah isi konten lengkap untuk Modul 0{$i} dari kelas <strong>{$title}</strong>. Konsep dibahas secara komprehensif, dilengkapi potongan kode dan petunjuk praktis bagi siswa SMK RPL.",
+                                    'text' => "Ini adalah isi konten lengkap untuk Modul 0{$i} dari course <strong>{$title}</strong>. Konsep dibahas secara komprehensif, dilengkapi potongan kode dan petunjuk praktis untuk semua kalangan yang belajar coding.",
                                 ],
                             ],
                         ],

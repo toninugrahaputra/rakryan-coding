@@ -29,9 +29,11 @@ class UpdateCourseContent
                 }
 
                 $content->update([
+                    'section_name' => $data['section_name'] ?? null,
                     'title' => $data['title'],
                     'slug' => $newSlug,
                     'content' => $contentJson,
+                    'sub_topics' => $data['sub_topics'] ?? null,
                     'is_published' => $data['is_published'] ?? false,
                 ]);
 

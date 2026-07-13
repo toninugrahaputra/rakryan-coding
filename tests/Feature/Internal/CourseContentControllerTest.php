@@ -50,16 +50,20 @@ class CourseContentControllerTest extends TestCase
     public function test_admin_can_create_content(): void
     {
         $response = $this->actingAs($this->admin)->post("/internal/courses/{$this->course->slug}/contents", [
+            'section_name' => 'Persiapan Awal',
             'title' => 'Intro to Laravel',
             'slug' => 'intro-to-laravel',
             'content' => ['time' => 123, 'blocks' => [], 'version' => '2.26.5'],
+            'sub_topics' => "pengenalan project\nPenjelasan Desain Database",
             'is_published' => false,
         ]);
 
         $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
         $this->assertDatabaseHas('course_contents', [
             'course_id' => $this->course->id,
+            'section_name' => 'Persiapan Awal',
             'title' => 'Intro to Laravel',
+            'sub_topics' => "pengenalan project\nPenjelasan Desain Database",
         ]);
     }
 
@@ -71,11 +75,23 @@ class CourseContentControllerTest extends TestCase
 
         $response = $this->actingAs($this->admin)->put(
             "/internal/courses/{$this->course->slug}/contents/{$content->slug}",
-            ['title' => 'New Title', 'slug' => 'new-title', 'is_published' => true, 'content' => $content->content]
+            [
+                'section_name' => 'Persiapan Awal Updated',
+                'title' => 'New Title',
+                'slug' => 'new-title',
+                'is_published' => true,
+                'content' => $content->content,
+                'sub_topics' => 'Updated Sub Topics',
+            ]
         );
 
         $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
-        $this->assertDatabaseHas('course_contents', ['id' => $content->id, 'title' => 'New Title']);
+        $this->assertDatabaseHas('course_contents', [
+            'id' => $content->id,
+            'section_name' => 'Persiapan Awal Updated',
+            'title' => 'New Title',
+            'sub_topics' => 'Updated Sub Topics',
+        ]);
     }
 
     public function test_admin_can_delete_content(): void

@@ -16,9 +16,11 @@ class CreateCourseContent
         try {
             return DB::transaction(function () use ($course, $data) {
                 return $course->contents()->create([
+                    'section_name' => $data['section_name'] ?? null,
                     'title' => $data['title'],
                     'slug' => $data['slug'],
                     'content' => $data['content'] ?? null,
+                    'sub_topics' => $data['sub_topics'] ?? null,
                     'is_published' => $data['is_published'] ?? false,
                     'order' => $course->contents()->max('order') + 1,
                 ]);

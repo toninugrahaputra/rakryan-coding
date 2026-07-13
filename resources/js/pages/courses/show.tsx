@@ -1,5 +1,16 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { CheckCircle2, Play, BookOpen, ArrowLeft, ChevronLeft, ChevronRight, Images, Star, Lock, ShoppingCart } from 'lucide-react';
+import {
+    CheckCircle2,
+    Play,
+    BookOpen,
+    ArrowLeft,
+    ChevronLeft,
+    ChevronRight,
+    Images,
+    Star,
+    Lock,
+    ShoppingCart,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
@@ -19,6 +30,8 @@ interface Content {
     slug: string;
     title: string;
     order: number;
+    section_name?: string | null;
+    sub_topics?: string[];
 }
 
 interface Course {
@@ -55,17 +68,50 @@ function formatPrice(price: number): string {
         return 'Gratis';
     }
 
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(price);
 }
+
+/** Jumlah modul pertama yang boleh dibaca tanpa login pada course gratis (samakan dengan backend). */
+const FREE_PREVIEW_LIMIT = 3;
 
 /** Konten detail course yang dipakai baik oleh guest maupun user login */
 function CourseDetailContent() {
-    const { course, isPurchased = false, isLoggedIn = false } = usePage().props as unknown as CourseShowProps;
-    const isCompleted = isPurchased && course.contents.length > 0 && (course.completed_contents_count === course.contents.length);
+    const {
+        course,
+        isPurchased = false,
+        isLoggedIn = false,
+    } = usePage().props as unknown as CourseShowProps;
+    const isCompleted =
+        isPurchased &&
+        course.contents.length > 0 &&
+        course.completed_contents_count === course.contents.length;
+
+    // Indeks urutan modul (0-based) untuk menentukan modul mana yang termasuk preview gratis
+    const contentIndexById = new Map(
+        course.contents.map((content, index) => [content.id, index]),
+    );
+
+    // Group contents by section_name preserving chronological order
+    const sections: Array<{ name: string | null; contents: Content[] }> = [];
+    course.contents.forEach((content) => {
+        const sectionName = content.section_name || null;
+        let existingSection = sections.find((s) => s.name === sectionName);
+
+        if (!existingSection) {
+            existingSection = { name: sectionName, contents: [] };
+            sections.push(existingSection);
+        }
+
+        existingSection.contents.push(content);
+    });
 
     const { data, setData, post, processing } = useForm({
         rating: course.user_review?.rating ?? 5,
-        tags: course.user_review?.tags ?? [] as string[],
+        tags: course.user_review?.tags ?? ([] as string[]),
         comment: course.user_review?.comment ?? '',
     });
 
@@ -73,11 +119,20 @@ function CourseDetailContent() {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const gallery = course.gallery ?? [];
 
-    const quickTags = ['Materi Jelas', 'Sangat Detail', 'Mudah Dipahami', 'Desain Rapi', 'Rekomendasi!'];
+    const quickTags = [
+        'Materi Jelas',
+        'Sangat Detail',
+        'Mudah Dipahami',
+        'Desain Rapi',
+        'Rekomendasi!',
+    ];
 
     function toggleTag(tag: string) {
         if (data.tags.includes(tag)) {
-            setData('tags', data.tags.filter(t => t !== tag));
+            setData(
+                'tags',
+                data.tags.filter((t) => t !== tag),
+            );
         } else {
             setData('tags', [...data.tags, tag]);
         }
@@ -91,11 +146,15 @@ function CourseDetailContent() {
     }
 
     function showPrevImage() {
-        setLightboxIndex((idx) => (idx === null ? null : (idx - 1 + gallery.length) % gallery.length));
+        setLightboxIndex((idx) =>
+            idx === null ? null : (idx - 1 + gallery.length) % gallery.length,
+        );
     }
 
     function showNextImage() {
-        setLightboxIndex((idx) => (idx === null ? null : (idx + 1) % gallery.length));
+        setLightboxIndex((idx) =>
+            idx === null ? null : (idx + 1) % gallery.length,
+        );
     }
 
     const hasReviewed = !!course.user_review;
@@ -105,7 +164,10 @@ function CourseDetailContent() {
 
             if (reviewEl) {
                 setTimeout(() => {
-                    reviewEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    reviewEl.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                    });
                 }, 800);
             }
         }
@@ -119,7 +181,10 @@ function CourseDetailContent() {
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     {/* Back navigation */}
                     <div className="mb-6">
-                        <Link href="/courses" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                        <Link
+                            href="/courses"
+                            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                        >
                             <ArrowLeft className="h-4 w-4" />
                             Kembali ke Katalog Course
                         </Link>
@@ -127,89 +192,165 @@ function CourseDetailContent() {
 
                     {/* Split layout: Content (Left) & Sticky Buy Card (Right) */}
                     <div className="grid gap-8 lg:grid-cols-3">
-
                         {/* Left Column: About & Curriculum */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="space-y-8 lg:col-span-2">
                             {/* Header / Title */}
                             <div>
                                 {course.category && (
-                                    <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary uppercase tracking-wider mb-3">
+                                    <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wider text-primary uppercase">
                                         {course.category}
                                     </span>
                                 )}
-                                <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl text-foreground leading-tight">
+                                <h1 className="text-2xl leading-tight font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                                     {course.title}
                                 </h1>
                                 <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1.5">
-                                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                                        <span className="font-semibold text-foreground">{course.rating ?? 4.9}</span>
-                                        <span>({course.reviews_count ?? 0} Ulasan Pelajar)</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
                                         <BookOpen className="h-4 w-4" />
-                                        <span>{course.contents.length} Modul Belajar</span>
+                                        <span>
+                                            {course.contents.length} Modul
+                                            Belajar
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* About / Description */}
                             <div className="border-t border-border/50 pt-8">
-                                <h2 className="text-xl font-bold mb-4">Tentang Kelas</h2>
+                                <h2 className="mb-4 text-xl font-bold">
+                                    Tentang Course
+                                </h2>
                                 {course.description ? (
-                                    <div className="text-muted-foreground leading-relaxed space-y-4 whitespace-pre-line">
+                                    <div className="space-y-4 leading-relaxed whitespace-pre-line text-muted-foreground">
                                         {course.description}
                                     </div>
                                 ) : (
-                                    <p className="text-muted-foreground italic">Deskripsi kelas belum tersedia.</p>
+                                    <p className="text-muted-foreground italic">
+                                        Deskripsi course belum tersedia.
+                                    </p>
                                 )}
                             </div>
 
                             {/* Curriculum / Lesson list */}
                             <div className="border-t border-border/50 pt-8">
                                 <div className="mb-6">
-                                    <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <h2 className="flex items-center gap-2 text-xl font-bold">
                                         Kurikulum Belajar
                                     </h2>
                                     <p className="mt-1 text-sm text-muted-foreground">
-                                        Daftar modul terstruktur untuk menunjang proses belajarmu
+                                        Daftar modul terstruktur untuk menunjang
+                                        proses belajarmu
                                     </p>
                                 </div>
 
                                 {course.contents.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {course.contents.map((content) => (
+                                    <div className="space-y-6">
+                                        {sections.map((section, sIdx) => (
                                             <div
-                                                key={content.id}
-                                                className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border/50 bg-card/50 transition-colors hover:bg-card"
+                                                key={sIdx}
+                                                className="space-y-3.5"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
-                                                        {content.order}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-sm font-semibold text-foreground sm:text-base">
-                                                            {content.title}
-                                                        </h3>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Modul {content.order} • Belajar Mandiri
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                {section.name && (
+                                                    <h3 className="flex items-center gap-2 pt-3 text-xs font-extrabold tracking-wider text-[#B99430] uppercase sm:text-sm dark:text-[#d4af37]">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-[#B99430]" />
+                                                        {section.name}
+                                                    </h3>
+                                                )}
+                                                <div className="space-y-3">
+                                                    {section.contents.map(
+                                                        (content) => (
+                                                            <div
+                                                                key={content.id}
+                                                                className="rounded-xl border border-border/50 bg-card/50 p-4 transition-colors hover:bg-card/70"
+                                                            >
+                                                                <div className="flex items-center justify-between gap-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                                                                            {
+                                                                                content.order
+                                                                            }
+                                                                        </div>
+                                                                        <div>
+                                                                            <h4 className="text-sm leading-snug font-bold text-foreground sm:text-base">
+                                                                                {
+                                                                                    content.title
+                                                                                }
+                                                                            </h4>
+                                                                        </div>
+                                                                    </div>
 
-                                                {/* Access action */}
-                                                <div>
-                                                    {isPurchased ? (
-                                                        <Link
-                                                            href={courses.contents.show.url([course.slug, content.slug])}
-                                                            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-                                                        >
-                                                            Mulai Belajar
-                                                        </Link>
-                                                    ) : (
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground" title="Materi Terkunci">
-                                                            <Lock className="h-4 w-4" />
-                                                        </div>
+                                                                    {/* Access action */}
+                                                                    <div>
+                                                                        {(() => {
+                                                                            const contentIndex =
+                                                                                contentIndexById.get(
+                                                                                    content.id,
+                                                                                ) ??
+                                                                                -1;
+                                                                            const isFreePreview =
+                                                                                course.is_free &&
+                                                                                contentIndex <
+                                                                                    FREE_PREVIEW_LIMIT;
+                                                                            const canAccess =
+                                                                                isPurchased ||
+                                                                                isFreePreview;
+
+                                                                            return canAccess ? (
+                                                                                <Link
+                                                                                    href={courses.contents.show.url(
+                                                                                        [
+                                                                                            course.slug,
+                                                                                            content.slug,
+                                                                                        ],
+                                                                                    )}
+                                                                                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                                                                                >
+                                                                                    Mulai
+                                                                                    Belajar
+                                                                                </Link>
+                                                                            ) : (
+                                                                                <div
+                                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                                                                                    title="Materi Terkunci"
+                                                                                >
+                                                                                    <Lock className="h-4 w-4" />
+                                                                                </div>
+                                                                            );
+                                                                        })()}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Render sub topics */}
+                                                                {content.sub_topics &&
+                                                                    content
+                                                                        .sub_topics
+                                                                        .length >
+                                                                        0 && (
+                                                                        <div className="mt-3.5 ml-4 space-y-1.5 border-l border-border/40 pl-11">
+                                                                            {content.sub_topics.map(
+                                                                                (
+                                                                                    topic,
+                                                                                    tIdx,
+                                                                                ) => (
+                                                                                    <div
+                                                                                        key={
+                                                                                            tIdx
+                                                                                        }
+                                                                                        className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground"
+                                                                                    >
+                                                                                        <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/35" />
+                                                                                        <span>
+                                                                                            {
+                                                                                                topic
+                                                                                            }
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                            </div>
+                                                        ),
                                                     )}
                                                 </div>
                                             </div>
@@ -217,7 +358,8 @@ function CourseDetailContent() {
                                     </div>
                                 ) : (
                                     <div className="rounded-xl border border-dashed border-border/80 p-8 text-center text-muted-foreground">
-                                        Kurikulum / modul belum ditambahkan untuk kelas ini.
+                                        Kurikulum / modul belum ditambahkan
+                                        untuk course ini.
                                     </div>
                                 )}
                             </div>
@@ -226,12 +368,13 @@ function CourseDetailContent() {
                             {gallery.length > 0 && (
                                 <div className="border-t border-border/50 pt-8">
                                     <div className="mb-6">
-                                        <h2 className="text-xl font-bold flex items-center gap-2">
+                                        <h2 className="flex items-center gap-2 text-xl font-bold">
                                             <Images className="h-5 w-5 text-primary" />
                                             Galeri Hasil Project
                                         </h2>
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            Contoh tampilan jadi dari project yang akan kamu bangun di kelas ini
+                                            Contoh tampilan jadi dari project
+                                            yang akan kamu bangun di course ini
                                         </p>
                                     </div>
 
@@ -240,7 +383,9 @@ function CourseDetailContent() {
                                             <button
                                                 key={image.id}
                                                 type="button"
-                                                onClick={() => setLightboxIndex(idx)}
+                                                onClick={() =>
+                                                    setLightboxIndex(idx)
+                                                }
                                                 className="group relative aspect-video overflow-hidden rounded-xl border border-border/50"
                                             >
                                                 <img
@@ -257,35 +402,57 @@ function CourseDetailContent() {
 
                             {/* Review Section */}
                             {isCompleted && (
-                                <div id="review-form-container" className="border-t border-border/50 pt-8 mt-8">
+                                <div
+                                    id="review-form-container"
+                                    className="mt-8 border-t border-border/50 pt-8"
+                                >
                                     <div className="mb-6">
-                                        <h2 className="text-xl font-bold flex items-center gap-2">
-                                            Ulasan Kelasmu
+                                        <h2 className="flex items-center gap-2 text-xl font-bold">
+                                            Ulasan Course Kamu
                                         </h2>
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            Kamu telah menyelesaikan kelas ini! Bantu pembelajar lain dengan memberikan ulasan terbaikmu.
+                                            Kamu telah menyelesaikan course
+                                            ini! Bantu pembelajar lain dengan
+                                            memberikan ulasan terbaikmu.
                                         </p>
                                     </div>
 
-                                    <form onSubmit={submitReview} className="bg-card border border-border/60 rounded-2xl p-5 sm:p-6 space-y-5">
+                                    <form
+                                        onSubmit={submitReview}
+                                        className="space-y-5 rounded-2xl border border-border/60 bg-card p-5 sm:p-6"
+                                    >
                                         {/* Rating Star Selection */}
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Rating Kelas</label>
+                                            <label className="block text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                Rating Course
+                                            </label>
                                             <div className="flex items-center gap-1">
                                                 {[1, 2, 3, 4, 5].map((star) => (
                                                     <button
                                                         key={star}
                                                         type="button"
-                                                        onClick={() => setData('rating', star)}
-                                                        onMouseEnter={() => setRatingHover(star)}
-                                                        onMouseLeave={() => setRatingHover(null)}
-                                                        className="p-1 cursor-pointer transition-transform hover:scale-110"
+                                                        onClick={() =>
+                                                            setData(
+                                                                'rating',
+                                                                star,
+                                                            )
+                                                        }
+                                                        onMouseEnter={() =>
+                                                            setRatingHover(star)
+                                                        }
+                                                        onMouseLeave={() =>
+                                                            setRatingHover(null)
+                                                        }
+                                                        className="cursor-pointer p-1 transition-transform hover:scale-110"
                                                     >
                                                         <Star
-                                                            className={`h-7 w-7 ${star <= (ratingHover ?? data.rating)
-                                                                ? 'fill-amber-400 text-amber-400'
-                                                                : 'text-muted-foreground/35'
-                                                                }`}
+                                                            className={`h-7 w-7 ${
+                                                                star <=
+                                                                (ratingHover ??
+                                                                    data.rating)
+                                                                    ? 'fill-amber-400 text-amber-400'
+                                                                    : 'text-muted-foreground/35'
+                                                            }`}
                                                         />
                                                     </button>
                                                 ))}
@@ -294,20 +461,26 @@ function CourseDetailContent() {
 
                                         {/* Quick Tags Badge */}
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Tag Cepat</label>
+                                            <label className="block text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                Tag Cepat
+                                            </label>
                                             <div className="flex flex-wrap gap-2">
                                                 {quickTags.map((tag) => {
-                                                    const isSelected = data.tags.includes(tag);
+                                                    const isSelected =
+                                                        data.tags.includes(tag);
 
                                                     return (
                                                         <button
                                                             key={tag}
                                                             type="button"
-                                                            onClick={() => toggleTag(tag)}
-                                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isSelected
-                                                                ? 'bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400'
-                                                                : 'bg-muted/40 hover:bg-muted border-border/80 text-muted-foreground'
-                                                                }`}
+                                                            onClick={() =>
+                                                                toggleTag(tag)
+                                                            }
+                                                            className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
+                                                                isSelected
+                                                                    ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                                                                    : 'border-border/80 bg-muted/40 text-muted-foreground hover:bg-muted'
+                                                            }`}
                                                         >
                                                             {tag}
                                                         </button>
@@ -318,9 +491,13 @@ function CourseDetailContent() {
 
                                         {/* Comment area */}
                                         <div className="space-y-1.5">
-                                            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                                <label htmlFor="comment">Komentar Ulasan</label>
-                                                <span>{data.comment.length}/500</span>
+                                            <div className="flex items-center justify-between text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                <label htmlFor="comment">
+                                                    Komentar Ulasan
+                                                </label>
+                                                <span>
+                                                    {data.comment.length}/500
+                                                </span>
                                             </div>
                                             <textarea
                                                 id="comment"
@@ -328,23 +505,32 @@ function CourseDetailContent() {
                                                 maxLength={500}
                                                 placeholder="Tulis ulasan belajarmu di sini (opsional)..."
                                                 value={data.comment}
-                                                onChange={(e) => setData('comment', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'comment',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 className="w-full rounded-xl border border-border/80 bg-muted/20 p-3.5 text-sm font-medium focus:border-amber-500 focus:outline-none"
                                             />
                                         </div>
 
                                         <div className="flex items-center justify-between gap-4 pt-2">
                                             {course.user_review && (
-                                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 rounded px-2.5 py-1">
+                                                <span className="rounded border border-emerald-500/15 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                                     Sudah diulas sebelumnya
                                                 </span>
                                             )}
                                             <Button
                                                 type="submit"
                                                 disabled={processing}
-                                                className="rounded-xl font-bold bg-[#B99430] hover:bg-[#725a15] text-white ml-auto"
+                                                className="ml-auto rounded-xl bg-[#B99430] font-bold text-white hover:bg-[#725a15]"
                                             >
-                                                {processing ? 'Menyimpan...' : course.user_review ? 'Perbarui Ulasan' : 'Kirim Ulasan'}
+                                                {processing
+                                                    ? 'Menyimpan...'
+                                                    : course.user_review
+                                                      ? 'Perbarui Ulasan'
+                                                      : 'Kirim Ulasan'}
                                             </Button>
                                         </div>
                                     </form>
@@ -356,7 +542,7 @@ function CourseDetailContent() {
                         <div className="lg:col-span-1">
                             <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-5 shadow-lg">
                                 {/* Thumbnail */}
-                                <div className="relative h-44 w-full overflow-hidden rounded-xl bg-muted mb-5">
+                                <div className="relative mb-5 h-44 w-full overflow-hidden rounded-xl bg-muted">
                                     {course.thumbnail ? (
                                         <img
                                             src={course.thumbnail}
@@ -373,33 +559,40 @@ function CourseDetailContent() {
                                 {/* Pricing details */}
                                 {course.has_product ? (
                                     <div className="mb-5">
-                                        <p className="text-xs text-muted-foreground mb-1">Investasi Belajar</p>
+                                        <p className="mb-1 text-xs text-muted-foreground">
+                                            Investasi Belajar
+                                        </p>
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-2xl font-extrabold text-foreground">
                                                 {formatPrice(course.price ?? 0)}
                                             </span>
-                                            {course.price_strikethrough && course.price_strikethrough > (course.price ?? 0) && (
-                                                <span className="text-sm text-muted-foreground line-through">
-                                                    {formatPrice(course.price_strikethrough)}
-                                                </span>
-                                            )}
+                                            {course.price_strikethrough &&
+                                                course.price_strikethrough >
+                                                    (course.price ?? 0) && (
+                                                    <span className="text-sm text-muted-foreground line-through">
+                                                        {formatPrice(
+                                                            course.price_strikethrough,
+                                                        )}
+                                                    </span>
+                                                )}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="mb-5 p-3 rounded-lg bg-muted/65 text-center text-sm text-muted-foreground">
-                                        Kelas ini segera hadir / belum dapat dibeli.
+                                    <div className="mb-5 rounded-lg bg-muted/65 p-3 text-center text-sm text-muted-foreground">
+                                        Course ini segera hadir / belum dapat
+                                        dibeli.
                                     </div>
                                 )}
 
                                 {/* Benefits checklist */}
-                                <ul className="mb-6 space-y-2.5 text-sm text-muted-foreground border-t border-border/40 pt-4">
+                                <ul className="mb-6 space-y-2.5 border-t border-border/40 pt-4 text-sm text-muted-foreground">
                                     <li className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
                                         Akses materi seumur hidup
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                                        Sertifikat kelulusan kelas
+                                        Sertifikat penyelesaian course
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
@@ -410,8 +603,15 @@ function CourseDetailContent() {
                                 {/* Contextual CTA Button */}
                                 {isPurchased ? (
                                     <Link
-                                        href={course.contents.length > 0 ? courses.contents.show.url([course.slug, course.contents[0].slug]) : '#'}
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-center text-sm font-semibold text-white transition-all hover:bg-emerald-500 shadow-md shadow-emerald-500/10"
+                                        href={
+                                            course.contents.length > 0
+                                                ? courses.contents.show.url([
+                                                      course.slug,
+                                                      course.contents[0].slug,
+                                                  ])
+                                                : '#'
+                                        }
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-center text-sm font-semibold text-white shadow-md shadow-emerald-500/10 transition-all hover:bg-emerald-500"
                                     >
                                         <Play className="h-4 w-4" />
                                         Lanjutkan Belajar
@@ -420,7 +620,7 @@ function CourseDetailContent() {
                                     // Guest: tampilan tombol "Beli Sekarang", tapi flow tetap arahkan ke halaman Login (tidak diubah)
                                     <Link
                                         href="/login"
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 shadow-md shadow-primary/20 hover:shadow-lg hover:-translate-y-0.5"
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
                                     >
                                         <ShoppingCart className="h-4 w-4" />
                                         Beli Sekarang
@@ -428,30 +628,41 @@ function CourseDetailContent() {
                                 ) : course.has_product ? (
                                     // User login: flow langsung ke checkout, tidak diubah
                                     <Button
-                                        className="w-full py-6 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:-translate-y-0.5"
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl py-6 font-bold shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-lg"
                                         asChild
                                     >
-                                        <Link href={`/orders/create?course=${course.slug}`}>
+                                        <Link
+                                            href={`/orders/create?course=${course.slug}`}
+                                        >
                                             <ShoppingCart className="h-4 w-4" />
-                                            {course.is_free ? 'Daftar Kelas Gratis' : 'Beli Sekarang'}
+                                            {course.is_free
+                                                ? 'Daftar Course Gratis'
+                                                : 'Beli Sekarang'}
                                         </Link>
                                     </Button>
                                 ) : (
-                                    <Button className="w-full py-6 rounded-xl font-bold" disabled>
+                                    <Button
+                                        className="w-full rounded-xl py-6 font-bold"
+                                        disabled
+                                    >
                                         Segera Hadir
                                     </Button>
                                 )}
                             </div>
                         </div>
-
                     </div>
                 </div>
             </main>
 
             {/* Lightbox galeri */}
-            <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && setLightboxIndex(null)}>
+            <Dialog
+                open={lightboxIndex !== null}
+                onOpenChange={(open) => !open && setLightboxIndex(null)}
+            >
                 <DialogContent className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl">
-                    <DialogTitle className="sr-only">Galeri hasil project {course.title}</DialogTitle>
+                    <DialogTitle className="sr-only">
+                        Galeri hasil project {course.title}
+                    </DialogTitle>
                     {lightboxIndex !== null && gallery[lightboxIndex] && (
                         <div className="relative">
                             <img
@@ -465,7 +676,7 @@ function CourseDetailContent() {
                                         type="button"
                                         onClick={showPrevImage}
                                         aria-label="Gambar sebelumnya"
-                                        className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                        className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
                                     >
                                         <ChevronLeft className="h-5 w-5" />
                                     </button>
@@ -473,7 +684,7 @@ function CourseDetailContent() {
                                         type="button"
                                         onClick={showNextImage}
                                         aria-label="Gambar berikutnya"
-                                        className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                        className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
                                     >
                                         <ChevronRight className="h-5 w-5" />
                                     </button>
@@ -520,7 +731,10 @@ CourseShow.layout = (page: React.ReactNode) => {
                 breadcrumbs={[
                     { title: 'Dashboard', href: '/dashboard' },
                     { title: 'Katalog Courses', href: '/courses' },
-                    { title: props.course?.title ?? 'Detail Course', href: '#' },
+                    {
+                        title: props.course?.title ?? 'Detail Course',
+                        href: '#',
+                    },
                 ]}
             >
                 {page}

@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class UserPurchaseTest extends TestCase
@@ -19,7 +20,7 @@ class UserPurchaseTest extends TestCase
     {
         parent::setUp();
 
-        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        Role::create(['name' => 'admin']);
     }
 
     public function test_user_can_view_checkout_page(): void
@@ -103,6 +104,8 @@ class UserPurchaseTest extends TestCase
 
     public function test_xendit_webhook_callback_successfully_activates_subscription(): void
     {
+        config(['services.xendit.callback_token' => 'secure-token']);
+
         $user = User::factory()->create();
         $course = Course::factory()->create(['is_published' => true]);
         $product = Product::factory()->single()->published()->create(['price' => 100000]);
@@ -115,11 +118,12 @@ class UserPurchaseTest extends TestCase
             'net_amount' => 100000,
         ]);
 
-        $response = $this->postJson(route('webhooks.xendit'), [
-            'external_id' => $order->order_number,
-            'status' => 'PAID',
-            'amount' => 100000,
-        ]);
+        $response = $this->withHeaders(['x-callback-token' => 'secure-token'])
+            ->postJson(route('webhooks.xendit'), [
+                'external_id' => $order->order_number,
+                'status' => 'PAID',
+                'amount' => 100000,
+            ]);
 
         $response->assertOk();
         $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
@@ -168,5 +172,46 @@ class UserPurchaseTest extends TestCase
             ]);
         $response->assertOk();
         $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
+    }
+
+    public function test_order_self_approval_via_mock_pay_works_in_local_or_testing_env(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.show', [$order->id, 'mock_pay' => '1']));
+
+        $response->assertOk();
+        $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
+    }
+
+    public function test_order_self_approval_via_mock_pay_does_not_work_in_production_env(): void
+    {
+        // Mock the environment to production
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.show', [$order->id, 'mock_pay' => '1']));
+
+        $response->assertOk();
+        $this->assertEquals(OrderStatus::Pending, $order->fresh()->status);
     }
 }

@@ -25,6 +25,7 @@ class CourseContentRequest extends FormRequest
         $course = app(GetCourseBySlug::class)->handle($courseSlug);
 
         return [
+            'section_name' => ['nullable', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required', 'string', 'max:255',
@@ -33,6 +34,7 @@ class CourseContentRequest extends FormRequest
                     ->ignore($contentSlug, 'slug'),
             ],
             'content' => ['nullable', 'array'],
+            'sub_topics' => ['nullable', 'string'],
             'is_published' => ['boolean'],
             'deleted_images' => ['nullable', 'array'],
             'deleted_images.*' => ['nullable', 'string', 'url'],

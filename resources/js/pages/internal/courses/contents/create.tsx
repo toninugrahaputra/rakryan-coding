@@ -19,9 +19,11 @@ export default function ContentsCreate({ course }: { course: Course }) {
     const editorRef = useRef<EditorJsRef>(null);
 
     const [form, setForm] = useState({
+        section_name: '',
         title: '',
         slug: '',
         content: null as OutputData | null,
+        sub_topics: '',
         is_published: false,
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -49,9 +51,11 @@ export default function ContentsCreate({ course }: { course: Course }) {
         }
 
         router.post(store(course.slug).url, {
+            section_name: form.section_name,
             title: form.title,
             slug: form.slug,
-            content: finalContent,
+            content: finalContent as any,
+            sub_topics: form.sub_topics,
             is_published: form.is_published,
         }, {
             onError: (errs) => { setErrors(errs); setProcessing(false); },
@@ -72,6 +76,17 @@ export default function ContentsCreate({ course }: { course: Course }) {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                     <div className="rounded-xl border p-6 flex flex-col gap-6">
                         <div className="flex flex-col gap-5">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="section_name">Nama Grup / Bab Besar (Section) - Opsional</Label>
+                                <Input
+                                    id="section_name"
+                                    value={form.section_name}
+                                    onChange={(e) => setForm((p) => ({ ...p, section_name: e.target.value }))}
+                                    placeholder="Contoh: Persiapan Awal"
+                                />
+                                {errors.section_name && <p className="text-destructive text-sm">{errors.section_name}</p>}
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
                                     <Label htmlFor="title">Judul</Label>
@@ -98,6 +113,19 @@ export default function ContentsCreate({ course }: { course: Course }) {
                                     />
                                     {errors.slug && <p className="text-destructive text-sm">{errors.slug}</p>}
                                 </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="sub_topics">Rincian Sub-Materi (tulis satu per baris) - Opsional</Label>
+                                <textarea
+                                    id="sub_topics"
+                                    value={form.sub_topics}
+                                    onChange={(e) => setForm((p) => ({ ...p, sub_topics: e.target.value }))}
+                                    placeholder="Contoh:&#10;pengenalan project&#10;Penjelasan Desain Database"
+                                    className="border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex min-h-[100px] w-full min-w-0 rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                    rows={4}
+                                />
+                                {errors.sub_topics && <p className="text-destructive text-sm">{errors.sub_topics}</p>}
                             </div>
 
                             <div className="flex items-center gap-3">

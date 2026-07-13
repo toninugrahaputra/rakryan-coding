@@ -139,6 +139,11 @@
 
     body {
         @apply bg-background text-foreground;
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    header, footer, aside, nav, .bg-card, .bg-muted, .border, .text-foreground, .text-muted-foreground {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
 }
 
@@ -362,4 +367,24 @@
 @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1 !important; }
     .reveal.is-visible { animation: none !important; }
+}
+
+/* Print Media CSS — Hides header, navigation, footer and layout components when printing */
+@media print {
+    header,
+    nav,
+    aside,
+    footer,
+    [data-slot="sidebar"],
+    .no-print,
+    .print-hidden,
+    .border-b.border-sidebar-border\/80,
+    .flex.w-full.border-b.border-sidebar-border\/70 {
+        display: none !important;
+    }
+
+    body, main {
+        background-color: transparent !important;
+        color: #000000 !important;
+    }
 }

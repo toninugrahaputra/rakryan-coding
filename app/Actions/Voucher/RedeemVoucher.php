@@ -21,11 +21,16 @@ class RedeemVoucher
         return DB::transaction(function () use ($voucher, $user, $discount, $order) {
             $locked = Voucher::whereKey($voucher->id)->lockForUpdate()->firstOrFail();
 
-            $usage = $locked->usages()->create([
-                'user_id' => $user->id,
-                'order_id' => $order?->id,
-                'discount_amount' => $discount,
-            ]);
+            $usage = $locked->usages()->updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'order_id' => null,
+                ],
+                [
+                    'order_id' => $order?->id,
+                    'discount_amount' => $discount,
+                ]
+            );
 
             $locked->increment('usage_count');
 

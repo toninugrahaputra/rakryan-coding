@@ -242,49 +242,42 @@ export default function Welcome({
                     {vouchers.length > 0 && (
                         <section
                             id="paket"
-                            className="border-b border-border/40 bg-[#1e1b4b] py-6"
+                            className="border-y border-border/40 bg-gradient-to-r from-[#1e1b4b] via-[#2e1065] to-[#1e1b4b] py-14"
                         >
-                            <div className="mx-auto max-w-4xl px-6 lg:px-8">
+                            <div className="mx-auto max-w-5xl px-4 lg:px-1">
                                 <ScrollReveal animation="scale-in">
-                                    <div className="flex flex-col items-center gap-4 rounded-2xl border border-[#eab308]/20 bg-white/5 p-5 text-center sm:flex-row sm:justify-between sm:text-left">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eab308]/15 text-[#eab308]">
-                                                <Ticket className="h-5 w-5" />
+                                    <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 md:p-10 shadow-2xl backdrop-blur-md">
+                                        <div className="absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl pointer-events-none" />
+                                        <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:text-left">
+                                            <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eab308]/20 text-[#eab308] shadow-inner">
+                                                    <Ticket className="h-7 w-7" />
+                                                </div>
+                                                <div className="space-y-1.5 text-center sm:text-left">
+                                                    <p className="text-lg font-black tracking-tight text-white uppercase sm:text-xl md:text-2xl">
+                                                        Voucher aktif ini spesial buat kamu
+                                                    </p>
+                                                    <p className="text-xs font-extrabold tracking-wide text-[#eab308] sm:text-sm md:text-base">
+                                                        {formatVoucherDiscount(vouchers[0])}
+                                                        {vouchers[0].name ? ` — ${vouchers[0].name}` : ''}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-md font-extrabold text-white uppercase">
-                                                    Voucher aktif ini spesial
-                                                    buat kamu
-                                                </p>
-                                                <p className="text-[10px] font-extrabold tracking-wider text-[#eab308]">
-                                                    {formatVoucherDiscount(
-                                                        vouchers[0],
-                                                    )}
-                                                    {vouchers[0].name
-                                                        ? ` — ${vouchers[0].name}`
-                                                        : ''}
-                                                </p>
-                                            </div>
-                                        </div>
 
-                                        <button
-                                            onClick={() =>
-                                                copyVoucherCode(
-                                                    vouchers[0].code,
-                                                )
-                                            }
-                                            className="flex shrink-0 items-center gap-2 rounded-xl bg-[#eab308] px-4 py-2.5 font-mono text-sm font-extrabold text-slate-950 transition-all hover:bg-[#d6a207] active:scale-95"
-                                        >
-                                            {copiedCode === vouchers[0].code
-                                                ? 'Tersalin!'
-                                                : vouchers[0].code}
-                                            <Copy className="h-4 w-4" />
-                                        </button>
+                                            <button
+                                                onClick={() => copyVoucherCode(vouchers[0].code)}
+                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-sm font-black uppercase text-slate-950 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
+                                            >
+                                                {copiedCode === vouchers[0].code ? 'Tersalin!' : vouchers[0].code}
+                                                <Copy className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </ScrollReveal>
                             </div>
                         </section>
                     )}
+
 
                     {/* ─── GALERI PROJEK COURSE (6 course terbaru) ──────── */}
                     <section

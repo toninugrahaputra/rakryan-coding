@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { User, Shield, Palette, LogOut } from 'lucide-react';
+import { useState } from 'react';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
@@ -7,6 +8,15 @@ import { logout } from '@/routes';
 import { edit as appearanceEdit } from '@/routes/appearance';
 import { edit as profileEdit } from '@/routes/profile';
 import { edit as securityEdit } from '@/routes/security';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 type Tab = {
     title: string;
@@ -42,6 +52,7 @@ type Props = {
 
 export default function SettingsLayout({ children }: Props) {
     const currentPath = window.location.pathname;
+    const [isOpen, setIsOpen] = useState(false);
 
     function isTabActive(tab: Tab): boolean {
         if (tab.matchPaths) {
@@ -52,7 +63,16 @@ export default function SettingsLayout({ children }: Props) {
     }
 
     function handleLogout() {
-        router.post(logout().url);
+        setIsOpen(true);
+    }
+
+    function handleConfirmLogout() {
+        setIsOpen(false);
+        router.post(logout().url, {}, {
+            onFinish: () => {
+                window.location.href = '/';
+            }
+        });
     }
 
     return (
@@ -155,6 +175,25 @@ export default function SettingsLayout({ children }: Props) {
                     </div>
                 </div>
             </div>
+
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Konfirmasi Keluar</DialogTitle>
+                        <DialogDescription>
+                            Apakah Anda yakin ingin keluar dari akun Anda?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                        <Button variant="ghost" onClick={() => setIsOpen(false)}>
+                            Batal
+                        </Button>
+                        <Button variant="destructive" onClick={handleConfirmLogout}>
+                            Keluar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

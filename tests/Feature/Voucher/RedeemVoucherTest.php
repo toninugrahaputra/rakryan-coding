@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Voucher;
 
+use App\Models\Order;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,11 +104,12 @@ class RedeemVoucherTest extends TestCase
     {
         $user = User::factory()->create();
         $voucher = Voucher::factory()->create();
+        $order = Order::factory()->create();
 
         // Catat penggunaan voucher dengan discount_amount yang diwajibkan
         $voucher->usages()->create([
             'user_id' => $user->id,
-            'order_id' => null,
+            'order_id' => $order->id,
             'discount_amount' => 10000,
         ]);
 
@@ -122,6 +124,33 @@ class RedeemVoucherTest extends TestCase
                 ->hasFlash('toast', [
                     'type' => 'error',
                     'message' => 'Anda sudah pernah menggunakan voucher ini.',
+                ])
+            );
+    }
+
+    public function test_redeem_fails_if_voucher_already_claimed_by_user(): void
+    {
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->create();
+
+        // Catat klaim voucher (order_id null)
+        $voucher->usages()->create([
+            'user_id' => $user->id,
+            'order_id' => null,
+            'discount_amount' => 0,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->from(route('vouchers.index'))
+            ->post(route('vouchers.redeem'), ['code' => $voucher->code]);
+
+        $response->assertRedirect(route('vouchers.index'));
+
+        $this->get(route('vouchers.index'))
+            ->assertInertia(fn ($page) => $page
+                ->hasFlash('toast', [
+                    'type' => 'error',
+                    'message' => 'Anda sudah pernah mengklaim voucher ini.',
                 ])
             );
     }
@@ -147,5 +176,11 @@ class RedeemVoucherTest extends TestCase
                     'message' => "Kupon '{$voucher->code}' berhasil ditukarkan! Silakan pilih course untuk memulai belajar.",
                 ])
             );
+
+        $this->assertDatabaseHas('voucher_usages', [
+            'user_id' => $user->id,
+            'voucher_id' => $voucher->id,
+            'order_id' => null,
+        ]);
     }
 }

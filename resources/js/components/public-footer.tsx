@@ -29,7 +29,6 @@ export function PublicFooter() {
         {
             title: 'BANTUAN',
             items: [
-                { label: 'FAQ', href: '/#faq' },
                 { label: 'Kontak', href: '/#kontak' },
                 { label: 'Syarat & ketentuan', href: '/#syarat' },
                 { label: 'Kebijakan privasi', href: '/#privasi' },

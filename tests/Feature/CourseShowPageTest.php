@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use App\Actions\Order\ApproveOrder;
-use App\Enums\OrderStatus;
 use App\Models\Course;
 use App\Models\CourseContent;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class CourseShowPageTest extends TestCase
@@ -22,14 +22,14 @@ class CourseShowPageTest extends TestCase
         $course = Course::factory()->create(['is_published' => true]);
         $product = Product::factory()->single()->published()->create();
         $product->courses()->attach($course->id);
-        
+
         $order = Order::factory()->pending()->create([
             'user_id' => $user->id,
             'product_id' => $product->id,
         ]);
-        
+
         app(ApproveOrder::class)->handle($order, $user);
-        
+
         $content = CourseContent::factory()->for($course)->create([
             'title' => 'Modul Pertama',
             'slug' => 'modul-pertama',
@@ -37,23 +37,23 @@ class CourseShowPageTest extends TestCase
             'order' => 1,
             'is_published' => true,
         ]);
-        
+
         $this->actingAs($user);
-        
+
         $courseResponse = $this->get(route('courses.show', ['course' => $course->slug]));
         $courseResponse->assertStatus(200);
         $courseResponse->assertSeeText($course->title);
         $courseResponse->assertSeeText('Modul Pertama');
-        
+
         $contentResponse = $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $content->slug]));
         $contentResponse->assertStatus(200);
-        $contentResponse->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        $contentResponse->assertInertia(fn (AssertableInertia $page) => $page
             ->component('courses/contents/show')
             ->has('content')
             ->where('content.title', 'Modul Pertama')
         );
     }
-    
+
     public function test_user_without_purchase_cannot_access_course_or_module()
     {
         $user = User::factory()->create();
@@ -72,6 +72,6 @@ class CourseShowPageTest extends TestCase
             ->assertStatus(200);
 
         $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $content->slug]))
-            ->assertStatus(403);
+            ->assertRedirect(route('courses.show', $course->slug));
     }
 }

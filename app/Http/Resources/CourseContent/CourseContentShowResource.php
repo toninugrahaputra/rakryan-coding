@@ -11,9 +11,11 @@ class CourseContentShowResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'section_name' => $this->section_name,
             'title' => $this->title,
             'slug' => $this->slug,
             'content' => $this->content,
+            'sub_topics' => $this->sub_topics,
             'order' => $this->order,
             'is_published' => $this->is_published,
         ];

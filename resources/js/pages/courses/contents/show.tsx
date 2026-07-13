@@ -1,9 +1,17 @@
 import { Head, Link, router } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    CheckCircle2,
+    Eye,
+    Lock,
+    Clock,
+    Bookmark,
+    Moon,
+} from 'lucide-react';
 import { useState } from 'react';
 import EditorJsRenderer from '@/components/editor-js-renderer';
-import AppLayout from '@/layouts/app-layout';
-import { ArrowLeft, CheckCircle2, ChevronRight, Play, Lock, BookOpen, Clock, Settings, Bookmark, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
 
 interface Lesson {
     id: number;
@@ -11,6 +19,7 @@ interface Lesson {
     slug: string;
     order: number;
     is_completed: boolean;
+    is_locked: boolean;
 }
 
 interface Content {
@@ -32,6 +41,10 @@ interface CourseContentShowProps {
     prevContent: { slug: string; title: string } | null;
     nextContent: { slug: string; title: string } | null;
     lessons: Lesson[];
+    isLoggedIn: boolean;
+    isPurchased: boolean;
+    isPreview: boolean;
+    isFree: boolean;
     progress: {
         total_count: number;
         completed_count: number;
@@ -46,6 +59,10 @@ export default function CourseContentShow({
     prevContent,
     nextContent,
     lessons = [],
+    isLoggedIn,
+    isPurchased,
+    isPreview,
+    isFree,
     progress,
 }: CourseContentShowProps) {
     const [isCompleting, setIsCompleting] = useState(false);
@@ -58,7 +75,7 @@ export default function CourseContentShow({
             {},
             {
                 onFinish: () => setIsCompleting(false),
-            }
+            },
         );
     }
 
@@ -72,80 +89,128 @@ export default function CourseContentShow({
         <>
             <Head title={`${content.title} — ${course.title}`} />
 
-            <div className="flex min-h-screen flex-col bg-[#fcfcfd] dark:bg-background text-foreground font-sans">
+            <div className="flex min-h-screen flex-col bg-[#fcfcfd] font-sans text-foreground dark:bg-background">
                 {/* ─── Reader Top Control Bar (BWA Page 23) ─── */}
-                <div className="border-b border-border/50 bg-card py-3 sticky top-0 z-40 shadow-xs">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+                <div className="sticky top-0 z-40 border-b border-border/50 bg-card py-3 shadow-xs">
+                    <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                         {/* Back link */}
                         <Link
                             href={`/courses/${course.slug}`}
-                            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-muted-foreground hover:text-primary transition-colors truncate max-w-[200px] sm:max-w-md"
+                            className="inline-flex max-w-[200px] items-center gap-1.5 truncate text-xs font-bold text-muted-foreground transition-colors hover:text-primary sm:max-w-md sm:text-sm"
                         >
                             <ArrowLeft className="h-4 w-4 shrink-0" />
                             <span className="truncate">{course.title}</span>
                         </Link>
 
-                        {/* Progress Indicator bar */}
-                        <div className="hidden sm:flex items-center gap-4 text-xs font-bold">
-                            <span className="text-muted-foreground">
-                                Bab {progress.current_index}/{progress.total_count}
-                            </span>
-                            <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${progress.percentage}%` }} />
+                        {/* Progress Indicator bar — disembunyikan untuk guest yang belum punya progress */}
+                        {isLoggedIn ? (
+                            <div className="hidden items-center gap-4 text-xs font-bold sm:flex">
+                                <span className="text-muted-foreground">
+                                    Bab {progress.current_index}/
+                                    {progress.total_count}
+                                </span>
+                                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        className="h-full rounded-full bg-emerald-500"
+                                        style={{
+                                            width: `${progress.percentage}%`,
+                                        }}
+                                    />
+                                </div>
+                                <span className="text-emerald-600">
+                                    {progress.percentage}%
+                                </span>
                             </div>
-                            <span className="text-emerald-600">{progress.percentage}%</span>
-                        </div>
+                        ) : (
+                            <span className="hidden items-center gap-1.5 rounded-full bg-[#eab308]/10 px-3 py-1 text-[10px] font-bold tracking-widest text-[#B99430] uppercase sm:inline-flex">
+                                <Eye className="h-3 w-3" />
+                                Mode Preview
+                            </span>
+                        )}
 
                         {/* Font size control and bookmark actions */}
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() => setFontSize(fontSize === 'sm' ? 'base' : fontSize === 'base' ? 'lg' : 'sm')}
-                                className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center font-serif text-sm font-bold border border-border/40"
+                                onClick={() =>
+                                    setFontSize(
+                                        fontSize === 'sm'
+                                            ? 'base'
+                                            : fontSize === 'base'
+                                              ? 'lg'
+                                              : 'sm',
+                                    )
+                                }
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 font-serif text-sm font-bold hover:bg-muted"
                                 title="Ganti Ukuran Font"
                             >
                                 A
                             </button>
-                            <button className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground border border-border/40">
+                            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted">
                                 <Bookmark className="h-4 w-4" />
                             </button>
-                            <button className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground border border-border/40">
+                            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted">
                                 <Moon className="h-4 w-4" />
                             </button>
                         </div>
                     </div>
                 </div>
 
+                {isPreview && (
+                    <div className="border-b border-[#eab308]/20 bg-[#eab308]/10 py-2.5 sm:hidden">
+                        <div className="mx-auto flex max-w-7xl items-center justify-center gap-1.5 px-4 text-[10px] font-bold tracking-widest text-[#B99430] uppercase">
+                            <Eye className="h-3 w-3" />
+                            Mode Preview
+                        </div>
+                    </div>
+                )}
+
                 {/* ─── Main split layout (BWA Page 23) ─── */}
-                <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8">
+                <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8 sm:px-6 lg:px-8">
                     {/* Left Sidebar: Lesson listing list (1/3 width on desktop) */}
-                    <aside className="w-72 shrink-0 border-r border-border/40 pr-6 hidden lg:block space-y-6">
+                    <aside className="hidden w-72 shrink-0 space-y-6 border-r border-border/40 pr-6 lg:block">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">MATERI BELAJAR</span>
-                            <h3 className="text-sm font-extrabold text-foreground leading-snug line-clamp-2">{course.title}</h3>
-                            <span className="text-[10px] text-emerald-600 font-bold block mt-1">{progress.percentage}% Selesai</span>
+                            <span className="block text-[10px] font-bold tracking-widest text-primary uppercase">
+                                MATERI BELAJAR
+                            </span>
+                            <h3 className="line-clamp-2 text-sm leading-snug font-extrabold text-foreground">
+                                {course.title}
+                            </h3>
+                            {isLoggedIn && (
+                                <span className="mt-1 block text-[10px] font-bold text-emerald-600">
+                                    {progress.percentage}% Selesai
+                                </span>
+                            )}
                         </div>
 
-                        <div className="space-y-2 mt-4 max-h-[60vh] overflow-y-auto pr-1">
+                        <div className="mt-4 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                             {lessons.map((lesson) => {
                                 const isActive = lesson.slug === content.slug;
+
                                 return (
                                     <Link
                                         key={lesson.id}
                                         href={`/courses/${course.slug}/contents/${lesson.slug}`}
-                                        className={`flex items-center justify-between gap-3 p-3 rounded-xl border text-left transition-colors ${isActive
-                                            ? 'border-primary bg-primary/5 font-extrabold text-primary shadow-xs'
-                                            : 'border-border/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground'
-                                            }`}
+                                        className={`flex items-center justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
+                                            isActive
+                                                ? 'border-primary bg-primary/5 font-extrabold text-primary shadow-xs'
+                                                : lesson.is_locked
+                                                  ? 'border-border/30 text-muted-foreground/70 hover:bg-muted/20'
+                                                  : 'border-border/40 text-muted-foreground hover:bg-muted/30 hover:text-foreground'
+                                        }`}
                                     >
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            {lesson.is_completed ? (
-                                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                        <div className="flex min-w-0 items-center gap-2.5">
+                                            {lesson.is_locked ? (
+                                                <Lock className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                                            ) : lesson.is_completed ? (
+                                                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
                                             ) : (
-                                                <span className="h-4 w-4 rounded-full border border-border/80 flex items-center justify-center text-[9px] font-bold shrink-0">
+                                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border/80 text-[9px] font-bold">
                                                     {lesson.order}
                                                 </span>
                                             )}
-                                            <span className="text-xs font-medium truncate leading-tight">{lesson.title}</span>
+                                            <span className="truncate text-xs leading-tight font-medium">
+                                                {lesson.title}
+                                            </span>
                                         </div>
                                     </Link>
                                 );
@@ -154,45 +219,50 @@ export default function CourseContentShow({
                     </aside>
 
                     {/* Right Main Panel: Material Reader (2/3 width) */}
-                    <main className="flex-1 min-w-0 space-y-8">
+                    <main className="min-w-0 flex-1 space-y-8">
                         {/* Title Header */}
                         <div className="space-y-2 border-b border-border/40 pb-5">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                Modul 03 • Bab {progress.current_index} dari {progress.total_count}
+                            <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                Bab {progress.current_index} dari{' '}
+                                {progress.total_count}
                             </span>
-                            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground leading-snug">
+                            <h1 className="text-2xl leading-snug font-extrabold text-foreground sm:text-3xl">
                                 {content.title}
                             </h1>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+                            <div className="flex items-center gap-4 pt-1 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <Clock className="h-3.5 w-3.5" />
                                     ±14 menit baca
                                 </span>
-                                <span>•</span>
-                                <span>Diperbarui Juni 2026</span>
                             </div>
                         </div>
 
                         {/* Rich Content View Pane */}
-                        <div className={`prose max-w-none text-foreground dark:prose-invert leading-relaxed border border-border/50 bg-card rounded-3xl p-6.5 shadow-xs ${fontSizeClasses[fontSize]}`}>
+                        <div
+                            className={`prose dark:prose-invert max-w-none rounded-3xl border border-border/50 bg-card p-6.5 leading-relaxed text-foreground shadow-xs ${fontSizeClasses[fontSize]}`}
+                        >
                             {content.content ? (
                                 <EditorJsRenderer data={content.content} />
                             ) : (
-                                <p className="italic text-muted-foreground">Materi tidak dapat dimuat atau kosong.</p>
+                                <p className="text-muted-foreground italic">
+                                    Materi tidak dapat dimuat atau kosong.
+                                </p>
                             )}
                         </div>
 
                         {/* Bottom navigation buttons */}
-                        <div className="border-t border-border/40 pt-6 space-y-6">
+                        <div className="space-y-6 border-t border-border/40 pt-6">
                             {/* Prev / Next buttons */}
                             <div className="flex flex-wrap items-center justify-between gap-4">
                                 {prevContent ? (
                                     <Link
                                         href={`/courses/${course.slug}/contents/${prevContent.slug}`}
-                                        className="group inline-flex flex-col text-left max-w-[200px]"
+                                        className="group inline-flex max-w-[200px] flex-col text-left"
                                     >
-                                        <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">SEBELUMNYA</span>
-                                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate mt-0.5">
+                                        <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            SEBELUMNYA
+                                        </span>
+                                        <span className="mt-0.5 truncate text-xs font-bold text-foreground transition-colors group-hover:text-primary">
                                             {prevContent.title}
                                         </span>
                                     </Link>
@@ -203,10 +273,12 @@ export default function CourseContentShow({
                                 {nextContent ? (
                                     <Link
                                         href={`/courses/${course.slug}/contents/${nextContent.slug}`}
-                                        className="group inline-flex flex-col text-right max-w-[200px] items-end"
+                                        className="group inline-flex max-w-[200px] flex-col items-end text-right"
                                     >
-                                        <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">BERIKUTNYA</span>
-                                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate mt-0.5">
+                                        <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            BERIKUTNYA
+                                        </span>
+                                        <span className="mt-0.5 truncate text-xs font-bold text-foreground transition-colors group-hover:text-primary">
                                             {nextContent.title}
                                         </span>
                                     </Link>
@@ -215,10 +287,28 @@ export default function CourseContentShow({
                                 )}
                             </div>
 
-                            {/* Mark complete CTA button */}
+                            {/* Mark complete CTA button — hanya untuk yang punya akses penuh */}
                             <div className="flex justify-center pt-2">
-                                {content.is_completed ? (
-                                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-xl p-3.5 px-6 font-bold text-xs flex items-center gap-2">
+                                {!isPurchased && !isLoggedIn ? (
+                                    <Button
+                                        asChild
+                                        className="rounded-xl bg-[#B99430] px-8 py-3.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#725a15]"
+                                    >
+                                        <Link href="/login">
+                                            Login untuk melanjutkan belajar ➔
+                                        </Link>
+                                    </Button>
+                                ) : !isPurchased && isFree ? (
+                                    <Button
+                                        asChild
+                                        className="rounded-xl bg-[#B99430] px-8 py-3.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#725a15]"
+                                    >
+                                        <Link href={`/orders/create?course=${course.slug}`}>
+                                            Daftar Gratis untuk Lanjut Belajar ➔
+                                        </Link>
+                                    </Button>
+                                ) : content.is_completed ? (
+                                    <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 px-6 text-xs font-bold text-emerald-600">
                                         <CheckCircle2 className="h-4.5 w-4.5" />
                                         Kamu telah menyelesaikan modul ini!
                                     </div>
@@ -226,16 +316,17 @@ export default function CourseContentShow({
                                     <Button
                                         onClick={handleComplete}
                                         disabled={isCompleting}
-                                        className="rounded-xl font-extrabold text-xs bg-[#B99430] hover:bg-[#725a15] text-white px-8 py-3.5 shadow-sm"
+                                        className="rounded-xl bg-[#B99430] px-8 py-3.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#725a15]"
                                     >
-                                        {isCompleting ? 'Menyimpan progres...' : 'Tandai selesai & lanjut ➔'}
+                                        {isCompleting
+                                            ? 'Menyimpan progres...'
+                                            : 'Tandai selesai & lanjut ➔'}
                                     </Button>
                                 )}
                             </div>
                         </div>
                     </main>
                 </div>
-
             </div>
         </>
     );

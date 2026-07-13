@@ -8,8 +8,12 @@ use App\Models\UserSubscription;
 
 class HasPurchasedCourse
 {
-    public function handle(User $user, Course $course): bool
+    public function handle(?User $user, Course $course): bool
     {
+        if (! $user) {
+            return false;
+        }
+
         return UserSubscription::query()
             ->where('user_id', $user->id)
             ->whereHas('product.courses', fn ($query) => $query->where('id', $course->id))

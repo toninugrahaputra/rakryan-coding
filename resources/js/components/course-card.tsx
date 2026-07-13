@@ -106,11 +106,6 @@ export function CourseCard({
                 <div className="space-y-3 border-t border-border/40 pt-3">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{course.contents_count} bab</span>
-                        {showRating && (
-                            <span className="flex items-center gap-0.5">
-                                ⭐ {course.rating ?? 4.9}
-                            </span>
-                        )}
                     </div>
 
                     {/* Price Tag Row */}

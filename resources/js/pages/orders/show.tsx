@@ -100,7 +100,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
 
             <div className="flex min-h-screen flex-col bg-[#fcfcfd] dark:bg-background text-foreground font-sans">
                 {/* Secure Top Bar */}
-                <div className="bg-[#1e1b4b] text-white/80 py-2.5 text-center text-xs flex items-center justify-center gap-1.5 border-b border-white/5">
+                <div className="bg-[#1e1b4b] text-white/80 py-2.5 text-center text-xs flex items-center justify-center gap-1.5 border-b border-white/5 print:hidden">
                     <ShieldCheck className="h-3.5 w-3.5 text-[#eab308]" />
                     <span>Pembayaran aman</span>
                 </div>
@@ -108,7 +108,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                 <main className="flex-1 py-10">
                     <div className="mx-auto max-w-4xl px-6 lg:px-8">
                         {/* ─── Step progress bar indicator ─── */}
-                        <div className="flex items-center justify-center gap-4 mb-10 text-xs sm:text-sm font-semibold border-b border-border/40 pb-6">
+                        <div className="flex items-center justify-center gap-4 mb-10 text-xs sm:text-sm font-semibold border-b border-border/40 pb-6 print:hidden">
                             <div className="flex items-center gap-2 text-emerald-600">
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold">✓</span>
                                 <span>Detail produk</span>
@@ -326,7 +326,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                                                 <span className="text-[10px] text-muted-foreground mt-0.5 block">5 bab pembelajaran</span>
                                                             </div>
                                                         </div>
-                                                        <Button size="sm" variant="ghost" className="rounded-lg text-primary text-xs font-bold hover:bg-primary/10" asChild>
+                                                        <Button size="sm" variant="ghost" className="rounded-lg text-primary text-xs font-bold hover:bg-primary/10 print:hidden" asChild>
                                                             <Link href={`/courses/${c.slug}`}>
                                                                 Mulai ➔
                                                             </Link>
@@ -337,7 +337,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                         </div>
 
                                         {/* Action buttons */}
-                                        <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row gap-3">
+                                        <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row gap-3 print:hidden">
                                             {firstCourse && (
                                                 <Button className="flex-1 py-5 rounded-xl font-bold text-xs bg-[#B99430] hover:bg-[#725a15] text-white flex items-center justify-center gap-1.5" asChild>
                                                     <Link href={`/courses/${firstCourse.slug}`}>
@@ -353,7 +353,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                     </CardContent>
                                 </Card>
 
-                                <div className="text-center pt-2">
+                                <div className="text-center pt-2 print:hidden">
                                     <span className="text-xs text-muted-foreground">
                                         Invoice dikirim ke <strong>{userEmail}</strong> • Ada pertanyaan? <a href="https://wa.me/6281234567890" className="underline hover:text-primary font-semibold">Hubungi kami</a>
                                     </span>

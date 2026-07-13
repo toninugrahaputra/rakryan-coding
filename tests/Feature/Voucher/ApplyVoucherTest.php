@@ -4,6 +4,7 @@ namespace Tests\Feature\Voucher;
 
 use App\Actions\Voucher\ApplyVoucher;
 use App\Actions\Voucher\RedeemVoucher;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Voucher;
@@ -140,8 +141,9 @@ class ApplyVoucherTest extends TestCase
         $product = Product::factory()->create(['price' => 100000]);
         $user = User::factory()->create();
         $voucher = Voucher::factory()->flat(10000)->create(['per_user_limit' => 1]);
+        $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
 
-        app(RedeemVoucher::class)->handle($voucher, $user, 10000);
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $order);
 
         $this->expectException(ValidationException::class);
         $this->apply($voucher->code, $product, $user);
@@ -151,12 +153,14 @@ class ApplyVoucherTest extends TestCase
     {
         $user = User::factory()->create();
         $voucher = Voucher::factory()->flat(10000)->create();
+        $order = Order::factory()->create(['user_id' => $user->id]);
 
-        app(RedeemVoucher::class)->handle($voucher, $user, 10000);
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $order);
 
         $this->assertDatabaseHas('voucher_usages', [
             'voucher_id' => $voucher->id,
             'user_id' => $user->id,
+            'order_id' => $order->id,
             'discount_amount' => 10000,
         ]);
         $this->assertSame(1, $voucher->fresh()->usage_count);
