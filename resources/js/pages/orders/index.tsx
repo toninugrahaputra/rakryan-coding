@@ -1,9 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
-import { Card, CardContent } from '@/components/ui/card';
+import { Head, Link, router } from '@inertiajs/react';
+import { Receipt, Clock, FileText, Play, RotateCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { cancel } from '@/actions/App/Http/Controllers/OrderController';
 import { Button } from '@/components/ui/button';
-import { Receipt, Calendar, CreditCard, Clock, FileText, Play, RotateCcw } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 
 interface Order {
     id: number;
@@ -13,6 +14,7 @@ interface Order {
     net_amount: number;
     status: 'pending' | 'paid' | 'cancel' | 'expired';
     payment_url: string | null;
+    valid_until: string | null;
     created_at: string;
     product: {
         id: number;
@@ -35,68 +37,160 @@ interface OrdersIndexProps {
 }
 
 function formatPrice(price: number): string {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(price);
+}
+
+function formatCountdown(ms: number): string {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return [hours, minutes, seconds]
+        .map((unit) => unit.toString().padStart(2, '0'))
+        .join(':');
+}
+
+function PaymentCountdown({ validUntil }: { validUntil: string | null }) {
+    const [now, setNow] = useState(() => Date.now());
+
+    useEffect(() => {
+        const interval = setInterval(() => setNow(Date.now()), 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    if (!validUntil) {
+        return (
+            <span className="flex items-center gap-1 text-[10px] font-bold text-red-600">
+                <Clock className="h-3.5 w-3.5" />
+                Segera selesaikan pembayaran
+            </span>
+        );
+    }
+
+    const remaining = new Date(validUntil).getTime() - now;
+
+    if (remaining <= 0) {
+        return (
+            <span className="flex items-center gap-1 text-[10px] font-bold text-red-600">
+                <Clock className="h-3.5 w-3.5" />
+                Waktu pembayaran telah habis
+            </span>
+        );
+    }
+
+    return (
+        <span className="flex items-center gap-1 text-[10px] font-bold text-red-600">
+            <Clock className="h-3.5 w-3.5" />
+            Bayar dalam {formatCountdown(remaining)}
+        </span>
+    );
 }
 
 export default function OrdersIndex({ orders }: OrdersIndexProps) {
     const allOrders = orders.data;
+    const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+    function handleCancel(orderId: number) {
+        setCancellingId(orderId);
+        router.patch(
+            cancel(orderId).url,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setCancellingId(null),
+            },
+        );
+    }
 
     // Filter tab state
-    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'paid' | 'cancel'>('all');
+    const [activeTab, setActiveTab] = useState<
+        'all' | 'pending' | 'paid' | 'cancel'
+    >('all');
 
     // Filter counts computed
     const countAll = allOrders.length;
     const countPending = allOrders.filter((o) => o.status === 'pending').length;
     const countPaid = allOrders.filter((o) => o.status === 'paid').length;
-    const countCancel = allOrders.filter((o) => o.status === 'cancel' || o.status === 'expired').length;
+    const countCancel = allOrders.filter(
+        (o) => o.status === 'cancel' || o.status === 'expired',
+    ).length;
 
     const filteredOrders = allOrders.filter((o) => {
-        if (activeTab === 'pending') return o.status === 'pending';
-        if (activeTab === 'paid') return o.status === 'paid';
-        if (activeTab === 'cancel') return o.status === 'cancel' || o.status === 'expired';
+        if (activeTab === 'pending') {
+            return o.status === 'pending';
+        }
+
+        if (activeTab === 'paid') {
+            return o.status === 'paid';
+        }
+
+        if (activeTab === 'cancel') {
+            return o.status === 'cancel' || o.status === 'expired';
+        }
+
         return true;
     });
 
     return (
         <>
-            <Head title="Riwayat Pesanan — Rakryan Coding" />
+            <Head title="Riwayat Pesanan" />
 
-            <div className="space-y-6 max-w-4xl mx-auto font-sans">
+            <div className="mx-auto max-w-4xl space-y-6 font-sans">
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight">Riwayat Pesanan</h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    <h1 className="text-2xl font-extrabold tracking-tight">
+                        Riwayat Pesanan
+                    </h1>
+                    <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                         Semua transaksi & status pembayaranmu ada di sini.
                     </p>
                 </div>
 
                 {/* Filter Tabs (BWA Page 26) */}
-                <div className="flex border-b border-border/40 pb-2 flex-wrap gap-2 text-xs sm:text-sm font-semibold text-muted-foreground">
+                <div className="flex flex-wrap gap-2 border-b border-border/40 pb-2 text-xs font-semibold text-muted-foreground sm:text-sm">
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`pb-2.5 px-3 border-b-2 transition-all ${activeTab === 'all' ? 'border-[#eab308] text-foreground font-bold' : 'border-transparent hover:text-foreground'
-                            }`}
+                        className={`border-b-2 px-3 pb-2.5 transition-all ${
+                            activeTab === 'all'
+                                ? 'border-[#eab308] font-bold text-foreground'
+                                : 'border-transparent hover:text-foreground'
+                        }`}
                     >
                         Semua ({countAll})
                     </button>
                     <button
                         onClick={() => setActiveTab('pending')}
-                        className={`pb-2.5 px-3 border-b-2 transition-all ${activeTab === 'pending' ? 'border-[#eab308] text-foreground font-bold' : 'border-transparent hover:text-foreground'
-                            }`}
+                        className={`border-b-2 px-3 pb-2.5 transition-all ${
+                            activeTab === 'pending'
+                                ? 'border-[#eab308] font-bold text-foreground'
+                                : 'border-transparent hover:text-foreground'
+                        }`}
                     >
                         Menunggu ({countPending})
                     </button>
                     <button
                         onClick={() => setActiveTab('paid')}
-                        className={`pb-2.5 px-3 border-b-2 transition-all ${activeTab === 'paid' ? 'border-[#eab308] text-foreground font-bold' : 'border-transparent hover:text-foreground'
-                            }`}
+                        className={`border-b-2 px-3 pb-2.5 transition-all ${
+                            activeTab === 'paid'
+                                ? 'border-[#eab308] font-bold text-foreground'
+                                : 'border-transparent hover:text-foreground'
+                        }`}
                     >
                         Berhasil ({countPaid})
                     </button>
                     <button
                         onClick={() => setActiveTab('cancel')}
-                        className={`pb-2.5 px-3 border-b-2 transition-all ${activeTab === 'cancel' ? 'border-[#eab308] text-foreground font-bold' : 'border-transparent hover:text-foreground'
-                            }`}
+                        className={`border-b-2 px-3 pb-2.5 transition-all ${
+                            activeTab === 'cancel'
+                                ? 'border-[#eab308] font-bold text-foreground'
+                                : 'border-transparent hover:text-foreground'
+                        }`}
                     >
                         Dibatalkan ({countCancel})
                     </button>
@@ -104,14 +198,17 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
 
                 {/* Orders List Container */}
                 {filteredOrders.length === 0 ? (
-                    <Card className="border-border/50 text-center py-16">
+                    <Card className="border-border/50 py-16 text-center">
                         <CardContent className="space-y-3">
                             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                                 <Receipt className="h-6 w-6 text-muted-foreground/60" />
                             </div>
-                            <h3 className="font-bold text-foreground">Tidak ada pesanan</h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground max-w-xs mx-auto">
-                                Belum ada riwayat transaksi untuk kategori status pembayaran ini.
+                            <h3 className="font-bold text-foreground">
+                                Tidak ada pesanan
+                            </h3>
+                            <p className="mx-auto max-w-xs text-xs text-muted-foreground sm:text-sm">
+                                Belum ada riwayat transaksi untuk kategori
+                                status pembayaran ini.
                             </p>
                         </CardContent>
                     </Card>
@@ -122,27 +219,29 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
                             const isPaid = order.status === 'paid';
                             const isCancel = order.status === 'cancel';
                             const isExpired = order.status === 'expired';
-                            const courseNames = order.product?.courses?.map((c) => c.title).join(', ') || 'Untitled Course';
-                            const firstCourseSlug = order.product?.courses[0]?.slug;
+                            const firstCourseSlug =
+                                order.product?.courses[0]?.slug;
 
                             return (
                                 <div
                                     key={order.id}
-                                    className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-xs hover:border-border/80 transition-all space-y-4 p-5"
+                                    className="space-y-4 overflow-hidden rounded-2xl border border-border/50 bg-card p-5 shadow-xs transition-all hover:border-border/80"
                                 >
                                     {/* Card Header: Order Number, Date, Status Badge */}
                                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 pb-3">
                                         <div className="flex items-center gap-3">
-                                            <span className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">
+                                            <span className="font-mono text-xs font-bold tracking-wider text-foreground uppercase">
                                                 {order.order_number}
                                             </span>
                                             <span className="text-[10px] text-muted-foreground">
-                                                {new Date(order.created_at).toLocaleDateString('id-ID', {
+                                                {new Date(
+                                                    order.created_at,
+                                                ).toLocaleDateString('id-ID', {
                                                     day: 'numeric',
                                                     month: 'short',
                                                     year: 'numeric',
                                                     hour: '2-digit',
-                                                    minute: '2-digit'
+                                                    minute: '2-digit',
                                                 })}
                                             </span>
                                         </div>
@@ -173,48 +272,85 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
                                     {/* Card Body: Details & Pricing */}
                                     <div className="flex gap-4">
                                         {/* Course Icon Placeholder */}
-                                        <div className="h-14 w-20 shrink-0 bg-primary/5 border border-primary/10 rounded-lg flex items-center justify-center font-bold text-[#eab308] text-xs">
+                                        <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-primary/5 text-xs font-bold text-[#eab308]">
                                             &lt;/&gt;
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <span className="text-[9px] font-bold text-primary uppercase block tracking-wider">
-                                                PAKET • {order.product?.courses?.length || 1} MATERI
+                                        <div className="min-w-0 flex-1">
+                                            <span className="block text-[9px] font-bold tracking-wider text-primary uppercase">
+                                                PAKET •{' '}
+                                                {order.product?.courses
+                                                    ?.length || 1}{' '}
+                                                MATERI
                                             </span>
-                                            <h4 className="text-sm font-extrabold text-foreground leading-snug mt-0.5 truncate">
-                                                {order.product?.title || 'Paket Jago'}
+                                            <h4 className="mt-0.5 truncate text-sm leading-snug font-extrabold text-foreground">
+                                                {order.product?.title ||
+                                                    'Paket Jago'}
                                             </h4>
-                                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                BCA Virtual Account {order.discount_amount > 0 ? '• voucher NGODING40' : ''}
+                                            <p className="mt-0.5 text-[10px] text-muted-foreground">
+                                                BCA Virtual Account{' '}
+                                                {order.discount_amount > 0
+                                                    ? '• voucher NGODING40'
+                                                    : ''}
                                             </p>
                                         </div>
-                                        <div className="text-right shrink-0">
-                                            <span className="text-sm font-extrabold text-foreground block">
+                                        <div className="shrink-0 text-right">
+                                            <span className="block text-sm font-extrabold text-foreground">
                                                 {formatPrice(order.net_amount)}
                                             </span>
                                             {order.discount_amount > 0 && (
-                                                <span className="text-[9px] text-emerald-600 block mt-0.5">
-                                                    setelah diskon {Math.round((order.discount_amount / (order.net_amount + order.discount_amount)) * 100)}%
+                                                <span className="mt-0.5 block text-[9px] text-emerald-600">
+                                                    setelah diskon{' '}
+                                                    {Math.round(
+                                                        (order.discount_amount /
+                                                            (order.net_amount +
+                                                                order.discount_amount)) *
+                                                            100,
+                                                    )}
+                                                    %
                                                 </span>
                                             )}
                                         </div>
                                     </div>
 
                                     {/* Card Action Bar */}
-                                    <div className="border-t border-border/40 pt-4 flex flex-wrap items-center justify-between gap-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/40 pt-4">
                                         {isPending && (
                                             <>
-                                                <span className="text-[10px] font-bold text-red-600 flex items-center gap-1">
-                                                    <Clock className="h-3.5 w-3.5" />
-                                                    Bayar sebelum 23:59:00
-                                                </span>
+                                                <PaymentCountdown
+                                                    validUntil={
+                                                        order.valid_until
+                                                    }
+                                                />
                                                 <div className="flex gap-2">
-                                                    <Button size="sm" className="rounded-lg text-xs font-bold bg-[#B99430] hover:bg-[#725a15] text-white" asChild>
-                                                        <Link href={`/orders/${order.id}`}>
+                                                    <Button
+                                                        size="sm"
+                                                        className="rounded-lg bg-[#B99430] text-xs font-bold text-white hover:bg-[#725a15]"
+                                                        asChild
+                                                    >
+                                                        <Link
+                                                            href={`/orders/${order.id}`}
+                                                        >
                                                             Lanjutkan pembayaran
                                                         </Link>
                                                     </Button>
-                                                    <Button size="sm" variant="outline" className="rounded-lg text-xs font-bold">
-                                                        Batalkan
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="rounded-lg text-xs font-bold"
+                                                        disabled={
+                                                            cancellingId ===
+                                                            order.id
+                                                        }
+                                                        onClick={() =>
+                                                            handleCancel(
+                                                                order.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        {cancellingId ===
+                                                        order.id
+                                                            ? 'Membatalkan...'
+                                                            : 'Batalkan'}
                                                     </Button>
                                                 </div>
                                             </>
@@ -222,19 +358,33 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
 
                                         {isPaid && (
                                             <>
-                                                <span className="text-[10px] text-muted-foreground font-semibold">
-                                                    Pembayaran terverifikasi otomatis
+                                                <span className="text-[10px] font-semibold text-muted-foreground">
+                                                    Pembayaran terverifikasi
+                                                    otomatis
                                                 </span>
                                                 <div className="flex gap-2">
-                                                    <Button size="sm" variant="outline" className="rounded-lg text-xs font-bold flex items-center gap-1" asChild>
-                                                        <Link href={`/orders/${order.id}`}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="flex items-center gap-1 rounded-lg text-xs font-bold"
+                                                        asChild
+                                                    >
+                                                        <Link
+                                                            href={`/orders/${order.id}`}
+                                                        >
                                                             <FileText className="h-3.5 w-3.5" />
                                                             Invoice
                                                         </Link>
                                                     </Button>
                                                     {firstCourseSlug && (
-                                                        <Button size="sm" className="rounded-lg text-xs font-bold bg-[#B99430] hover:bg-[#725a15] text-white flex items-center gap-1" asChild>
-                                                            <Link href={`/courses/${firstCourseSlug}`}>
+                                                        <Button
+                                                            size="sm"
+                                                            className="flex items-center gap-1 rounded-lg bg-[#B99430] text-xs font-bold text-white hover:bg-[#725a15]"
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={`/courses/${firstCourseSlug}`}
+                                                            >
                                                                 <Play className="h-3.5 w-3.5 fill-current" />
                                                                 Lihat course
                                                             </Link>
@@ -246,10 +396,17 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
 
                                         {(isCancel || isExpired) && (
                                             <>
-                                                <span className="text-[10px] text-muted-foreground font-semibold">
-                                                    {isCancel ? 'Pemesanan dibatalkan' : 'Pemesanan kadaluarsa'}
+                                                <span className="text-[10px] font-semibold text-muted-foreground">
+                                                    {isCancel
+                                                        ? 'Pemesanan dibatalkan'
+                                                        : 'Pemesanan kadaluarsa'}
                                                 </span>
-                                                <Button size="sm" variant="outline" className="rounded-lg text-xs font-bold flex items-center gap-1" asChild>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="flex items-center gap-1 rounded-lg text-xs font-bold"
+                                                    asChild
+                                                >
                                                     <Link href="/courses">
                                                         <RotateCcw className="h-3.5 w-3.5" />
                                                         Pesan lagi

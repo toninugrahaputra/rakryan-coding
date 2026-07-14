@@ -59,7 +59,7 @@ function CatalogContent() {
 
     return (
         <>
-            <Head title="Katalog Courses — Rakryan Coding">
+            <Head title="Katalog Courses">
                 <meta
                     name="description"
                     content="Jelajahi semua course coding dan teknologi digital tersedia di Rakryan Coding."

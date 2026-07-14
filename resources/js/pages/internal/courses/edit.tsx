@@ -81,7 +81,7 @@ export default function CoursesEdit({ course, categories }: { course: CourseProp
                     <p className="text-muted-foreground text-sm">Perbarui detail course.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="title">Judul</Label>

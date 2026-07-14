@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('orders/apply-voucher', [OrderController::class, 'applyVoucher'])->name('orders.apply-voucher');
 
     // User Voucher & Notification routes

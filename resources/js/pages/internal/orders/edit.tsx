@@ -124,7 +124,7 @@ export default function OrdersEdit({ order }: { order: Order }) {
                     <p className="font-mono text-sm text-muted-foreground">{order.order_number}</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <div className="flex flex-col gap-5">
 
                         {/* Read-only: user & product */}

@@ -30,7 +30,7 @@ export default function UsersEdit({ user, roles }: { user: UserProp; roles: stri
                     <p className="text-muted-foreground text-sm">Perbarui detail dan peran user.</p>
                 </div>
 
-                <div className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <div className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <Form action={update(user.id).url} method="put">
                         {({ errors, processing }) => (
                             <div className="flex flex-col gap-5">

@@ -153,7 +153,7 @@ export default function Welcome({
 
     return (
         <>
-            <Head title="Rakryan Coding — Platform Belajar Coding">
+            <Head title="Platform Belajar Coding">
                 <meta
                     name="description"
                     content="Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri."
@@ -246,8 +246,8 @@ export default function Welcome({
                         >
                             <div className="mx-auto max-w-5xl px-4 lg:px-1">
                                 <ScrollReveal animation="scale-in">
-                                    <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 md:p-10 shadow-2xl backdrop-blur-md">
-                                        <div className="absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl pointer-events-none" />
+                                    <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md md:p-10">
+                                        <div className="pointer-events-none absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl" />
                                         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:text-left">
                                             <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
                                                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eab308]/20 text-[#eab308] shadow-inner">
@@ -255,20 +255,31 @@ export default function Welcome({
                                                 </div>
                                                 <div className="space-y-1.5 text-center sm:text-left">
                                                     <p className="text-lg font-black tracking-tight text-white uppercase sm:text-xl md:text-2xl">
-                                                        Voucher aktif ini spesial buat kamu
+                                                        Voucher aktif ini
+                                                        spesial buat kamu
                                                     </p>
                                                     <p className="text-xs font-extrabold tracking-wide text-[#eab308] sm:text-sm md:text-base">
-                                                        {formatVoucherDiscount(vouchers[0])}
-                                                        {vouchers[0].name ? ` — ${vouchers[0].name}` : ''}
+                                                        {formatVoucherDiscount(
+                                                            vouchers[0],
+                                                        )}
+                                                        {vouchers[0].name
+                                                            ? ` — ${vouchers[0].name}`
+                                                            : ''}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             <button
-                                                onClick={() => copyVoucherCode(vouchers[0].code)}
-                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-sm font-black uppercase text-slate-950 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
+                                                onClick={() =>
+                                                    copyVoucherCode(
+                                                        vouchers[0].code,
+                                                    )
+                                                }
+                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-sm font-black text-slate-950 uppercase shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
                                             >
-                                                {copiedCode === vouchers[0].code ? 'Tersalin!' : vouchers[0].code}
+                                                {copiedCode === vouchers[0].code
+                                                    ? 'Tersalin!'
+                                                    : vouchers[0].code}
                                                 <Copy className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
                                             </button>
                                         </div>
@@ -277,7 +288,6 @@ export default function Welcome({
                             </div>
                         </section>
                     )}
-
 
                     {/* ─── GALERI PROJEK COURSE (6 course terbaru) ──────── */}
                     <section
@@ -364,8 +374,8 @@ export default function Welcome({
                                     </h2>
                                     <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
                                         Tips, tutorial singkat, sampai cara
-                                        menangani error yang sering ditemui
-                                        pas ngoding.
+                                        menangani error yang sering ditemui pas
+                                        ngoding.
                                     </p>
                                 </div>
 

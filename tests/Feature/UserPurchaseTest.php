@@ -214,4 +214,64 @@ class UserPurchaseTest extends TestCase
         $response->assertOk();
         $this->assertEquals(OrderStatus::Pending, $order->fresh()->status);
     }
+
+    public function test_user_can_cancel_own_pending_order(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->patch(route('orders.cancel', $order->id));
+
+        $response->assertRedirect();
+        $this->assertEquals(OrderStatus::Cancel, $order->fresh()->status);
+    }
+
+    public function test_user_cannot_cancel_another_users_order(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $otherUser->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->patch(route('orders.cancel', $order->id));
+
+        $response->assertStatus(403);
+        $this->assertEquals(OrderStatus::Pending, $order->fresh()->status);
+    }
+
+    public function test_user_cannot_cancel_an_already_paid_order(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'status' => OrderStatus::Paid,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->patch(route('orders.cancel', $order->id));
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
+    }
 }

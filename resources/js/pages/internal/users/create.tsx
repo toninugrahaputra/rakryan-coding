@@ -23,7 +23,7 @@ export default function UsersCreate({ roles }: { roles: string[] }) {
                     <p className="text-muted-foreground text-sm">Buat akun user baru.</p>
                 </div>
 
-                <div className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <div className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <Form action={store.url()} method="post">
                         {({ errors, processing }) => (
                             <div className="flex flex-col gap-5">

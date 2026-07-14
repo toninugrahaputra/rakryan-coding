@@ -91,7 +91,7 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
                     <p className="text-muted-foreground text-sm">Perbarui detail produk.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="title">Judul</Label>

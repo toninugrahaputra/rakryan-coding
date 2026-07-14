@@ -141,7 +141,7 @@ export default function Dashboard() {
 
     return (
         <>
-            <Head title="Dashboard — Rakryan Coding" />
+            <Head title="Dashboard" />
 
             <div className="flex h-full flex-1 flex-col gap-6 bg-[#fcfcfd] p-4 font-sans dark:bg-background">
                 {/* ─── Welcome Greeting Area (BWA Page 21) ─── */}

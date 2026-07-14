@@ -153,7 +153,7 @@ export function PublicNavbar() {
                         {/* Desktop Nav Links */}
                         <nav className="hidden items-center gap-8 md:flex">
                             <DropdownMenu>
-                                <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-bold text-[#555a64] transition-colors outline-none hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white">
+                                <DropdownMenuTrigger className="flex items-center gap-1 text-base font-bold text-[#555a64] transition-colors outline-none hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white">
                                     Course
                                     <ChevronDown className="h-3.5 w-3.5" />
                                 </DropdownMenuTrigger>
@@ -171,7 +171,7 @@ export function PublicNavbar() {
 
                             <Link
                                 href="/articles"
-                                className="text-sm font-bold text-[#555a64] transition-colors hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white"
+                                className="text-base font-bold text-[#555a64] transition-colors hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white"
                             >
                                 Artikel Belajar
                             </Link>

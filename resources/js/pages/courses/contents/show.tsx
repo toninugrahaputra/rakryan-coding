@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import EditorJsRenderer from '@/components/editor-js-renderer';
+import ScrollToTopBottom from '@/components/scroll-to-top-bottom';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 
@@ -88,6 +89,8 @@ export default function CourseContentShow({
     return (
         <>
             <Head title={`${content.title} — ${course.title}`} />
+
+            <ScrollToTopBottom />
 
             <div className="flex min-h-screen flex-col bg-[#fcfcfd] font-sans text-foreground dark:bg-background">
                 {/* ─── Reader Top Control Bar (BWA Page 23) ─── */}

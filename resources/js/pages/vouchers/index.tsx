@@ -114,7 +114,7 @@ export default function VouchersIndex({
 
     return (
         <>
-            <Head title="Voucher Saya — Rakryan Coding" />
+            <Head title="Voucher Saya" />
 
             <div className="mx-auto max-w-4xl space-y-6 font-sans">
                 {/* Header */}

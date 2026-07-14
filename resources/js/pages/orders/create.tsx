@@ -200,7 +200,7 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
 
     return (
         <>
-            <Head title="Checkout & Bayar — Rakryan Coding" />
+            <Head title="Checkout & Bayar" />
 
             <div className="flex min-h-screen flex-col bg-[#fcfcfd] font-sans text-foreground dark:bg-background">
                 {/* Secure checkout indicator top bar */}

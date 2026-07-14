@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Order\ApproveOrder;
+use App\Actions\Order\CancelOrder;
 use App\Actions\Order\CreateOrder;
 use App\Actions\User\HasPurchasedCourse;
 use App\Actions\Voucher\ApplyVoucher;
@@ -160,6 +161,21 @@ class OrderController extends Controller
         return Inertia::render('orders/show', [
             'order' => $order,
         ]);
+    }
+
+    public function cancel(Order $order, Request $request): RedirectResponse
+    {
+        if ($order->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        try {
+            app(CancelOrder::class)->handle($order);
+        } catch (ValidationException $e) {
+            return redirect()->back()->with('error', $e->validator->errors()->first('status'));
+        }
+
+        return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
     public function applyVoucher(Request $request): JsonResponse

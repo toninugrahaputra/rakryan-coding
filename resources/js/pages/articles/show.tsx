@@ -20,7 +20,7 @@ interface ArticleShowProps {
 export default function ArticleShow({ article }: ArticleShowProps) {
     return (
         <>
-            <Head title={`${article.title} — Rakryan Coding`}>
+            <Head title={article.title}>
                 {article.excerpt && (
                     <meta name="description" content={article.excerpt} />
                 )}

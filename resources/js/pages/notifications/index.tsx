@@ -89,7 +89,7 @@ export default function NotificationsIndex({
 
     return (
         <>
-            <Head title="Notifikasi — Rakryan Coding" />
+            <Head title="Notifikasi" />
 
             <div className="mx-auto max-w-4xl space-y-6 font-sans">
                 {/* Header */}

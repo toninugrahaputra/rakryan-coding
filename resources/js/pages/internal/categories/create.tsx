@@ -17,7 +17,7 @@ export default function CategoriesCreate() {
                     <p className="text-muted-foreground text-sm">Buat kategori course baru.</p>
                 </div>
 
-                <div className="mx-auto w-full max-w-lg rounded-xl border p-6">
+                <div className="mx-auto w-full max-w-2xl rounded-xl border p-6">
                     <Form action={store.url()} method="post">
                         {({ errors, processing }) => (
                             <div className="flex flex-col gap-5">

@@ -42,7 +42,7 @@ export default function ArticlesIndex({
             <PublicNavbar />
 
             <main className="flex-1">
-                <Head title="Artikel — Rakryan Coding">
+                <Head title="Artikel">
                     <meta
                         name="description"
                         content="Kumpulan artikel, tips, dan tutorial singkat seputar coding dari Rakryan Coding."

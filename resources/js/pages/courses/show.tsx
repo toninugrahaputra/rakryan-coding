@@ -175,7 +175,7 @@ function CourseDetailContent() {
 
     return (
         <>
-            <Head title={`${course.title} — Rakryan Coding`} />
+            <Head title={course.title} />
 
             <main className="flex-1 py-10">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -411,8 +411,8 @@ function CourseDetailContent() {
                                             Ulasan Course Kamu
                                         </h2>
                                         <p className="mt-1 text-sm text-muted-foreground">
-                                            Kamu telah menyelesaikan course
-                                            ini! Bantu pembelajar lain dengan
+                                            Kamu telah menyelesaikan course ini!
+                                            Bantu pembelajar lain dengan
                                             memberikan ulasan terbaikmu.
                                         </p>
                                     </div>

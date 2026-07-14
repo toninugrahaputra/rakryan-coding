@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import type { OutputData } from '@editorjs/editorjs';
 import { useRef, useState } from 'react';
 import EditorJsComponent, { type EditorJsRef } from '@/components/editor-js';
+import ScrollToTopBottom from '@/components/scroll-to-top-bottom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -76,6 +77,8 @@ export default function ContentsEdit({ course, content }: { course: Course; cont
     return (
         <>
             <Head title={`Edit — ${content.title}`} />
+
+            <ScrollToTopBottom />
 
             <div className="flex h-full flex-1 flex-col gap-6 p-6">
                 <div>
