@@ -5,6 +5,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        @php
+            $ogTitle = config('app.name', 'Rakryan Coding');
+            $ogDescription = 'Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri.';
+            $ogImage = asset('assets/images/og-image.png');
+        @endphp
+
+        <meta name="description" content="{{ $ogDescription }}">
+
+        {{-- Open Graph / Twitter Card — dibaca oleh crawler link-preview (WhatsApp, Telegram, dll) yang tidak menjalankan JS,
+             jadi tag ini harus ada di sini, bukan hanya lewat <Head> Inertia di masing-masing halaman. --}}
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $ogTitle }}">
+        <meta property="og:title" content="{{ $ogTitle }}">
+        <meta property="og:description" content="{{ $ogDescription }}">
+        <meta property="og:image" content="{{ $ogImage }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $ogTitle }}">
+        <meta name="twitter:description" content="{{ $ogDescription }}">
+        <meta name="twitter:image" content="{{ $ogImage }}">
+
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {
