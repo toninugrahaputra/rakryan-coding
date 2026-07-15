@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Voucher;
+use App\Services\XenditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -77,8 +78,35 @@ class UserPurchaseTest extends TestCase
         $this->assertEquals($user->id, $order->user_id);
         $this->assertEquals(OrderStatus::Pending, $order->status);
         $this->assertNotNull($order->payment_url);
+        $this->assertNotNull($order->valid_until);
+        $this->assertNotNull($order->payment_metadata);
 
         $response->assertRedirect(route('orders.show', $order->id));
+    }
+
+    public function test_order_and_voucher_redemption_roll_back_when_xendit_invoice_creation_fails(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+        $voucher = Voucher::factory()->flat(20000)->create();
+
+        $this->mock(XenditService::class, function ($mock) {
+            $mock->shouldReceive('createInvoice')->once()->andThrow(new \Exception('Xendit sedang gangguan'));
+        });
+
+        $response = $this->actingAs($user)
+            ->post(route('orders.store'), [
+                'product_id' => $product->id,
+                'voucher_code' => $voucher->code,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('voucher_usages', 0);
+        $this->assertEquals(0, $voucher->fresh()->usage_count);
     }
 
     public function test_user_can_apply_voucher_successfully(): void
@@ -172,6 +200,92 @@ class UserPurchaseTest extends TestCase
             ]);
         $response->assertOk();
         $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
+    }
+
+    public function test_duplicate_paid_webhook_is_idempotent_and_does_not_error(): void
+    {
+        config(['services.xendit.callback_token' => 'secure-token']);
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'net_amount' => 100000,
+        ]);
+
+        $payload = [
+            'external_id' => $order->order_number,
+            'status' => 'PAID',
+            'amount' => 100000,
+        ];
+
+        // Kiriman pertama: memproses & meng-approve order seperti biasa
+        $this->withHeaders(['x-callback-token' => 'secure-token'])
+            ->postJson(route('webhooks.xendit'), $payload)
+            ->assertOk();
+
+        // Kiriman kedua (retry/duplicate dari Xendit): harus tetap 200, bukan 500
+        $response = $this->withHeaders(['x-callback-token' => 'secure-token'])
+            ->postJson(route('webhooks.xendit'), $payload);
+
+        $response->assertOk();
+        $this->assertEquals(OrderStatus::Paid, $order->fresh()->status);
+        $this->assertDatabaseCount('user_subscriptions', 1);
+    }
+
+    public function test_paid_webhook_for_already_cancelled_order_does_not_auto_approve(): void
+    {
+        config(['services.xendit.callback_token' => 'secure-token']);
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'status' => OrderStatus::Cancel,
+        ]);
+
+        $response = $this->withHeaders(['x-callback-token' => 'secure-token'])
+            ->postJson(route('webhooks.xendit'), [
+                'external_id' => $order->order_number,
+                'status' => 'PAID',
+                'amount' => 100000,
+            ]);
+
+        $response->assertOk();
+        $this->assertEquals(OrderStatus::Cancel, $order->fresh()->status);
+        $this->assertDatabaseCount('user_subscriptions', 0);
+    }
+
+    public function test_expired_webhook_marks_pending_order_as_expired(): void
+    {
+        config(['services.xendit.callback_token' => 'secure-token']);
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->withHeaders(['x-callback-token' => 'secure-token'])
+            ->postJson(route('webhooks.xendit'), [
+                'external_id' => $order->order_number,
+                'status' => 'EXPIRED',
+            ]);
+
+        $response->assertOk();
+        $this->assertEquals(OrderStatus::Expired, $order->fresh()->status);
     }
 
     public function test_order_self_approval_via_mock_pay_works_in_local_or_testing_env(): void

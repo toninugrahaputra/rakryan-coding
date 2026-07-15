@@ -1,6 +1,15 @@
 import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -14,15 +23,6 @@ import { logout } from '@/routes';
 import { profile } from '@/routes/internal/settings';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 
 type Props = {
     user: User;
@@ -68,7 +68,7 @@ export function UserMenuContent({ user }: Props) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-                className="block w-full cursor-pointer text-left text-destructive focus:bg-destructive/10 focus:text-destructive"
+                className="block w-full cursor-pointer text-left font-bold text-destructive focus:bg-destructive/10 focus:text-destructive dark:text-red-400 dark:focus:bg-red-500/10 dark:focus:text-red-400"
                 onSelect={(e) => {
                     e.preventDefault();
                     setIsOpen(true);
@@ -93,7 +93,11 @@ export function UserMenuContent({ user }: Props) {
                         <Button variant="ghost" onClick={() => setIsOpen(false)}>
                             Batal
                         </Button>
-                        <Button variant="destructive" onClick={handleConfirmLogout}>
+                        <Button
+                            variant="destructive"
+                            className="font-bold dark:bg-red-600 dark:hover:bg-red-500"
+                            onClick={handleConfirmLogout}
+                        >
                             Keluar
                         </Button>
                     </DialogFooter>

@@ -150,7 +150,7 @@ export default function Dashboard() {
                     className="flex flex-wrap items-center justify-between gap-4 border-b border-border/40 pb-6"
                 >
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                        <h1 className="text-3xl mt-5 font-extrabold tracking-tight text-foreground">
                             {getGreeting()}, {user ? user.name : 'Pelajar'}👋
                         </h1>
                         <p className="mt-1 text-xs text-muted-foreground sm:text-sm">

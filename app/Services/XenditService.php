@@ -24,11 +24,18 @@ class XenditService
         if (empty($this->secretKey) || str_starts_with($this->secretKey, 'mock_') || app()->environment('testing')) {
             // Mock Fallback
             $mockUrl = route('orders.show', $order->id).'?mock_pay=1';
+            $expiryDate = now()->addDay()->toIso8601String();
 
             return [
                 'id' => 'xnd_mock_'.time().'_'.rand(1000, 9999),
                 'invoice_url' => $mockUrl,
                 'status' => 'PENDING',
+                'expiry_date' => $expiryDate,
+                'raw' => [
+                    'mock' => true,
+                    'note' => 'XENDIT_SECRET_KEY belum dikonfigurasi — ini invoice simulasi lokal, bukan invoice Xendit asli.',
+                    'expiry_date' => $expiryDate,
+                ],
             ];
         }
 
@@ -50,6 +57,8 @@ class XenditService
                     'id' => $data['id'],
                     'invoice_url' => $data['invoice_url'],
                     'status' => $data['status'],
+                    'expiry_date' => $data['expiry_date'] ?? null,
+                    'raw' => $data,
                 ];
             }
 

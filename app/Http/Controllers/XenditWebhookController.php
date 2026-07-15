@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Order\ApproveOrder;
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -42,6 +43,22 @@ class XenditWebhookController extends Controller
         }
 
         if ($status === 'PAID' || $status === 'SETTLED') {
+            // Sudah pernah diproses (retry/duplicate delivery dari Xendit) — balas 200 idempotent
+            // supaya Xendit berhenti mengirim ulang webhook yang sama.
+            if ($order->status === OrderStatus::Paid) {
+                Log::info("Xendit Webhook: Order {$externalId} already paid, skipping (idempotent).");
+
+                return response()->json(['message' => 'Already processed']);
+            }
+
+            // Order sudah dibatalkan/kedaluwarsa di sisi kita tapi tetap dibayar di Xendit —
+            // butuh peninjauan manual, tapi tetap balas 200 agar Xendit tidak retry terus-menerus.
+            if ($order->status !== OrderStatus::Pending) {
+                Log::warning("Xendit Webhook: Order {$externalId} received PAID webhook while status is {$order->status->value}. Perlu peninjauan manual.");
+
+                return response()->json(['message' => 'Order not payable, manual review required']);
+            }
+
             // Ambil admin user pertama sebagai penanggung jawab approve order otomatis
             $adminUser = User::role('admin')->first() ?? User::first();
 
@@ -59,6 +76,17 @@ class XenditWebhookController extends Controller
 
                 return response()->json(['message' => 'Failed to process activation'], 500);
             }
+
+            return response()->json(['message' => 'Success']);
+        }
+
+        if ($status === 'EXPIRED') {
+            if ($order->status === OrderStatus::Pending) {
+                $order->update(['status' => OrderStatus::Expired]);
+                Log::info("Xendit Webhook: Order {$externalId} marked as expired.");
+            }
+
+            return response()->json(['message' => 'Success']);
         }
 
         return response()->json(['message' => 'Success']);

@@ -17,6 +17,8 @@ use App\Services\XenditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -80,50 +82,60 @@ class OrderController extends Controller
 
         $netAmount = max(0, $product->price - $discount);
 
-        // Buat Order
-        $order = app(CreateOrder::class)->handle([
-            'user_id' => $user->id,
-            'product_id' => $product->id,
-            'channel_group' => 'Xendit',
-            'channel_code' => 'Invoice',
-            'channel_name' => 'Xendit Gateway',
-            'payment_fee' => 0,
-            'total_amount' => $netAmount,
-        ]);
+        // Order, redeem voucher, dan pembuatan invoice Xendit dibungkus satu transaction:
+        // kalau createInvoice() gagal, order & pemakaian voucher ikut di-rollback (tidak orphan).
+        try {
+            $order = DB::transaction(function () use ($user, $product, $discount, $netAmount, $voucher) {
+                $order = app(CreateOrder::class)->handle([
+                    'user_id' => $user->id,
+                    'product_id' => $product->id,
+                    'channel_group' => 'Xendit',
+                    'channel_code' => 'Invoice',
+                    'channel_name' => 'Xendit Gateway',
+                    'payment_fee' => 0,
+                    'total_amount' => $netAmount,
+                ]);
 
-        // Simpan diskon ke order
-        if ($discount > 0) {
-            $order->update([
-                'discount_amount' => $discount,
-                'net_amount' => $netAmount,
-            ]);
+                if ($discount > 0) {
+                    $order->update([
+                        'discount_amount' => $discount,
+                        'net_amount' => $netAmount,
+                    ]);
+                }
+
+                if ($voucher) {
+                    app(RedeemVoucher::class)->handle($voucher, $user, $discount, $order);
+                }
+
+                // Jika harga net Rp 0 (Gratis), langsung disetujui tanpa memanggil Xendit
+                if ($netAmount === 0) {
+                    $adminUser = User::role('admin')->first() ?? User::first();
+                    if ($adminUser) {
+                        app(ApproveOrder::class)->handle($order, $adminUser);
+                    }
+
+                    return $order;
+                }
+
+                $xenditInvoice = app(XenditService::class)->createInvoice($order, $user->email, $product->title);
+                $order->update([
+                    'payment_url' => $xenditInvoice['invoice_url'],
+                    'payment_reference' => $xenditInvoice['id'],
+                    'valid_until' => $xenditInvoice['expiry_date'] ?? null,
+                    'payment_metadata' => $xenditInvoice['raw'] ?? null,
+                ]);
+
+                return $order;
+            });
+        } catch (\Exception $e) {
+            Log::error('Gagal membuat order/invoice Xendit: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran. Silakan coba lagi.');
         }
 
-        // Catat penggunaan voucher jika ada
-        if ($voucher) {
-            app(RedeemVoucher::class)->handle($voucher, $user, $discount, $order);
-        }
-
-        // Jika harga net Rp 0 (Gratis)
         if ($netAmount === 0) {
-            $adminUser = User::role('admin')->first() ?? User::first();
-            if ($adminUser) {
-                app(ApproveOrder::class)->handle($order, $adminUser);
-            }
-
             return redirect()->route('courses.show', $product->courses->first()->slug)
                 ->with('success', 'Pendaftaran course gratis berhasil!');
-        }
-
-        // Panggil Xendit Invoice
-        try {
-            $xenditInvoice = app(XenditService::class)->createInvoice($order, $user->email, $product->title);
-            $order->update([
-                'payment_url' => $xenditInvoice['invoice_url'],
-                'payment_reference' => $xenditInvoice['id'],
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses pembayaran: '.$e->getMessage());
         }
 
         return redirect()->route('orders.show', $order->id);
