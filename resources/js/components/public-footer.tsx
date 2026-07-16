@@ -136,13 +136,10 @@ export function PublicFooter() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs font-medium text-slate-500 sm:flex-row">
+                <div className="border-t border-white/5 pt-8 text-center text-xs font-medium text-slate-500">
                     <span>
                         &copy; {year} Rakryan Coding · Dibuat untuk calon
                         developer di seluruh Indonesia
-                    </span>
-                    <span className="flex items-center gap-1">
-                        Made with ☕ in Malang
                     </span>
                 </div>
             </div>
