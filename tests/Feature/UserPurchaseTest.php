@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Voucher;
 use App\Services\XenditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -129,6 +130,48 @@ class UserPurchaseTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->where('order.product.courses.0.contents_count', 3)
+        );
+    }
+
+    public function test_order_show_page_flags_a_valid_signed_return_from_xendit(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $signedUrl = URL::temporarySignedRoute('orders.show', now()->addDays(2), ['order' => $order->id]);
+
+        $response = $this->actingAs($user)->get($signedUrl);
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('justReturnedFromXendit', true)
+        );
+    }
+
+    public function test_order_show_page_does_not_flag_a_plain_visit_as_returning_from_xendit(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.show', $order->id));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('justReturnedFromXendit', false)
         );
     }
 

@@ -42,6 +42,7 @@ interface Order {
 
 interface OrdersShowProps {
     order: Order;
+    justReturnedFromXendit: boolean;
     auth: {
         user: { email: string } | null;
     };
@@ -55,7 +56,11 @@ function formatPrice(price: number): string {
     }).format(price);
 }
 
-export default function OrdersShow({ order, auth }: OrdersShowProps) {
+export default function OrdersShow({
+    order,
+    justReturnedFromXendit,
+    auth,
+}: OrdersShowProps) {
     const isPending = order.status === 'pending';
     const isPaid = order.status === 'paid';
     const isCancel = order.status === 'cancel';
@@ -160,6 +165,21 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                         {/* ─── PENDING PAYMENT STATE (Page 13) ─── */}
                         {isPending && (
                             <div className="space-y-6">
+                                {/* Baru kembali dari halaman pembayaran Xendit (signature URL tervalidasi) —
+                                    murni info UX, bukan penentu status; status tetap dari webhook. */}
+                                {justReturnedFromXendit && (
+                                    <div className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs font-semibold text-blue-700 sm:text-sm dark:text-blue-300">
+                                        <CheckCircle2 className="h-5 w-5 shrink-0" />
+                                        <span>
+                                            Kamu baru saja kembali dari
+                                            halaman pembayaran Xendit. Kami
+                                            sedang mengonfirmasi status
+                                            pembayaranmu — halaman ini akan
+                                            update otomatis begitu selesai.
+                                        </span>
+                                    </div>
+                                )}
+
                                 {/* Expiry Warning Bar */}
                                 <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-sm font-bold text-red-600 sm:text-base">
                                     <span className="flex items-center gap-2">

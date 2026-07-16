@@ -168,10 +168,19 @@ class OrderController extends Controller
             }
         }
 
+        // Signature valid → request ini benar-benar redirect asli dari Xendit (bukan dipakai
+        // untuk mengubah status apa pun, cuma penanda UX "baru saja kembali dari pembayaran").
+        $justReturnedFromXendit = $request->hasValidSignature();
+
+        if ($justReturnedFromXendit) {
+            Log::info("Order {$order->order_number}: user kembali dari redirect Xendit yang tervalidasi.");
+        }
+
         $order->load(['product.courses' => fn ($query) => $query->withCount('contents')]);
 
         return Inertia::render('orders/show', [
             'order' => $order,
+            'justReturnedFromXendit' => $justReturnedFromXendit,
         ]);
     }
 

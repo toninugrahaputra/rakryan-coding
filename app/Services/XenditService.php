@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class XenditService
 {
@@ -40,14 +41,19 @@ class XenditService
         }
 
         try {
+            // Signed URL: cuma untuk deteksi "baru saja kembali dari Xendit" di halaman order
+            // (tampilan/analytics saja) — BUKAN sumber kebenaran status pembayaran. Status
+            // pembayaran tetap murni dari webhook, terlepas dari signature ini valid atau tidak.
+            $returnUrl = URL::temporarySignedRoute('orders.show', now()->addDays(2), ['order' => $order->id]);
+
             $response = Http::withBasicAuth($this->secretKey, '')
                 ->post('https://api.xendit.co/v2/invoices', [
                     'external_id' => $order->order_number,
                     'amount' => (int) $order->net_amount,
                     'payer_email' => $email,
                     'description' => $description,
-                    'success_redirect_url' => route('orders.show', $order->id),
-                    'failure_redirect_url' => route('orders.show', $order->id),
+                    'success_redirect_url' => $returnUrl,
+                    'failure_redirect_url' => $returnUrl,
                 ]);
 
             if ($response->successful()) {
