@@ -172,7 +172,6 @@ class OrderController extends Controller
 
         return Inertia::render('orders/show', [
             'order' => $order,
-            'canSimulatePayment' => app()->environment('local', 'testing'),
         ]);
     }
 

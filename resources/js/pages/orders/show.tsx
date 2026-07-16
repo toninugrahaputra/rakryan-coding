@@ -1,4 +1,4 @@
-import { Head, Link, router, usePoll } from '@inertiajs/react';
+import { Head, Link, usePoll } from '@inertiajs/react';
 import {
     CheckCircle2,
     AlertCircle,
@@ -43,7 +43,6 @@ interface Order {
 
 interface OrdersShowProps {
     order: Order;
-    canSimulatePayment: boolean;
     auth: {
         user: { email: string } | null;
     };
@@ -57,11 +56,7 @@ function formatPrice(price: number): string {
     }).format(price);
 }
 
-export default function OrdersShow({
-    order,
-    canSimulatePayment,
-    auth,
-}: OrdersShowProps) {
+export default function OrdersShow({ order, auth }: OrdersShowProps) {
     const isPending = order.status === 'pending';
     const isPaid = order.status === 'paid';
     const isCancel = order.status === 'cancel';
@@ -117,15 +112,6 @@ export default function OrdersShow({
         navigator.clipboard.writeText('8077 0420 2026 0084');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    }
-
-    function handleMockPay() {
-        // Redirection simulator mock pay lunas
-        router.get(
-            `/orders/${order.id}?mock_pay=1`,
-            {},
-            { preserveScroll: true },
-        );
     }
 
     return (
@@ -382,16 +368,6 @@ export default function OrdersShow({
                                                     <a href={order.payment_url}>
                                                         Lanjutkan Pembayaran ➔
                                                     </a>
-                                                </Button>
-                                            )}
-                                            {canSimulatePayment && (
-                                                <Button
-                                                    onClick={handleMockPay}
-                                                    variant="outline"
-                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-5 text-xs font-bold"
-                                                >
-                                                    Simulasi: pembayaran sukses
-                                                    ➔
                                                 </Button>
                                             )}
                                             <Button
