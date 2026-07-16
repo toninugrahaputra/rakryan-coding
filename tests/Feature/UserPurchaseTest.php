@@ -31,13 +31,22 @@ class UserPurchaseTest extends TestCase
     {
         $user = User::factory()->create();
         $course = Course::factory()->create(['is_published' => true]);
-        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        CourseContent::factory()->count(4)->create(['course_id' => $course->id]);
+        $product = Product::factory()->single()->published()->create([
+            'price' => 100000,
+            'price_strikethrough' => 150000,
+        ]);
         $product->courses()->attach($course->id);
 
         $response = $this->actingAs($user)
             ->get(route('orders.create', ['course' => $course->slug]));
 
         $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('course.contents_count', 4)
+            ->where('product.courses_count', 1)
+            ->where('product.price_strikethrough', 150000)
+        );
     }
 
     public function test_user_cannot_view_checkout_page_if_already_purchased(): void

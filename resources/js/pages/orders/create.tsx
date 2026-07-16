@@ -11,12 +11,17 @@ interface Course {
     title: string;
     slug: string;
     thumbnail: string | null;
+    tech_stack: string | null;
+    read_duration: string | null;
+    contents_count: number;
 }
 
 interface Product {
     id: number;
     title: string;
     price: number;
+    price_strikethrough: number | null;
+    courses_count: number;
 }
 
 interface OrdersCreateProps {
@@ -214,23 +219,31 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-[10px] font-bold tracking-wider text-primary uppercase">
-                                                PAKET • 6 MATERI
+                                                PAKET • {product.courses_count}{' '}
+                                                MATERI
                                             </span>
                                             <h4 className="mt-0.5 truncate text-base leading-snug font-extrabold text-foreground">
                                                 {product.title}
                                             </h4>
                                             <p className="mt-1 text-xs text-muted-foreground">
-                                                62 bab • ±52 jam baca • akses
-                                                sampai lulus
+                                                {course.contents_count} bab
+                                                {course.read_duration
+                                                    ? ` • ${course.read_duration}`
+                                                    : ''}{' '}
+                                                • akses sampai lulus
                                             </p>
                                         </div>
                                         <div className="shrink-0 text-right">
                                             <span className="block text-sm font-extrabold text-foreground">
                                                 {formatPrice(product.price)}
                                             </span>
-                                            <span className="mt-0.5 block text-[10px] text-muted-foreground line-through">
-                                                Rp 1.100.000
-                                            </span>
+                                            {product.price_strikethrough && (
+                                                <span className="mt-0.5 block text-[10px] text-muted-foreground line-through">
+                                                    {formatPrice(
+                                                        product.price_strikethrough,
+                                                    )}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -311,11 +324,13 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                                         {/* Logo Box */}
                                         <div className="relative overflow-hidden rounded-xl bg-[#1e1b4b] p-4.5 text-center font-bold tracking-wider text-white">
                                             <div className="absolute right-0 bottom-0 h-12 w-12 translate-x-4 translate-y-4 rounded-full bg-white/5" />
-                                            <span className="block font-mono text-sm text-amber-400">
-                                                &lt;Web Dev/&gt;
-                                            </span>
+                                            {course.tech_stack && (
+                                                <span className="block font-mono text-sm text-amber-400">
+                                                    &lt;{course.tech_stack}/&gt;
+                                                </span>
+                                            )}
                                             <span className="mt-0.5 block text-base font-extrabold">
-                                                Paket Jago
+                                                {product.title}
                                             </span>
                                         </div>
 

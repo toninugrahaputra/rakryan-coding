@@ -52,11 +52,16 @@ class OrderController extends Controller
                 'title' => $course->title,
                 'slug' => $course->slug,
                 'thumbnail' => $course->thumbnail ? Storage::disk('public')->url($course->thumbnail) : null,
+                'tech_stack' => $course->tech_stack,
+                'read_duration' => $course->read_duration,
+                'contents_count' => $course->contents()->count(),
             ],
             'product' => [
                 'id' => $product->id,
                 'title' => $product->title,
                 'price' => $product->price,
+                'price_strikethrough' => $product->price_strikethrough,
+                'courses_count' => $product->courses()->count(),
             ],
         ]);
     }

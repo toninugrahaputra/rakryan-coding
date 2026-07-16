@@ -289,8 +289,7 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
                                                 MATERI
                                             </span>
                                             <h4 className="mt-0.5 truncate text-sm leading-snug font-extrabold text-foreground">
-                                                {order.product?.title ||
-                                                    'Paket Jago'}
+                                                {order.product?.title || '-'}
                                             </h4>
                                             <p className="mt-0.5 text-[10px] text-muted-foreground">
                                                 {order.channel_name || 'Xendit'}

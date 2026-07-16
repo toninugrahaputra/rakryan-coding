@@ -307,7 +307,7 @@ export default function OrdersShow({
                                                     </span>
                                                     <span className="font-bold text-foreground">
                                                         {order.product?.title ||
-                                                            'Paket Jago'}
+                                                            '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-border/40 pb-2.5">
