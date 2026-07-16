@@ -44,12 +44,13 @@ class ApplyVoucher
             $this->fail('Kuota voucher sudah habis.');
         }
 
-        if ($voucher->per_user_limit !== null) {
-            $userUsage = $voucher->usages()->where('user_id', $user->id)->whereNotNull('order_id')->count();
+        // Kosong (null) berarti default 1x per pengguna, bukan unlimited — admin harus
+        // secara eksplisit mengisi angka lebih besar kalau memang mau voucher dipakai berkali-kali.
+        $perUserLimit = $voucher->per_user_limit ?? 1;
+        $userUsage = $voucher->usages()->where('user_id', $user->id)->whereNotNull('order_id')->count();
 
-            if ($userUsage >= $voucher->per_user_limit) {
-                $this->fail("Voucher hanya dapat digunakan {$voucher->per_user_limit} kali per pengguna.");
-            }
+        if ($userUsage >= $perUserLimit) {
+            $this->fail("Voucher hanya dapat digunakan {$perUserLimit} kali per pengguna.");
         }
 
         if (! $voucher->applies_to_all_products && ! $voucher->products()->whereKey($product->id)->exists()) {

@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { store } from '@/actions/App/Http/Controllers/Internal/VoucherController';
 import { ProductSheetSelector } from '@/components/product-sheet-selector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { store } from '@/actions/App/Http/Controllers/Internal/VoucherController';
 import { create, index } from '@/routes/internal/vouchers';
 
 type Product = { id: number; title: string; price: number };
@@ -58,7 +58,9 @@ export default function VouchersCreate({ products }: { products: Product[] }) {
                 ends_at: form.ends_at || null,
             },
             {
-                onError: (errs) => { setErrors(errs); setProcessing(false); },
+                onError: (errs) => {
+ setErrors(errs); setProcessing(false); 
+},
                 onFinish: () => setProcessing(false),
             },
         );
@@ -183,7 +185,7 @@ export default function VouchersCreate({ products }: { products: Product[] }) {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <Label htmlFor="per_user_limit">Limit / User <span className="text-muted-foreground text-xs">(opsional)</span></Label>
+                                <Label htmlFor="per_user_limit">Limit / User <span className="text-muted-foreground text-xs">(kosongkan = 1x per user)</span></Label>
                                 <Input
                                     id="per_user_limit"
                                     type="number"
@@ -191,7 +193,7 @@ export default function VouchersCreate({ products }: { products: Product[] }) {
                                     value={form.per_user_limit}
                                     onChange={(e) => setForm((p) => ({ ...p, per_user_limit: e.target.value }))}
                                     onWheel={(e) => e.currentTarget.blur()}
-                                    placeholder="Unlimited"
+                                    placeholder="Default: 1x"
                                     className={numberInputClass}
                                 />
                                 {errors.per_user_limit && <p className="text-destructive text-sm">{errors.per_user_limit}</p>}

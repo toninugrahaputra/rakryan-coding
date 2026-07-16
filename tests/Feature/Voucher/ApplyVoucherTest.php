@@ -149,6 +149,34 @@ class ApplyVoucherTest extends TestCase
         $this->apply($voucher->code, $product, $user);
     }
 
+    public function test_voucher_defaults_to_one_use_per_user_when_limit_is_not_set(): void
+    {
+        $product = Product::factory()->create(['price' => 100000]);
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->flat(10000)->create(['per_user_limit' => null]);
+        $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $order);
+
+        $this->expectException(ValidationException::class);
+        $this->apply($voucher->code, $product, $user);
+    }
+
+    public function test_voucher_without_explicit_limit_still_works_for_a_different_user(): void
+    {
+        $product = Product::factory()->create(['price' => 100000]);
+        $firstUser = User::factory()->create();
+        $secondUser = User::factory()->create();
+        $voucher = Voucher::factory()->flat(10000)->create(['per_user_limit' => null]);
+        $order = Order::factory()->create(['user_id' => $firstUser->id, 'product_id' => $product->id]);
+
+        app(RedeemVoucher::class)->handle($voucher, $firstUser, 10000, $order);
+
+        $result = $this->apply($voucher->code, $product, $secondUser);
+
+        $this->assertSame(10000, $result['discount']);
+    }
+
     public function test_redeem_records_usage_and_increments_counter(): void
     {
         $user = User::factory()->create();
