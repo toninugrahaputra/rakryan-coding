@@ -126,7 +126,9 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                 <span>Detail produk</span>
                             </div>
                             <div className="h-px w-12 bg-emerald-600/30" />
-                            <div className="flex items-center gap-2 text-emerald-600">
+                            <div
+                                className={`flex items-center gap-2 ${isPaid ? 'text-emerald-600' : 'text-primary'}`}
+                            >
                                 <span
                                     className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
                                         isPaid
@@ -136,9 +138,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                 >
                                     {isPaid ? '✓' : '2'}
                                 </span>
-                                <span>
-                                    {isPaid ? 'Bayar' : 'Selesaikan pembayaran'}
-                                </span>
+                                <span>Selesaikan Pembayaran</span>
                             </div>
                             <div className="h-px w-12 bg-border" />
                             <div

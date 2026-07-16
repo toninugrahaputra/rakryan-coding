@@ -179,7 +179,7 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                                     2
                                 </span>
-                                <span>Checkout & bayar</span>
+                                <span>Selesaikan Pembayaran</span>
                             </div>
                             <div className="h-px w-12 bg-border" />
                             <div className="flex items-center gap-2 text-muted-foreground">
