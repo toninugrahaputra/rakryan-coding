@@ -27,6 +27,7 @@ interface Product {
 interface OrdersCreateProps {
     course: Course;
     product: Product;
+    defaultVoucherCode: string | null;
 }
 
 function formatPrice(price: number): string {
@@ -41,7 +42,11 @@ function formatPrice(price: number): string {
     }).format(price);
 }
 
-export default function OrdersCreate({ course, product }: OrdersCreateProps) {
+export default function OrdersCreate({
+    course,
+    product,
+    defaultVoucherCode,
+}: OrdersCreateProps) {
     const [voucherCode, setVoucherCode] = useState(() => {
         const pending = sessionStorage.getItem('pending_voucher');
 
@@ -51,7 +56,8 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
             return pending;
         }
 
-        return 'NGODING40'; // Pre-fill voucher dari PDF
+        // Voucher yang sedang aktif diatur dari /internal/vouchers, bukan hardcode di sini.
+        return defaultVoucherCode ?? '';
     });
     const [appliedVoucher, setAppliedVoucher] = useState<{
         code: string;

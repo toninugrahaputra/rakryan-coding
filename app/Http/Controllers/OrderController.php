@@ -7,6 +7,7 @@ use App\Actions\Order\CancelOrder;
 use App\Actions\Order\CreateOrder;
 use App\Actions\User\HasPurchasedCourse;
 use App\Actions\Voucher\ApplyVoucher;
+use App\Actions\Voucher\GetActiveVoucherCode;
 use App\Actions\Voucher\RedeemVoucher;
 use App\Enums\OrderStatus;
 use App\Models\Course;
@@ -63,6 +64,7 @@ class OrderController extends Controller
                 'price_strikethrough' => $product->price_strikethrough,
                 'courses_count' => $product->courses()->count(),
             ],
+            'defaultVoucherCode' => app(GetActiveVoucherCode::class)->handle(),
         ]);
     }
 

@@ -49,6 +49,56 @@ class UserPurchaseTest extends TestCase
         );
     }
 
+    public function test_checkout_page_prefills_the_currently_active_voucher(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        Voucher::factory()->flat(20000)->create([
+            'code' => 'PROMOLAMA',
+            'is_active' => false,
+        ]);
+        Voucher::factory()->flat(20000)->create([
+            'code' => 'PROMOAKTIF',
+            'is_active' => true,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addWeek(),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.create', ['course' => $course->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('defaultVoucherCode', 'PROMOAKTIF')
+        );
+    }
+
+    public function test_checkout_page_has_no_default_voucher_when_none_is_active(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        Voucher::factory()->flat(20000)->create([
+            'code' => 'PROMOEXPIRED',
+            'is_active' => true,
+            'starts_at' => now()->subWeeks(2),
+            'ends_at' => now()->subWeek(),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.create', ['course' => $course->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('defaultVoucherCode', null)
+        );
+    }
+
     public function test_user_cannot_view_checkout_page_if_already_purchased(): void
     {
         $user = User::factory()->create();
