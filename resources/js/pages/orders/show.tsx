@@ -215,9 +215,29 @@ export default function OrdersShow({
                                     </div>
                                 </div>
 
-                                {/* Main Payment Panel */}
+                                {/* Tombol ke halaman pembayaran Xendit yang sesungguhnya (payment_url) */}
+                                {order.payment_url && (
+                                    <Button
+                                        asChild
+                                        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-6 text-sm font-bold text-white shadow-sm hover:bg-[#725a15]"
+                                    >
+                                        <a href={order.payment_url}>
+                                            Lanjutkan Pembayaran ➔
+                                        </a>
+                                    </Button>
+                                )}
+
+                                {/* Main Payment Panel — ilustrasi cara bayar umum, bukan detail transaksi asli (VA/QRIS asli ada di halaman Xendit lewat tombol di atas) */}
                                 <Card className="overflow-hidden border-border/50 shadow-sm">
                                     <CardContent className="space-y-6 p-6">
+                                        <p className="rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
+                                            Contoh ilustrasi cara bayar —
+                                            nomor VA &amp; metode asli akan
+                                            muncul di halaman Xendit setelah
+                                            klik "Lanjutkan Pembayaran" di
+                                            atas.
+                                        </p>
+
                                         {/* Tabs Selector */}
                                         <div className="flex border-b border-border/40 pb-2">
                                             <button
