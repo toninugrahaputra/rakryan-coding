@@ -215,27 +215,14 @@ export default function OrdersShow({
                                     </div>
                                 </div>
 
-                                {/* Tombol ke halaman pembayaran Xendit yang sesungguhnya (payment_url) */}
-                                {order.payment_url && (
-                                    <Button
-                                        asChild
-                                        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-6 text-sm font-bold text-white shadow-sm hover:bg-[#725a15]"
-                                    >
-                                        <a href={order.payment_url}>
-                                            Lanjutkan Pembayaran ➔
-                                        </a>
-                                    </Button>
-                                )}
-
-                                {/* Main Payment Panel — ilustrasi cara bayar umum, bukan detail transaksi asli (VA/QRIS asli ada di halaman Xendit lewat tombol di atas) */}
+                                {/* Main Payment Panel — ilustrasi cara bayar umum, bukan detail transaksi asli (VA/QRIS asli ada di halaman Xendit lewat tombol di bawah) */}
                                 <Card className="overflow-hidden border-border/50 shadow-sm">
                                     <CardContent className="space-y-6 p-6">
                                         <p className="rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
-                                            Contoh ilustrasi cara bayar —
-                                            nomor VA &amp; metode asli akan
-                                            muncul di halaman Xendit setelah
-                                            klik "Lanjutkan Pembayaran" di
-                                            atas.
+                                            Contoh ilustrasi cara bayar — nomor
+                                            VA &amp; metode asli akan muncul di
+                                            halaman Xendit setelah klik
+                                            "Lanjutkan Pembayaran" di bawah.
                                         </p>
 
                                         {/* Tabs Selector */}
@@ -385,15 +372,26 @@ export default function OrdersShow({
                                             </span>
                                         </div>
 
-                                        {/* Simulator Button — cuma tampil di local/testing, disembunyikan total di production */}
+                                        {/* Tombol aksi: bayar asli (payment_url), simulasi (cuma local/testing), ganti metode */}
                                         <div className="flex flex-col gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                                            {order.payment_url && (
+                                                <Button
+                                                    asChild
+                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
+                                                >
+                                                    <a href={order.payment_url}>
+                                                        Lanjutkan Pembayaran ➔
+                                                    </a>
+                                                </Button>
+                                            )}
                                             {canSimulatePayment && (
                                                 <Button
                                                     onClick={handleMockPay}
-                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
+                                                    variant="outline"
+                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-5 text-xs font-bold"
                                                 >
-                                                    Simulasi: pembayaran
-                                                    sukses ➔
+                                                    Simulasi: pembayaran sukses
+                                                    ➔
                                                 </Button>
                                             )}
                                             <Button

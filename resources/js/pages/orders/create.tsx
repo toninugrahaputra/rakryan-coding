@@ -36,46 +36,6 @@ function formatPrice(price: number): string {
     }).format(price);
 }
 
-const PAYMENT_METHODS = [
-    {
-        id: 'bca_va',
-        group: 'VIRTUAL_ACCOUNT',
-        label: 'BCA Virtual Account',
-        fee: 4500,
-        logo: '🏦',
-    },
-    {
-        id: 'mandiri_va',
-        group: 'VIRTUAL_ACCOUNT',
-        label: 'Mandiri Virtual Account',
-        fee: 4000,
-        logo: '🏦',
-    },
-    {
-        id: 'bni_va',
-        group: 'VIRTUAL_ACCOUNT',
-        label: 'BNI Virtual Account',
-        fee: 4000,
-        logo: '🏦',
-    },
-    {
-        id: 'bri_va',
-        group: 'VIRTUAL_ACCOUNT',
-        label: 'BRI Virtual Account',
-        fee: 4000,
-        logo: '🏦',
-    },
-    {
-        id: 'qris',
-        group: 'QRIS',
-        label: 'QRIS (GoPay, OVO, DANA, ShopeePay, dll)',
-        fee: 2500,
-        logo: '📱',
-    },
-    { id: 'gopay', group: 'E_WALLET', label: 'GoPay', fee: 2500, logo: '👛' },
-    { id: 'ovo', group: 'E_WALLET', label: 'OVO', fee: 2500, logo: '👛' },
-];
-
 export default function OrdersCreate({ course, product }: OrdersCreateProps) {
     const [voucherCode, setVoucherCode] = useState(() => {
         const pending = sessionStorage.getItem('pending_voucher');
@@ -92,7 +52,6 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
         code: string;
         discount: number;
     } | null>(null);
-    const [selectedMethod, setSelectedMethod] = useState(PAYMENT_METHODS[0]);
     const [voucherError, setVoucherError] = useState('');
     const [voucherSuccess, setVoucherSuccess] = useState('');
     const [isValidating, setIsValidating] = useState(false);
@@ -105,10 +64,7 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
     const originalPrice = product.price;
     const discount = appliedVoucher?.discount ?? 0;
     const basePriceAfterDiscount = Math.max(0, originalPrice - discount);
-
-    // Biaya channel
-    const channelFee = basePriceAfterDiscount === 0 ? 0 : selectedMethod.fee;
-    const totalPrice = basePriceAfterDiscount + channelFee;
+    const totalPrice = basePriceAfterDiscount;
 
     // Terapkan voucher otomatis jika prefilled (tidak relevan untuk course gratis)
     useEffect(() => {
@@ -189,7 +145,6 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
             {
                 product_id: product.id,
                 voucher_code: appliedVoucher?.code || null,
-                payment_method: selectedMethod.id, // pass payment method
             },
             {
                 onError: () => setIsSubmitting(false),
@@ -236,7 +191,7 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                         </div>
 
                         <div className="grid items-start gap-8 lg:grid-cols-12">
-                            {/* Left Side: Order list, Voucher input, Payment methods (8 cols) */}
+                            {/* Left Side: Order summary & voucher input (8 cols) */}
                             <div className="space-y-6 lg:col-span-8">
                                 {/* Order Summary */}
                                 <div className="rounded-2xl border border-border/50 bg-card p-5 shadow-xs">
@@ -347,197 +302,6 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                                         )}
                                     </div>
                                 )}
-
-                                {/* Payment Methods selection — tidak relevan untuk course gratis */}
-                                {!isFree && (
-                                    <div className="space-y-6 rounded-2xl border border-border/50 bg-card p-5 shadow-xs">
-                                        <div>
-                                            <h3 className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-                                                Metode pembayaran
-                                            </h3>
-                                            <p className="mt-0.5 text-[11px] text-muted-foreground">
-                                                Pilih salah satu channel
-                                                pembayaran di bawah ini
-                                            </p>
-                                        </div>
-
-                                        {/* Virtual Account Group */}
-                                        <div className="space-y-3">
-                                            <span className="block text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                VIRTUAL ACCOUNT
-                                            </span>
-                                            <div className="grid gap-2.5 sm:grid-cols-2">
-                                                {PAYMENT_METHODS.filter(
-                                                    (m) =>
-                                                        m.group ===
-                                                        'VIRTUAL_ACCOUNT',
-                                                ).map((method) => (
-                                                    <button
-                                                        key={method.id}
-                                                        onClick={() =>
-                                                            setSelectedMethod(
-                                                                method,
-                                                            )
-                                                        }
-                                                        className={`flex items-center justify-between rounded-xl border p-3.5 text-left transition-all ${
-                                                            selectedMethod.id ===
-                                                            method.id
-                                                                ? 'border-[#eab308] bg-[#eab308]/5 shadow-sm'
-                                                                : 'border-border/60 hover:bg-muted/30'
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-lg">
-                                                                {method.logo}
-                                                            </span>
-                                                            <div>
-                                                                <span className="block text-xs font-bold text-foreground">
-                                                                    {
-                                                                        method.label
-                                                                    }
-                                                                </span>
-                                                                <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                                                                    +{' '}
-                                                                    {formatPrice(
-                                                                        method.fee,
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            className={`flex h-4.5 w-4.5 items-center justify-center rounded-full border ${
-                                                                selectedMethod.id ===
-                                                                method.id
-                                                                    ? 'border-[#eab308] bg-[#eab308]'
-                                                                    : 'border-border'
-                                                            }`}
-                                                        >
-                                                            {selectedMethod.id ===
-                                                                method.id && (
-                                                                <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                                                            )}
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* QRIS Group */}
-                                        <div className="space-y-3 border-t border-border/40 pt-4">
-                                            <span className="block text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                QRIS
-                                            </span>
-                                            {PAYMENT_METHODS.filter(
-                                                (m) => m.group === 'QRIS',
-                                            ).map((method) => (
-                                                <button
-                                                    key={method.id}
-                                                    onClick={() =>
-                                                        setSelectedMethod(
-                                                            method,
-                                                        )
-                                                    }
-                                                    className={`flex w-full items-center justify-between rounded-xl border p-3.5 text-left transition-all ${
-                                                        selectedMethod.id ===
-                                                        method.id
-                                                            ? 'border-[#eab308] bg-[#eab308]/5 shadow-sm'
-                                                            : 'border-border/60 hover:bg-muted/30'
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-lg">
-                                                            {method.logo}
-                                                        </span>
-                                                        <div>
-                                                            <span className="block text-xs font-bold text-foreground">
-                                                                {method.label}
-                                                            </span>
-                                                            <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                                                                +{' '}
-                                                                {formatPrice(
-                                                                    method.fee,
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        className={`flex h-4.5 w-4.5 items-center justify-center rounded-full border ${
-                                                            selectedMethod.id ===
-                                                            method.id
-                                                                ? 'border-[#eab308] bg-[#eab308]'
-                                                                : 'border-border'
-                                                        }`}
-                                                    >
-                                                        {selectedMethod.id ===
-                                                            method.id && (
-                                                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                                                        )}
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {/* E-Wallet Group */}
-                                        <div className="space-y-3 border-t border-border/40 pt-4">
-                                            <span className="block text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                E-WALLET
-                                            </span>
-                                            <div className="grid gap-2.5 sm:grid-cols-2">
-                                                {PAYMENT_METHODS.filter(
-                                                    (m) =>
-                                                        m.group === 'E_WALLET',
-                                                ).map((method) => (
-                                                    <button
-                                                        key={method.id}
-                                                        onClick={() =>
-                                                            setSelectedMethod(
-                                                                method,
-                                                            )
-                                                        }
-                                                        className={`flex items-center justify-between rounded-xl border p-3.5 text-left transition-all ${
-                                                            selectedMethod.id ===
-                                                            method.id
-                                                                ? 'border-[#eab308] bg-[#eab308]/5 shadow-sm'
-                                                                : 'border-border/60 hover:bg-muted/30'
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-lg">
-                                                                {method.logo}
-                                                            </span>
-                                                            <div>
-                                                                <span className="block text-xs font-bold text-foreground">
-                                                                    {
-                                                                        method.label
-                                                                    }
-                                                                </span>
-                                                                <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                                                                    +{' '}
-                                                                    {formatPrice(
-                                                                        method.fee,
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            className={`flex h-4.5 w-4.5 items-center justify-center rounded-full border ${
-                                                                selectedMethod.id ===
-                                                                method.id
-                                                                    ? 'border-[#eab308] bg-[#eab308]'
-                                                                    : 'border-border'
-                                                            }`}
-                                                        >
-                                                            {selectedMethod.id ===
-                                                                method.id && (
-                                                                <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                                                            )}
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Right Side: Sticky Checkout Pricing details card (4 cols) */}
@@ -565,16 +329,6 @@ export default function OrdersCreate({ course, product }: OrdersCreateProps) {
                                                     )}
                                                 </span>
                                             </div>
-                                            {!isFree && (
-                                                <div className="flex justify-between text-muted-foreground">
-                                                    <span>Biaya channel</span>
-                                                    <span className="font-bold text-foreground">
-                                                        {formatPrice(
-                                                            channelFee,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            )}
                                         </div>
 
                                         {/* Net Total */}
