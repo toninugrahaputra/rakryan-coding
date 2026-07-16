@@ -144,7 +144,7 @@ class OrderController extends Controller
     public function index(Request $request): Response
     {
         $orders = Order::where('user_id', $request->user()->id)
-            ->with('product.courses')
+            ->with(['product.courses', 'voucherUsage.voucher'])
             ->orderByDesc('created_at')
             ->paginate(10);
 

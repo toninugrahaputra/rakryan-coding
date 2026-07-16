@@ -175,6 +175,28 @@ class UserPurchaseTest extends TestCase
         );
     }
 
+    public function test_orders_index_shows_the_actual_voucher_code_and_channel_used(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+        $voucher = Voucher::factory()->flat(20000)->create(['code' => 'NGODING26']);
+
+        $this->actingAs($user)->post(route('orders.store'), [
+            'product_id' => $product->id,
+            'voucher_code' => $voucher->code,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('orders.data.0.voucher_usage.voucher.code', 'NGODING26')
+            ->where('orders.data.0.channel_name', 'Xendit Gateway')
+        );
+    }
+
     public function test_user_can_apply_voucher_successfully(): void
     {
         $user = User::factory()->create();

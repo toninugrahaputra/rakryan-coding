@@ -14,8 +14,14 @@ interface Order {
     net_amount: number;
     status: 'pending' | 'paid' | 'cancel' | 'expired';
     payment_url: string | null;
+    channel_name: string | null;
     valid_until: string | null;
     created_at: string;
+    voucher_usage: {
+        voucher: {
+            code: string;
+        } | null;
+    } | null;
     product: {
         id: number;
         title: string;
@@ -287,10 +293,19 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
                                                     'Paket Jago'}
                                             </h4>
                                             <p className="mt-0.5 text-[10px] text-muted-foreground">
-                                                BCA Virtual Account{' '}
-                                                {order.discount_amount > 0
-                                                    ? '• voucher NGODING40'
-                                                    : ''}
+                                                {order.channel_name || 'Xendit'}
+                                                {order.voucher_usage
+                                                    ?.voucher && (
+                                                    <>
+                                                        {' '}
+                                                        • voucher{' '}
+                                                        {
+                                                            order
+                                                                .voucher_usage
+                                                                .voucher.code
+                                                        }
+                                                    </>
+                                                )}
                                             </p>
                                         </div>
                                         <div className="shrink-0 text-right">
