@@ -4,7 +4,6 @@ import {
     AlertCircle,
     Clock,
     ShieldCheck,
-    Copy,
     FileText,
     CheckCircle,
 } from 'lucide-react';
@@ -66,9 +65,6 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
     const firstCourse = courses[0];
     const userEmail = auth?.user?.email || 'user@rakryancoding.id';
 
-    const [activeTab, setActiveTab] = useState<'va' | 'qris'>('va');
-    const [copied, setCopied] = useState(false);
-
     // Countdown Timer: pakai valid_until asli dari invoice Xendit,
     // fallback 24 jam dari order dibuat untuk order lama yang belum punya valid_until.
     const [timeLeft, setTimeLeft] = useState('23:59:59');
@@ -107,12 +103,6 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
 
         return () => clearInterval(timer);
     }, [order.created_at, order.valid_until, isPending, stopPolling]);
-
-    function handleCopy() {
-        navigator.clipboard.writeText('8077 0420 2026 0084');
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
 
     return (
         <>
@@ -201,153 +191,9 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                     </div>
                                 </div>
 
-                                {/* Main Payment Panel — ilustrasi cara bayar umum, bukan detail transaksi asli (VA/QRIS asli ada di halaman Xendit lewat tombol di bawah) */}
+                                {/* Payment Panel — arahkan ke halaman Xendit asli untuk pilih channel & bayar */}
                                 <Card className="overflow-hidden border-border/50 shadow-sm">
                                     <CardContent className="space-y-6 p-6">
-                                        <p className="rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
-                                            Contoh ilustrasi cara bayar — nomor
-                                            VA &amp; metode asli akan muncul di
-                                            halaman Xendit setelah klik
-                                            "Lanjutkan Pembayaran" di bawah.
-                                        </p>
-
-                                        {/* Tabs Selector */}
-                                        <div className="flex border-b border-border/40 pb-2">
-                                            <button
-                                                onClick={() =>
-                                                    setActiveTab('va')
-                                                }
-                                                className={`flex-1 border-b-2 pb-3 text-center text-sm font-bold transition-all ${
-                                                    activeTab === 'va'
-                                                        ? 'border-[#eab308] text-foreground'
-                                                        : 'border-transparent text-muted-foreground'
-                                                }`}
-                                            >
-                                                Virtual Account
-                                            </button>
-                                            <button
-                                                onClick={() =>
-                                                    setActiveTab('qris')
-                                                }
-                                                className={`flex-1 border-b-2 pb-3 text-center text-sm font-bold transition-all ${
-                                                    activeTab === 'qris'
-                                                        ? 'border-transparent text-muted-foreground'
-                                                        : 'border-transparent text-muted-foreground'
-                                                }`}
-                                            >
-                                                QRIS
-                                            </button>
-                                        </div>
-
-                                        {/* Virtual Account Panel */}
-                                        {activeTab === 'va' && (
-                                            <div className="space-y-6">
-                                                {/* Bank VA Box */}
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-blue-600/10 text-xs font-extrabold text-blue-600 shadow-xs">
-                                                        BCA
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-extrabold text-foreground">
-                                                            BCA Virtual Account
-                                                        </h4>
-                                                        <span className="text-[10px] text-muted-foreground">
-                                                            Transfer otomatis
-                                                            dari m-BCA atau ATM
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* VA Number Card */}
-                                                <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/20 p-5.5">
-                                                    <div>
-                                                        <span className="block text-[10px] font-medium text-muted-foreground uppercase">
-                                                            Nomor Virtual
-                                                            Account
-                                                        </span>
-                                                        <strong className="mt-1 block font-mono text-xl tracking-widest text-foreground sm:text-2xl">
-                                                            8077 0420 2026 0084
-                                                        </strong>
-                                                    </div>
-                                                    <Button
-                                                        onClick={handleCopy}
-                                                        variant="outline"
-                                                        className="flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold"
-                                                    >
-                                                        <Copy className="h-3.5 w-3.5" />
-                                                        {copied
-                                                            ? 'Tersalin!'
-                                                            : 'Salin'}
-                                                    </Button>
-                                                </div>
-
-                                                {/* Instructions */}
-                                                <div className="space-y-3">
-                                                    <span className="block text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                        Cara bayar via m-BCA:
-                                                    </span>
-                                                    <ol className="space-y-2 text-xs text-muted-foreground sm:text-sm">
-                                                        <li className="flex items-start gap-2.5">
-                                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                                                                1
-                                                            </span>
-                                                            <span>
-                                                                Buka aplikasi
-                                                                m-BCA ➔{' '}
-                                                                <strong>
-                                                                    m-Transfer
-                                                                </strong>{' '}
-                                                                ➔{' '}
-                                                                <strong>
-                                                                    BCA Virtual
-                                                                    Account
-                                                                </strong>
-                                                            </span>
-                                                        </li>
-                                                        <li className="flex items-start gap-2.5">
-                                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                                                                2
-                                                            </span>
-                                                            <span>
-                                                                Masukkan nomor
-                                                                VA di atas, lalu
-                                                                klik{' '}
-                                                                <strong>
-                                                                    Send
-                                                                </strong>
-                                                            </span>
-                                                        </li>
-                                                        <li className="flex items-start gap-2.5">
-                                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                                                                3
-                                                            </span>
-                                                            <span>
-                                                                Konfirmasi nama
-                                                                & nominal —
-                                                                harus persis{' '}
-                                                                <strong>
-                                                                    {formatPrice(
-                                                                        order.net_amount,
-                                                                    )}
-                                                                </strong>
-                                                            </span>
-                                                        </li>
-                                                        <li className="flex items-start gap-2.5">
-                                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                                                                4
-                                                            </span>
-                                                            <span>
-                                                                Masukkan PIN,
-                                                                tunggu
-                                                                notifikasi
-                                                                berhasil
-                                                            </span>
-                                                        </li>
-                                                    </ol>
-                                                </div>
-                                            </div>
-                                        )}
-
                                         {/* Status Check Note */}
                                         <div className="flex items-center gap-2 rounded-xl border border-amber-500/10 bg-amber-500/5 p-3.5 text-xs text-amber-800 sm:text-sm dark:text-amber-300">
                                             <div className="h-2 w-2 animate-ping rounded-full bg-amber-500" />
@@ -358,8 +204,8 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                             </span>
                                         </div>
 
-                                        {/* Tombol aksi: bayar asli (payment_url), simulasi (cuma local/testing), ganti metode */}
-                                        <div className="flex flex-col gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                                        {/* Tombol aksi: bayar asli (payment_url), ganti metode */}
+                                        <div className="flex flex-col gap-3 sm:flex-row">
                                             {order.payment_url && (
                                                 <Button
                                                     asChild
