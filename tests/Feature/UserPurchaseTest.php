@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Models\Course;
+use App\Models\CourseContent;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Voucher;
 use App\Services\XenditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -107,6 +109,27 @@ class UserPurchaseTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
         $this->assertDatabaseCount('voucher_usages', 0);
         $this->assertEquals(0, $voucher->fresh()->usage_count);
+    }
+
+    public function test_paid_order_show_page_includes_course_content_count(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        CourseContent::factory()->count(3)->create(['course_id' => $course->id]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $order = Order::factory()->paid()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.show', $order->id));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('order.product.courses.0.contents_count', 3)
+        );
     }
 
     public function test_user_can_apply_voucher_successfully(): void

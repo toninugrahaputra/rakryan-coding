@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePoll } from '@inertiajs/react';
 import {
     CheckCircle2,
     AlertCircle,
@@ -17,6 +17,7 @@ interface Course {
     id: number;
     title: string;
     slug: string;
+    contents_count: number;
 }
 
 interface Order {
@@ -28,6 +29,10 @@ interface Order {
     status: 'pending' | 'paid' | 'cancel' | 'expired';
     payment_url: string | null;
     payment_reference: string | null;
+    channel_group: string | null;
+    channel_name: string | null;
+    valid_until: string | null;
+    paid_at: string | null;
     created_at: string;
     product: {
         id: number;
@@ -64,16 +69,24 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
     const [activeTab, setActiveTab] = useState<'va' | 'qris'>('va');
     const [copied, setCopied] = useState(false);
 
-    // Countdown Timer: 24 jam dari order dibuat
+    // Countdown Timer: pakai valid_until asli dari invoice Xendit,
+    // fallback 24 jam dari order dibuat untuk order lama yang belum punya valid_until.
     const [timeLeft, setTimeLeft] = useState('23:59:59');
+
+    // Poll halaman ini selagi pending — begitu webhook Xendit mengubah status,
+    // props ter-refresh otomatis dan tampilan pindah ke state sukses tanpa reload manual.
+    const { stop: stopPolling } = usePoll(5000);
 
     useEffect(() => {
         if (!isPending) {
+            stopPolling();
+
             return;
         }
 
-        const orderTime = new Date(order.created_at).getTime();
-        const expiryTime = orderTime + 24 * 60 * 60 * 1000; // 24 jam
+        const expiryTime = order.valid_until
+            ? new Date(order.valid_until).getTime()
+            : new Date(order.created_at).getTime() + 24 * 60 * 60 * 1000;
 
         const timer = setInterval(() => {
             const now = new Date().getTime();
@@ -93,7 +106,7 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [order.created_at, isPending]);
+    }, [order.created_at, order.valid_until, isPending, stopPolling]);
 
     function handleCopy() {
         navigator.clipboard.writeText('8077 0420 2026 0084');
@@ -434,7 +447,9 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                                         Metode bayar
                                                     </span>
                                                     <span className="font-bold text-foreground">
-                                                        BCA Virtual Account
+                                                        {order.channel_name ||
+                                                            order.channel_group ||
+                                                            '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-border/40 pb-2.5">
@@ -442,17 +457,20 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                                         Waktu bayar
                                                     </span>
                                                     <span className="font-bold text-foreground">
-                                                        {new Date(
-                                                            order.created_at,
-                                                        ).toLocaleDateString(
-                                                            'id-ID',
-                                                            {
-                                                                day: 'numeric',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                            },
-                                                        )}{' '}
-                                                        • 15:42
+                                                        {order.paid_at
+                                                            ? new Date(
+                                                                  order.paid_at,
+                                                              ).toLocaleString(
+                                                                  'id-ID',
+                                                                  {
+                                                                      day: 'numeric',
+                                                                      month: 'short',
+                                                                      year: 'numeric',
+                                                                      hour: '2-digit',
+                                                                      minute: '2-digit',
+                                                                  },
+                                                              )
+                                                            : '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between pt-1 text-base font-extrabold">
@@ -488,7 +506,10 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                                                     {c.title}
                                                                 </h5>
                                                                 <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                                                                    5 bab
+                                                                    {
+                                                                        c.contents_count
+                                                                    }{' '}
+                                                                    bab
                                                                     pembelajaran
                                                                 </span>
                                                             </div>

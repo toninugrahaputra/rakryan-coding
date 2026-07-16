@@ -168,7 +168,7 @@ class OrderController extends Controller
             }
         }
 
-        $order->load(['product.courses']);
+        $order->load(['product.courses' => fn ($query) => $query->withCount('contents')]);
 
         return Inertia::render('orders/show', [
             'order' => $order,
