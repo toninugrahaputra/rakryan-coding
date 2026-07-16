@@ -43,6 +43,7 @@ interface Order {
 
 interface OrdersShowProps {
     order: Order;
+    canSimulatePayment: boolean;
     auth: {
         user: { email: string } | null;
     };
@@ -56,7 +57,11 @@ function formatPrice(price: number): string {
     }).format(price);
 }
 
-export default function OrdersShow({ order, auth }: OrdersShowProps) {
+export default function OrdersShow({
+    order,
+    canSimulatePayment,
+    auth,
+}: OrdersShowProps) {
     const isPending = order.status === 'pending';
     const isPaid = order.status === 'paid';
     const isCancel = order.status === 'cancel';
@@ -360,14 +365,17 @@ export default function OrdersShow({ order, auth }: OrdersShowProps) {
                                             </span>
                                         </div>
 
-                                        {/* Simulator Button (Mock Developer Gateway) */}
+                                        {/* Simulator Button — cuma tampil di local/testing, disembunyikan total di production */}
                                         <div className="flex flex-col gap-3 border-t border-border/40 pt-4 sm:flex-row">
-                                            <Button
-                                                onClick={handleMockPay}
-                                                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
-                                            >
-                                                Simulasi: pembayaran sukses ➔
-                                            </Button>
+                                            {canSimulatePayment && (
+                                                <Button
+                                                    onClick={handleMockPay}
+                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
+                                                >
+                                                    Simulasi: pembayaran
+                                                    sukses ➔
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="outline"
                                                 className="flex-1 rounded-xl py-5 text-xs font-bold"
