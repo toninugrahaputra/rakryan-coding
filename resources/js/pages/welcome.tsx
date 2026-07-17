@@ -192,6 +192,15 @@ export default function Welcome({
                                         sendiri.
                                     </h1>
 
+                                    {/* Mobile only: gambar hero tampil di sini, di bawah judul */}
+                                    <div className="lg:hidden">
+                                        <img
+                                            src="/assets/images/hero-side-image.webp"
+                                            alt="Contoh hasil project — mockup device"
+                                            className="mx-auto w-full max-w-md object-contain drop-shadow-2xl"
+                                        />
+                                    </div>
+
                                     <p className="max-w-2xl text-left text-base leading-relaxed text-muted-foreground sm:text-lg">
                                         Bukan sekadar teori. Kamu bisa langsung
                                         praktik bikin project Web, Mobile, dan
@@ -222,11 +231,11 @@ export default function Welcome({
                                     </div>
                                 </ScrollReveal>
 
-                                {/* Right Column: Hero illustration (6 cols, diperbesar) */}
+                                {/* Right Column: Hero illustration (6 cols, diperbesar). Disembunyikan di mobile karena sudah ditampilkan di bawah judul. */}
                                 <ScrollReveal
                                     animation="slide-right"
                                     delay={150}
-                                    className="relative flex items-center justify-center lg:col-span-6"
+                                    className="relative hidden items-center justify-center lg:col-span-6 lg:flex"
                                 >
                                     <img
                                         src="/assets/images/hero-side-image.webp"
