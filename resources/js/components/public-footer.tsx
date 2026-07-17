@@ -126,11 +126,11 @@ export function PublicFooter() {
                         <ul className="flex flex-col gap-2.5">
                             <li>
                                 <a
-                                    href="tel:+6281234567890"
+                                    href="tel:+6285126464454"
                                     className="flex items-center gap-2 text-base font-medium text-white transition-colors hover:text-primary"
                                 >
                                     <Phone className="h-4 w-4 shrink-0" />
-                                    +62 812-3456-7890
+                                    +62 851-2646-4454
                                 </a>
                             </li>
                             <li>

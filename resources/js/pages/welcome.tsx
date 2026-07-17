@@ -15,6 +15,7 @@ import { CourseCard } from '@/components/course-card';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
+import { WhatsappFloatButton } from '@/components/whatsapp-float-button';
 import { useClipboard } from '@/hooks/use-clipboard';
 
 interface Course {
@@ -576,6 +577,8 @@ export default function Welcome({
 
                 {/* Footer */}
                 <PublicFooter />
+
+                <WhatsappFloatButton />
             </div>
         </>
     );
