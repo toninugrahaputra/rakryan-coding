@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Course;
 
+use App\Http\Resources\Technology\TechnologyListResource;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +22,7 @@ class CourseListResource extends JsonResource
         if ($request->user() && $this->relationLoaded('contents')) {
             $incompleteContent = $this->contents->first(function ($content) use ($request) {
                 // Modul dianggap belum selesai jika tidak ada data progress untuk user tersebut
-                return !$content->progress->contains('user_id', $request->user()->id);
+                return ! $content->progress->contains('user_id', $request->user()->id);
             });
 
             // Jika semua selesai atau tidak ditemukan, fallback ke modul pertama
@@ -45,26 +47,27 @@ class CourseListResource extends JsonResource
             : 4.9;
 
         return [
-            'id'                       => $this->id,
-            'title'                    => $this->title,
-            'slug'                     => $this->slug,
-            'thumbnail'                => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
-            'is_published'             => $this->is_published,
-            'category'                 => $this->whenLoaded('category', fn () => $this->category instanceof \App\Models\Category ? $this->category->name : null),
-            'contents_count'           => $this->contents_count,
-            'created_at'               => $this->created_at->format('d-m-Y'),
+            'id' => $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
+            'is_published' => $this->is_published,
+            'category' => $this->whenLoaded('category', fn () => $this->category instanceof Category ? $this->category->name : null),
+            'contents_count' => $this->contents_count,
+            'created_at' => $this->created_at->format('d-m-Y'),
             'completed_contents_count' => $this->completed_contents_count ?? 0,
-            'next_content_slug'        => $nextContentSlug,
+            'next_content_slug' => $nextContentSlug,
             // Pricing — dari produk published termurah yang terkait dengan kursus ini
-            'price'                    => $cheapestProduct?->price ?? null,
-            'price_strikethrough'      => $cheapestProduct?->price_strikethrough ?? null,
-            'is_free'                  => $cheapestProduct !== null && $cheapestProduct->price === 0,
-            'has_product'              => $cheapestProduct !== null,
-            'tech_stack'               => $this->tech_stack,
-            'read_duration'            => $this->read_duration,
-            'last_read_at'             => $lastReadAt,
-            'rating'                   => $averageRating,
-            'reviews_count'            => $ratingCount,
+            'price' => $cheapestProduct?->price ?? null,
+            'price_strikethrough' => $cheapestProduct?->price_strikethrough ?? null,
+            'is_free' => $cheapestProduct !== null && $cheapestProduct->price === 0,
+            'has_product' => $cheapestProduct !== null,
+            'tech_stack' => $this->tech_stack,
+            'read_duration' => $this->read_duration,
+            'technologies' => TechnologyListResource::collection($this->whenLoaded('technologies')),
+            'last_read_at' => $lastReadAt,
+            'rating' => $averageRating,
+            'reviews_count' => $ratingCount,
         ];
     }
 }

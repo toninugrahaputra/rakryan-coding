@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\CourseContent;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Technology;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -73,5 +74,23 @@ class CourseShowPageTest extends TestCase
 
         $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $content->slug]))
             ->assertRedirect(route('courses.show', $course->slug));
+    }
+
+    public function test_course_show_page_lists_attached_technologies()
+    {
+        $course = Course::factory()->create(['is_published' => true]);
+        $laravel = Technology::create(['name' => 'Laravel', 'slug' => 'laravel']);
+        $react = Technology::create(['name' => 'React', 'slug' => 'react']);
+        $course->technologies()->attach([$laravel->id, $react->id]);
+
+        $response = $this->get(route('courses.show', ['course' => $course->slug]));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('courses/show')
+            ->has('course.technologies', 2)
+            ->where('course.technologies.0.name', 'Laravel')
+            ->where('course.technologies.1.name', 'React')
+        );
     }
 }

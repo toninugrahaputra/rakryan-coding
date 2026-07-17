@@ -3,6 +3,7 @@
 namespace Tests\Feature\Internal;
 
 use App\Models\Course;
+use App\Models\Technology;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -90,6 +91,49 @@ class CourseControllerTest extends TestCase
 
         $response->assertRedirect('/internal/courses');
         $this->assertDatabaseHas('courses', ['id' => $course->id, 'title' => 'New Title']);
+    }
+
+    public function test_admin_can_attach_technologies_when_creating_course(): void
+    {
+        $laravel = Technology::create(['name' => 'Laravel', 'slug' => 'laravel']);
+        $react = Technology::create(['name' => 'React', 'slug' => 'react']);
+
+        $response = $this->actingAs($this->admin)->post('/internal/courses', [
+            'title' => 'Laravel React App',
+            'slug' => 'laravel-react-app',
+            'is_published' => false,
+            'technology_ids' => [$laravel->id, $react->id],
+        ]);
+
+        $response->assertRedirect('/internal/courses');
+
+        $course = Course::where('slug', 'laravel-react-app')->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            [$laravel->id, $react->id],
+            $course->technologies()->pluck('technologies.id')->all(),
+        );
+    }
+
+    public function test_admin_can_sync_technologies_when_updating_course(): void
+    {
+        $laravel = Technology::create(['name' => 'Laravel', 'slug' => 'laravel']);
+        $mysql = Technology::create(['name' => 'MySQL', 'slug' => 'mysql']);
+
+        $course = Course::create(['title' => 'Old Title', 'slug' => 'old-title', 'is_published' => false]);
+        $course->technologies()->attach($laravel->id);
+
+        $response = $this->actingAs($this->admin)->put("/internal/courses/{$course->slug}", [
+            'title' => 'Old Title',
+            'slug' => 'old-title',
+            'is_published' => false,
+            'technology_ids' => [$mysql->id],
+        ]);
+
+        $response->assertRedirect('/internal/courses');
+        $this->assertEqualsCanonicalizing(
+            [$mysql->id],
+            $course->technologies()->pluck('technologies.id')->all(),
+        );
     }
 
     public function test_admin_can_delete_course(): void

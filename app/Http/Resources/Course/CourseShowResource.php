@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Course;
 
+use App\Http\Resources\Technology\TechnologyListResource;
 use App\Models\Category;
 use App\Models\Review;
 use Illuminate\Http\Request;
@@ -75,6 +76,7 @@ class CourseShowResource extends JsonResource
                     'url' => Storage::disk('public')->url($gallery->path),
                 ])
                 ->values()),
+            'technologies' => TechnologyListResource::collection($this->whenLoaded('technologies')),
         ];
     }
 }

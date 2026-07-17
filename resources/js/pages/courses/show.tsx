@@ -50,6 +50,12 @@ interface Course {
     reviews_count?: number;
     completed_contents_count?: number;
     gallery?: Array<{ id: number; url: string }>;
+    technologies?: Array<{
+        id: number;
+        name: string;
+        slug: string;
+        logo_url: string | null;
+    }>;
     user_review?: {
         rating: number;
         tags: string[];
@@ -61,6 +67,38 @@ interface CourseShowProps {
     course: Course;
     isPurchased: boolean;
     isLoggedIn: boolean;
+}
+
+/** Grid tools/teknologi yang dipakai course — dipakai baik di posisi desktop maupun mobile. */
+function TechnologyList({ technologies }: { technologies: NonNullable<Course['technologies']> }) {
+    return (
+        <div>
+            <p className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Tools yang digunakan
+            </p>
+            <div className="flex flex-wrap gap-4">
+                {technologies.map((tech) => (
+                    <div
+                        key={tech.id}
+                        className="flex flex-col items-center gap-2 rounded-2xl border border-border/60 bg-muted/30 px-5 py-4"
+                    >
+                        {tech.logo_url && (
+                            <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background">
+                                <img
+                                    src={tech.logo_url}
+                                    alt={tech.name}
+                                    className="h-full w-full object-contain p-2"
+                                />
+                            </span>
+                        )}
+                        <span className="text-sm font-bold text-foreground">
+                            {tech.name}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
 
 function formatPrice(price: number): string {
@@ -190,31 +228,158 @@ function CourseDetailContent() {
                         </Link>
                     </div>
 
-                    {/* Split layout: Content (Left) & Sticky Buy Card (Right) */}
+                    {/* Split layout: Content (Left) & Sticky Buy Card (Right). Order dipakai supaya card Investasi Belajar tampil di atas deskripsi saat mobile, tanpa mengubah susunan desktop. */}
                     <div className="grid gap-8 lg:grid-cols-3">
-                        {/* Left Column: About & Curriculum */}
-                        <div className="space-y-8 lg:col-span-2">
-                            {/* Header / Title */}
-                            <div>
-                                {course.category && (
-                                    <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wider text-primary uppercase">
-                                        {course.category}
+                        {/* Header / Title */}
+                        <div className="order-1 lg:col-span-2">
+                            {course.category && (
+                                <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wider text-primary uppercase">
+                                    {course.category}
+                                </span>
+                            )}
+                            <h1 className="text-2xl leading-tight font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                                {course.title}
+                            </h1>
+                            <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                    <BookOpen className="h-4 w-4" />
+                                    <span>
+                                        {course.contents.length} Modul
+                                        Belajar
                                     </span>
-                                )}
-                                <h1 className="text-2xl leading-tight font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                                    {course.title}
-                                </h1>
-                                <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-1.5">
-                                        <BookOpen className="h-4 w-4" />
-                                        <span>
-                                            {course.contents.length} Modul
-                                            Belajar
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
 
+                            {/* Desktop: tampil di sini seperti semula. Mobile: dipindahkan ke atas deskripsi (lihat di bawah). */}
+                            {course.technologies && course.technologies.length > 0 && (
+                                <div className="mt-6 hidden lg:block">
+                                    <TechnologyList technologies={course.technologies} />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right Column: Sticky Pricing & CTA Card */}
+                        <div className="order-2 lg:col-span-1 lg:row-span-2">
+                            <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-5 shadow-lg">
+                                {/* Thumbnail */}
+                                <div className="relative mb-5 h-44 w-full overflow-hidden rounded-xl bg-muted">
+                                    {course.thumbnail ? (
+                                        <img
+                                            src={course.thumbnail}
+                                            alt={course.title}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">
+                                            <BookOpen className="h-8 w-8 text-primary/30" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Pricing details */}
+                                {course.has_product ? (
+                                    <div className="mb-5">
+                                        <p className="mb-1 text-xs text-muted-foreground">
+                                            Investasi Belajar
+                                        </p>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-extrabold text-foreground">
+                                                {formatPrice(course.price ?? 0)}
+                                            </span>
+                                            {course.price_strikethrough &&
+                                                course.price_strikethrough >
+                                                    (course.price ?? 0) && (
+                                                    <span className="text-sm text-muted-foreground line-through">
+                                                        {formatPrice(
+                                                            course.price_strikethrough,
+                                                        )}
+                                                    </span>
+                                                )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mb-5 rounded-lg bg-muted/65 p-3 text-center text-sm text-muted-foreground">
+                                        Course ini segera hadir / belum dapat
+                                        dibeli.
+                                    </div>
+                                )}
+
+                                {/* Benefits checklist */}
+                                <ul className="mb-6 space-y-2.5 border-t border-border/40 pt-4 text-sm text-muted-foreground">
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                                        Akses materi seumur hidup
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                                        Sertifikat penyelesaian course
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                                        Konsultasi dengan Instruktur
+                                    </li>
+                                </ul>
+
+                                {/* Contextual CTA Button */}
+                                {isPurchased ? (
+                                    <Link
+                                        href={
+                                            course.contents.length > 0
+                                                ? courses.contents.show.url([
+                                                      course.slug,
+                                                      course.contents[0].slug,
+                                                  ])
+                                                : '#'
+                                        }
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-center text-sm font-semibold text-white shadow-md shadow-emerald-500/10 transition-all hover:bg-emerald-500"
+                                    >
+                                        <Play className="h-4 w-4" />
+                                        Lanjutkan Belajar
+                                    </Link>
+                                ) : !isLoggedIn ? (
+                                    // Guest: tampilan tombol "Beli Sekarang", tapi flow tetap arahkan ke halaman Login (tidak diubah)
+                                    <Link
+                                        href="/login"
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
+                                    >
+                                        <ShoppingCart className="h-4 w-4" />
+                                        Beli Sekarang
+                                    </Link>
+                                ) : course.has_product ? (
+                                    // User login: flow langsung ke checkout, tidak diubah
+                                    <Button
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl py-6 font-bold shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                                        asChild
+                                    >
+                                        <Link
+                                            href={`/orders/create?course=${course.slug}`}
+                                        >
+                                            <ShoppingCart className="h-4 w-4" />
+                                            {course.is_free
+                                                ? 'Daftar Course Gratis'
+                                                : 'Beli Sekarang'}
+                                        </Link>
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="w-full rounded-xl py-6 font-bold"
+                                        disabled
+                                    >
+                                        Segera Hadir
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Mobile only: tools ditampilkan tepat di atas deskripsi course */}
+                        {course.technologies && course.technologies.length > 0 && (
+                            <div className="order-3 lg:hidden">
+                                <TechnologyList technologies={course.technologies} />
+                            </div>
+                        )}
+
+                        {/* Left Column: About & Curriculum */}
+                        <div className="order-3 space-y-8 lg:col-span-2">
                             {/* About / Description */}
                             <div className="border-t border-border/50 pt-8">
                                 <h2 className="mb-4 text-xl font-bold">
@@ -251,8 +416,7 @@ function CourseDetailContent() {
                                                 className="space-y-3.5"
                                             >
                                                 {section.name && (
-                                                    <h3 className="flex items-center gap-2 pt-3 text-xs font-extrabold tracking-wider text-[#B99430] uppercase sm:text-sm dark:text-[#d4af37]">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-[#B99430]" />
+                                                    <h3 className="pt-3 text-base font-extrabold text-[#B99430] sm:text-lg dark:text-[#d4af37]">
                                                         {section.name}
                                                     </h3>
                                                 )}
@@ -536,119 +700,6 @@ function CourseDetailContent() {
                                     </form>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Right Column: Sticky Pricing & CTA Card */}
-                        <div className="lg:col-span-1">
-                            <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-5 shadow-lg">
-                                {/* Thumbnail */}
-                                <div className="relative mb-5 h-44 w-full overflow-hidden rounded-xl bg-muted">
-                                    {course.thumbnail ? (
-                                        <img
-                                            src={course.thumbnail}
-                                            alt={course.title}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">
-                                            <BookOpen className="h-8 w-8 text-primary/30" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Pricing details */}
-                                {course.has_product ? (
-                                    <div className="mb-5">
-                                        <p className="mb-1 text-xs text-muted-foreground">
-                                            Investasi Belajar
-                                        </p>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-extrabold text-foreground">
-                                                {formatPrice(course.price ?? 0)}
-                                            </span>
-                                            {course.price_strikethrough &&
-                                                course.price_strikethrough >
-                                                    (course.price ?? 0) && (
-                                                    <span className="text-sm text-muted-foreground line-through">
-                                                        {formatPrice(
-                                                            course.price_strikethrough,
-                                                        )}
-                                                    </span>
-                                                )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="mb-5 rounded-lg bg-muted/65 p-3 text-center text-sm text-muted-foreground">
-                                        Course ini segera hadir / belum dapat
-                                        dibeli.
-                                    </div>
-                                )}
-
-                                {/* Benefits checklist */}
-                                <ul className="mb-6 space-y-2.5 border-t border-border/40 pt-4 text-sm text-muted-foreground">
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                                        Akses materi seumur hidup
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                                        Sertifikat penyelesaian course
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                                        Konsultasi dengan Instruktur
-                                    </li>
-                                </ul>
-
-                                {/* Contextual CTA Button */}
-                                {isPurchased ? (
-                                    <Link
-                                        href={
-                                            course.contents.length > 0
-                                                ? courses.contents.show.url([
-                                                      course.slug,
-                                                      course.contents[0].slug,
-                                                  ])
-                                                : '#'
-                                        }
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-center text-sm font-semibold text-white shadow-md shadow-emerald-500/10 transition-all hover:bg-emerald-500"
-                                    >
-                                        <Play className="h-4 w-4" />
-                                        Lanjutkan Belajar
-                                    </Link>
-                                ) : !isLoggedIn ? (
-                                    // Guest: tampilan tombol "Beli Sekarang", tapi flow tetap arahkan ke halaman Login (tidak diubah)
-                                    <Link
-                                        href="/login"
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
-                                    >
-                                        <ShoppingCart className="h-4 w-4" />
-                                        Beli Sekarang
-                                    </Link>
-                                ) : course.has_product ? (
-                                    // User login: flow langsung ke checkout, tidak diubah
-                                    <Button
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl py-6 font-bold shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                                        asChild
-                                    >
-                                        <Link
-                                            href={`/orders/create?course=${course.slug}`}
-                                        >
-                                            <ShoppingCart className="h-4 w-4" />
-                                            {course.is_free
-                                                ? 'Daftar Course Gratis'
-                                                : 'Beli Sekarang'}
-                                        </Link>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        className="w-full rounded-xl py-6 font-bold"
-                                        disabled
-                                    >
-                                        Segera Hadir
-                                    </Button>
-                                )}
-                            </div>
                         </div>
                     </div>
                 </div>

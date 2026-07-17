@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Instagram, Youtube } from 'lucide-react';
+import { Instagram, Mail, Phone, Youtube } from 'lucide-react';
 // We can use a custom SVG for Tiktok or import it if available. Let's try importing.
 
 export function PublicFooter() {
@@ -7,7 +7,7 @@ export function PublicFooter() {
 
     const sections = [
         {
-            title: 'PRODUK',
+            title: 'Produk',
             items: [
                 { label: 'Semua studi kasus', href: '/courses' },
                 { label: 'Paket hemat', href: '/#paket' },
@@ -19,19 +19,11 @@ export function PublicFooter() {
             ],
         },
         {
-            title: 'RAKRYAN',
+            title: 'Rakryan',
             items: [
                 { label: 'Tentang kami', href: '/#tentang' },
                 { label: 'Karier', href: '/#karier' },
                 { label: 'Artikel', href: '/#artikel' },
-            ],
-        },
-        {
-            title: 'BANTUAN',
-            items: [
-                { label: 'Kontak', href: '/#kontak' },
-                { label: 'Syarat & ketentuan', href: '/#syarat' },
-                { label: 'Kebijakan privasi', href: '/#privasi' },
             ],
         },
     ];
@@ -41,26 +33,18 @@ export function PublicFooter() {
             <div className="mx-auto max-w-7xl space-y-12 px-6 lg:px-8">
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
                     {/* Brand / Logo */}
-                    <div className="space-y-5 lg:col-span-2">
+                    <div className="space-y-6 sm:col-span-2 lg:col-span-2">
                         <Link
                             href="/"
-                            className="flex items-center gap-3 transition-opacity hover:opacity-85"
+                            className="flex items-center transition-opacity hover:opacity-85"
                         >
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center">
-                                <img
-                                    src="/assets/images/maskable.svg"
-                                    alt="Logo"
-                                    width={80}
-                                    height={80}
-                                    className="h-full w-full"
-                                />
-                            </div>
-                            <div className="flex gap-1 text-xl font-extrabold">
-                                <span className="text-white">Rakryan</span>
-                                <span className="text-[#B99430]">Coding</span>
-                            </div>
+                            <img
+                                src="/assets/images/logo-full.svg"
+                                alt="Rakryan Coding"
+                                className="h-14 w-auto sm:h-16"
+                            />
                         </Link>
-                        <p className="max-w-xs text-xs leading-relaxed font-medium text-slate-400 sm:text-sm">
+                        <p className="max-w-xs text-sm leading-relaxed font-medium text-white">
                             Platform belajar ngoding teks lengkap untuk semua
                             kalangan di seluruh Indonesia. Materi terstruktur,
                             dirancang biar kamu siap kerja atau bikin project
@@ -68,12 +52,12 @@ export function PublicFooter() {
                         </p>
 
                         {/* Social Media Row */}
-                        <div className="flex items-center gap-3 pt-2">
+                        <div className="flex items-center gap-3">
                             <a
                                 href="https://instagram.com/rakryancoding"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-white"
+                                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-primary"
                                 title="Instagram"
                             >
                                 <Instagram className="h-4.5 w-4.5" />
@@ -82,7 +66,7 @@ export function PublicFooter() {
                                 href="https://tiktok.com/@rakryancoding"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-white"
+                                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-primary"
                                 title="TikTok"
                             >
                                 <svg
@@ -96,7 +80,7 @@ export function PublicFooter() {
                                 href="https://youtube.com/rakryancoding"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-white"
+                                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/15 hover:text-primary"
                                 title="YouTube"
                             >
                                 <Youtube className="h-4.5 w-4.5" />
@@ -107,7 +91,7 @@ export function PublicFooter() {
                     {/* Columns */}
                     {sections.map((sec, idx) => (
                         <div key={idx} className="space-y-4">
-                            <h4 className="text-xs font-bold tracking-widest text-white uppercase">
+                            <h4 className="text-xl font-bold text-white">
                                 {sec.title}
                             </h4>
                             <ul className="flex flex-col gap-2.5">
@@ -116,14 +100,14 @@ export function PublicFooter() {
                                         {item.href.startsWith('/#') ? (
                                             <a
                                                 href={item.href}
-                                                className="text-xs font-medium text-slate-400 transition-colors hover:text-white sm:text-sm"
+                                                className="text-base font-medium text-white transition-colors hover:text-primary"
                                             >
                                                 {item.label}
                                             </a>
                                         ) : (
                                             <Link
                                                 href={item.href}
-                                                className="text-xs font-medium text-slate-400 transition-colors hover:text-white sm:text-sm"
+                                                className="text-base font-medium text-white transition-colors hover:text-primary"
                                             >
                                                 {item.label}
                                             </Link>
@@ -133,6 +117,33 @@ export function PublicFooter() {
                             </ul>
                         </div>
                     ))}
+
+                    {/* Kontak */}
+                    <div className="space-y-4">
+                        <h4 className="text-xl font-bold text-white">
+                            Kontak
+                        </h4>
+                        <ul className="flex flex-col gap-2.5">
+                            <li>
+                                <a
+                                    href="tel:+6281234567890"
+                                    className="flex items-center gap-2 text-base font-medium text-white transition-colors hover:text-primary"
+                                >
+                                    <Phone className="h-4 w-4 shrink-0" />
+                                    +62 812-3456-7890
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="mailto:hello@rakryancoding.id"
+                                    className="flex items-center gap-2 text-base font-medium text-white transition-colors hover:text-primary"
+                                >
+                                    <Mail className="h-4 w-4 shrink-0" />
+                                    hello@rakryancoding.id
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 {/* Bottom Bar */}

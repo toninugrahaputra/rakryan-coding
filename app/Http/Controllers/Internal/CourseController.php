@@ -8,11 +8,14 @@ use App\Actions\Course\DeleteCourse;
 use App\Actions\Course\GetCourseBySlug;
 use App\Actions\Course\GetPaginatedCourses;
 use App\Actions\Course\SyncCourseGallery;
+use App\Actions\Course\SyncCourseTechnologies;
 use App\Actions\Course\UpdateCourse;
+use App\Actions\Technology\GetTechnologyOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internal\CourseRequest;
 use App\Http\Resources\Course\CourseListResource;
 use App\Http\Resources\Course\CourseShowResource;
+use App\Http\Resources\Technology\TechnologyListResource;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,6 +33,7 @@ class CourseController extends Controller
     {
         return Inertia::render('internal/courses/create', [
             'categories' => app(GetCategoryOptions::class)->handle(),
+            'technologies' => TechnologyListResource::collection(app(GetTechnologyOptions::class)->handle()),
         ]);
     }
 
@@ -37,6 +41,7 @@ class CourseController extends Controller
     {
         $course = app(CreateCourse::class)->handle($request->validated());
         app(SyncCourseGallery::class)->handle($course, $request->file('gallery', []));
+        app(SyncCourseTechnologies::class)->handle($course, $request->validated('technology_ids', []));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Course berhasil ditambahkan.']);
 
@@ -45,11 +50,12 @@ class CourseController extends Controller
 
     public function edit(string $course): Response
     {
-        $course = app(GetCourseBySlug::class)->handle($course)->load('galleries');
+        $course = app(GetCourseBySlug::class)->handle($course)->load('galleries', 'technologies');
 
         return Inertia::render('internal/courses/edit', [
             'course' => new CourseShowResource($course),
             'categories' => app(GetCategoryOptions::class)->handle(),
+            'technologies' => TechnologyListResource::collection(app(GetTechnologyOptions::class)->handle()),
         ]);
     }
 
@@ -62,6 +68,7 @@ class CourseController extends Controller
             $request->file('gallery', []),
             $request->validated('remove_gallery_ids', []),
         );
+        app(SyncCourseTechnologies::class)->handle($course, $request->validated('technology_ids', []));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Course berhasil diperbarui.']);
 

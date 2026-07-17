@@ -136,14 +136,14 @@ export function PublicNavbar() {
                             <img
                                 src="/assets/images/logo-full.svg"
                                 alt="Rakryan Coding"
-                                className="h-9 w-auto sm:h-10"
+                                className="h-11 w-auto sm:h-12"
                             />
                         </Link>
 
                         {/* Desktop Nav Links */}
                         <nav className="hidden items-center gap-8 md:flex">
                             <DropdownMenu>
-                                <DropdownMenuTrigger className="flex items-center gap-1 text-base font-bold text-[#000000] transition-colors outline-none hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white">
+                                <DropdownMenuTrigger className="flex items-center gap-1 text-base font-bold text-[#000000] transition-colors outline-none hover:text-primary dark:text-white dark:hover:text-primary">
                                     Course
                                     <ChevronDown className="h-3.5 w-3.5" />
                                 </DropdownMenuTrigger>
@@ -161,7 +161,7 @@ export function PublicNavbar() {
 
                             <Link
                                 href="/articles"
-                                className="text-base font-bold text-[#000000] transition-colors hover:text-[#1e1b4b] dark:text-slate-300 dark:hover:text-white"
+                                className="text-base font-bold text-[#000000] transition-colors hover:text-primary dark:text-white dark:hover:text-primary"
                             >
                                 Artikel Belajar
                             </Link>
@@ -207,13 +207,13 @@ export function PublicNavbar() {
                             <>
                                 <Link
                                     href={login()}
-                                    className="flex items-center justify-center rounded-xl border-2 border-[#1e1b4b]/20 bg-white px-5 py-2 text-sm font-extrabold text-[#1e1b4b] transition-colors hover:bg-muted dark:border-white/30 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                                    className="flex items-center justify-center rounded-xl border-2 border-[#1e1b4b]/20 bg-white px-5 py-2 text-base font-extrabold text-[#1e1b4b] transition-colors hover:bg-muted dark:border-white/30 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                                 >
                                     Masuk
                                 </Link>
                                 <Link
                                     href={register()}
-                                    className="flex items-center justify-center rounded-xl bg-[#B99430] px-5 py-2 text-sm font-extrabold text-white shadow-sm shadow-[#B99430]/15 transition-all hover:bg-[#725a15]"
+                                    className="flex items-center justify-center rounded-xl bg-[#B99430] px-5 py-2 text-base font-extrabold text-white shadow-sm shadow-[#B99430]/15 transition-all hover:bg-[#725a15]"
                                 >
                                     Daftar gratis
                                 </Link>

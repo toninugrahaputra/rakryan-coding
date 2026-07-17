@@ -4,6 +4,7 @@ import { update } from '@/actions/App/Http/Controllers/Internal/CourseController
 import GalleryUpload from '@/components/gallery-upload';
 import ThumbnailUpload from '@/components/thumbnail-upload';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -18,6 +19,7 @@ import { slugify } from '@/lib/slugify';
 import { index } from '@/routes/internal/courses';
 
 type Category = { id: number; name: string };
+type Technology = { id: number; name: string; slug: string; logo_url: string | null };
 
 type CourseProp = {
     id: number;
@@ -28,10 +30,11 @@ type CourseProp = {
     category_id: number | null;
     is_published: boolean;
     gallery?: Array<{ id: number; url: string }>;
+    technologies?: Array<{ id: number; name: string; slug: string; logo_url: string | null }>;
 };
 
 
-export default function CoursesEdit({ course, categories }: { course: CourseProp; categories: Category[] }) {
+export default function CoursesEdit({ course, categories, technologies }: { course: CourseProp; categories: Category[]; technologies: Technology[] }) {
     const [form, setForm] = useState({
         title: course.title,
         slug: course.slug,
@@ -43,6 +46,9 @@ export default function CoursesEdit({ course, categories }: { course: CourseProp
     const [thumbnailCleared, setThumbnailCleared] = useState(false);
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     const [removedGalleryIds, setRemovedGalleryIds] = useState<number[]>([]);
+    const [technologyIds, setTechnologyIds] = useState<number[]>(
+        (course.technologies ?? []).map((tech) => tech.id),
+    );
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -51,11 +57,20 @@ export default function CoursesEdit({ course, categories }: { course: CourseProp
         setForm((prev) => ({ ...prev, title, slug: slugify(title) }));
     }
 
+    function toggleTechnology(id: number, checked: boolean) {
+        setTechnologyIds((prev) => (checked ? [...prev, id] : prev.filter((tid) => tid !== id)));
+    }
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setProcessing(true);
 
-        const data: Record<string, unknown> = { ...form, gallery: galleryFiles, remove_gallery_ids: removedGalleryIds };
+        const data: Record<string, unknown> = {
+            ...form,
+            gallery: galleryFiles,
+            remove_gallery_ids: removedGalleryIds,
+            technology_ids: technologyIds,
+        };
 
         if (thumbnailFile) {
             data.thumbnail = thumbnailFile;
@@ -65,7 +80,7 @@ export default function CoursesEdit({ course, categories }: { course: CourseProp
 
         router.put(update(course.slug).url, data, {
             onError: (errs) => {
- setErrors(errs); setProcessing(false); 
+ setErrors(errs); setProcessing(false);
 },
             onFinish: () => setProcessing(false),
         });
@@ -154,6 +169,36 @@ export default function CoursesEdit({ course, categories }: { course: CourseProp
                                 </SelectContent>
                             </Select>
                             {errors.category_id && <p className="text-destructive text-sm">{errors.category_id}</p>}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Tools yang digunakan</Label>
+                            {errors.technology_ids && <p className="text-destructive text-sm">{errors.technology_ids}</p>}
+                            {technologies.length === 0 ? (
+                                <p className="text-muted-foreground text-sm">
+                                    Belum ada tool. Tambahkan dulu di menu Technologies.
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                    {technologies.map((tech) => (
+                                        <label
+                                            key={tech.id}
+                                            htmlFor={`tech-${tech.id}`}
+                                            className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md border p-2"
+                                        >
+                                            <Checkbox
+                                                id={`tech-${tech.id}`}
+                                                checked={technologyIds.includes(tech.id)}
+                                                onCheckedChange={(checked) => toggleTechnology(tech.id, checked === true)}
+                                            />
+                                            {tech.logo_url && (
+                                                <img src={tech.logo_url} alt={tech.name} className="h-5 w-5 object-contain" />
+                                            )}
+                                            <span className="text-sm">{tech.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-3">

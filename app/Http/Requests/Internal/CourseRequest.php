@@ -32,6 +32,8 @@ class CourseRequest extends FormRequest
             'gallery.*' => ['image', 'mimes:jpeg,png,webp', 'max:2048'],
             'remove_gallery_ids' => ['nullable', 'array'],
             'remove_gallery_ids.*' => ['integer'],
+            'technology_ids' => ['nullable', 'array'],
+            'technology_ids.*' => ['integer', 'exists:technologies,id'],
         ];
     }
 }

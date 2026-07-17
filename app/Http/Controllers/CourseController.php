@@ -27,13 +27,13 @@ class CourseController extends Controller
         }
 
         return Inertia::render('courses/index', [
-            'courses'            => CourseListResource::collection($courses),
-            'categories'         => app(GetCategoriesWithCourseCount::class)->handle()->map(fn ($cat) => ['id' => $cat->id, 'name' => $cat->name]),
+            'courses' => CourseListResource::collection($courses),
+            'categories' => app(GetCategoriesWithCourseCount::class)->handle()->map(fn ($cat) => ['id' => $cat->id, 'name' => $cat->name]),
             'purchasedCourseIds' => $purchasedCourseIds,
-            'filters'            => [
-                'search'   => request()->input('search'),
+            'filters' => [
+                'search' => request()->input('search'),
                 'category' => request()->input('category'),
-                'sort'     => request()->input('sort', 'latest'),
+                'sort' => request()->input('sort', 'latest'),
             ],
         ]);
     }
@@ -61,12 +61,13 @@ class CourseController extends Controller
             },
             'products' => fn ($q) => $q->where('is_published', true)->orderBy('price'),
             'galleries',
+            'technologies',
         ]);
 
         return Inertia::render('courses/show', [
-            'course'      => new CourseShowResource($course),
+            'course' => new CourseShowResource($course),
             'isPurchased' => $isPurchased,
-            'isLoggedIn'  => $user !== null,
+            'isLoggedIn' => $user !== null,
         ]);
     }
 }

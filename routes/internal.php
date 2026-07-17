@@ -8,6 +8,7 @@ use App\Http\Controllers\Internal\DashboardController;
 use App\Http\Controllers\Internal\EditorImageController;
 use App\Http\Controllers\Internal\OrderController;
 use App\Http\Controllers\Internal\ProductController;
+use App\Http\Controllers\Internal\TechnologyController;
 use App\Http\Controllers\Internal\UserController;
 use App\Http\Controllers\Internal\VoucherController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -37,6 +38,14 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
         Route::match(['put', 'patch'], 'categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Technologies
+        Route::get('technologies', [TechnologyController::class, 'index'])->name('technologies.index');
+        Route::get('technologies/create', [TechnologyController::class, 'create'])->name('technologies.create');
+        Route::post('technologies', [TechnologyController::class, 'store'])->name('technologies.store');
+        Route::get('technologies/{technology}/edit', [TechnologyController::class, 'edit'])->name('technologies.edit');
+        Route::match(['put', 'patch'], 'technologies/{technology}', [TechnologyController::class, 'update'])->name('technologies.update');
+        Route::delete('technologies/{technology}', [TechnologyController::class, 'destroy'])->name('technologies.destroy');
 
         // Articles
         Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');

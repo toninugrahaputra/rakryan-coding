@@ -13,6 +13,7 @@ import {
     Tag,
     Ticket,
     Users,
+    Wrench,
 } from 'lucide-react';
 import { useState } from 'react';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Internal/OrderController';
@@ -45,6 +46,7 @@ import { index as articlesIndex } from '@/routes/internal/articles';
 import { index as categoriesIndex } from '@/routes/internal/categories';
 import { index as coursesIndex } from '@/routes/internal/courses';
 import { index as productsIndex } from '@/routes/internal/products';
+import { index as technologiesIndex } from '@/routes/internal/technologies';
 import { index as usersIndex } from '@/routes/internal/users';
 import { index as vouchersIndex } from '@/routes/internal/vouchers';
 import type { Auth, BreadcrumbItem, NavItem } from '@/types';
@@ -111,6 +113,12 @@ export function AppAdminHeader({ breadcrumbs = [] }: Props) {
                     title: 'Categories',
                     href: categoriesIndex.url(),
                     icon: Tag,
+                    matchPrefix: true,
+                },
+                {
+                    title: 'Technologies',
+                    href: technologiesIndex.url(),
+                    icon: Wrench,
                     matchPrefix: true,
                 },
                 {

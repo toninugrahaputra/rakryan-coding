@@ -14,12 +14,12 @@ class GetFeaturedCourses
         return Course::whereHas('products', function ($query) {
             $query->where('is_published', true);
         })
-        ->with(['category', 'reviews', 'products' => function ($query) {
-            $query->where('is_published', true)->orderBy('price');
-        }])
-        ->withCount('contents')
-        ->latest()
-        ->take(6)
-        ->get();
+            ->with(['category', 'reviews', 'technologies', 'products' => function ($query) {
+                $query->where('is_published', true)->orderBy('price');
+            }])
+            ->withCount('contents')
+            ->latest()
+            ->take(6)
+            ->get();
     }
 }

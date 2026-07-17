@@ -192,12 +192,11 @@ export default function Welcome({
                                     </h1>
 
                                     <p className="max-w-2xl text-left text-base leading-relaxed text-muted-foreground sm:text-lg">
-                                        Materi <strong>teks lengkap</strong>{' '}
-                                        berisi studi kasus nyata — Web Dev,
-                                        Android Dev, dan lainnya. Cocok buat
-                                        siapa aja di seluruh Indonesia yang mau
-                                        jago beneran, bukan cuma teori. Akses
-                                        seumur hidup.
+                                        Bukan sekadar teori. Kamu bisa langsung
+                                        praktik bikin project Web, Mobile, dan
+                                        Game, lewat studi kasus nyata. Materi
+                                        berbasis tutorial modul teks lengkap,
+                                        bisa akses seumur hidup.
                                     </p>
 
                                     {/* Action Button */}

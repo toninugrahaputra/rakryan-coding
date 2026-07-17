@@ -1,6 +1,13 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, BookOpen, CheckCircle, ShoppingCart } from 'lucide-react';
 
+export interface CourseTechnology {
+    id: number;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+}
+
 export interface CourseCardData {
     id: number;
     title: string;
@@ -15,6 +22,7 @@ export interface CourseCardData {
     has_product: boolean;
     rating?: number;
     reviews_count?: number;
+    technologies?: CourseTechnology[];
 }
 
 interface CourseCardProps {
@@ -66,7 +74,7 @@ export function CourseCard({
             className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-border/80 bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
         >
             {/* Thumbnail Image */}
-            <div className="relative h-44 w-full overflow-hidden bg-muted">
+            <div className="relative h-52 w-full overflow-hidden bg-muted">
                 {course.thumbnail ? (
                     <img
                         src={course.thumbnail}
@@ -97,10 +105,30 @@ export function CourseCard({
 
             {/* Content Details */}
             <div className="flex flex-1 flex-col justify-between gap-4 p-4.5">
-                <div>
+                <div className="space-y-2">
                     <h3 className="line-clamp-2 text-base leading-snug font-bold text-foreground transition-colors group-hover:text-primary">
                         {course.title}
                     </h3>
+
+                    {course.technologies && course.technologies.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            {course.technologies.map((tech) => (
+                                <span
+                                    key={tech.id}
+                                    title={tech.name}
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background"
+                                >
+                                    {tech.logo_url ? (
+                                        <img src={tech.logo_url} alt={tech.name} className="h-full w-full object-contain p-1" />
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-muted-foreground">
+                                            {tech.name.charAt(0)}
+                                        </span>
+                                    )}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-3 border-t border-border/40 pt-3">
@@ -150,7 +178,7 @@ export function CourseCard({
                 ) : !isLoggedIn ? (
                     // Tampilan saja yang diubah (icon + teks) — flow klik tetap ke halaman detail course seperti semula,
                     // proses login/checkout sesungguhnya baru terjadi di halaman detail course.
-                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-xs font-bold text-white shadow-sm">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm">
                         <ShoppingCart className="h-3.5 w-3.5" />
                         Beli Sekarang
                     </div>
@@ -160,7 +188,7 @@ export function CourseCard({
                         Daftar Gratis
                     </div>
                 ) : (
-                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-xs font-bold text-white shadow-sm hover:bg-[#725a15]">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm hover:bg-[#725a15]">
                         <ShoppingCart className="h-3.5 w-3.5" />
                         Beli Sekarang
                     </div>

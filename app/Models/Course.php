@@ -51,4 +51,9 @@ class Course extends Model
     {
         return $this->hasMany(CourseGallery::class)->orderBy('order');
     }
+
+    public function technologies(): BelongsToMany
+    {
+        return $this->belongsToMany(Technology::class);
+    }
 }

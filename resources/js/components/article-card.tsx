@@ -55,7 +55,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
 
             {/* CTA Footer */}
             <div className="border-t border-border/40 p-4 pt-3.5">
-                <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#725a15]">
+                <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#725a15]">
                     Baca artikel
                     <ArrowRight className="h-3.5 w-3.5" />
                 </div>
