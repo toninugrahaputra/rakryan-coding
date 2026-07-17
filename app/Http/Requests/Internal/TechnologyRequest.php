@@ -23,7 +23,7 @@ class TechnologyRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('technologies', 'slug')->ignore($technologySlug, 'slug')],
-            'logo' => ['nullable', 'image', 'mimes:jpeg,png,webp,svg', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,webp,svg', 'max:8192'],
         ];
     }
 }
