@@ -256,7 +256,7 @@ export function PublicNavbar() {
                                     key={href}
                                     href={href}
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-primary"
+                                    className="rounded-lg px-3 py-2 text-xs font-semibold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
                                 >
                                     {label}
                                 </Link>
