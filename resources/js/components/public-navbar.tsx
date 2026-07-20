@@ -248,7 +248,7 @@ export function PublicNavbar() {
                 {mobileOpen && (
                     <div className="border-t border-border/60 bg-background px-6 pb-4 md:hidden">
                         <nav className="flex flex-col gap-1 pt-3">
-                            <span className="px-3 pt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                            <span className="px-3 pt-1 text-base font-bold text-[#000000] dark:text-white">
                                 Course
                             </span>
                             {courseLinks.map(({ label, href }) => (
@@ -256,7 +256,7 @@ export function PublicNavbar() {
                                     key={href}
                                     href={href}
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
+                                    className="rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-primary"
                                 >
                                     {label}
                                 </Link>
@@ -267,7 +267,7 @@ export function PublicNavbar() {
                             <Link
                                 href="/articles"
                                 onClick={() => setMobileOpen(false)}
-                                className="rounded-lg px-3 py-2.5 text-sm font-bold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
+                                className="rounded-lg px-3 py-2.5 text-base font-bold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
                             >
                                 Artikel Belajar
                             </Link>
