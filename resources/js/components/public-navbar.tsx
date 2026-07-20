@@ -256,7 +256,7 @@ export function PublicNavbar() {
                                     key={href}
                                     href={href}
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
                                 >
                                     {label}
                                 </Link>
@@ -267,7 +267,7 @@ export function PublicNavbar() {
                             <Link
                                 href="/articles"
                                 onClick={() => setMobileOpen(false)}
-                                className="rounded-lg px-3 py-2.5 text-sm font-bold text-muted-foreground hover:bg-muted hover:text-foreground"
+                                className="rounded-lg px-3 py-2.5 text-sm font-bold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
                             >
                                 Artikel Belajar
                             </Link>
