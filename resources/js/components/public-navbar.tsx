@@ -113,7 +113,7 @@ export function PublicNavbar() {
 
     const courseLinks = [
         { label: 'Web Development', href: '/courses?category=Web+Dev' },
-        { label: 'Mobile Development', href: '/courses?category=Android+Dev' },
+        { label: 'Mobile Development', href: '/courses?category=Mobile+Dev' },
     ];
 
     const isDark = appearance === 'dark';
@@ -467,7 +467,7 @@ export function PublicNavbar() {
                             <div className="mt-4 flex flex-wrap gap-2">
                                 {[
                                     'Web Dev',
-                                    'Android Dev',
+                                    'Mobile Dev',
                                     'Backend & API',
                                     'Fundamental',
                                     'UI/UX',

@@ -90,7 +90,7 @@ return;
 
     const categoryIcons: Record<string, string> = {
         'Web Dev': '💻',
-        'Android Dev': '📱',
+        'Mobile Dev': '📱',
         'Backend & API': '⚙️',
         'Fundamental': '🧠',
         'UI/UX': '🎨',
@@ -184,7 +184,7 @@ return;
                                     </h1>
 
                                     <p className="text-base sm:text-lg leading-relaxed text-muted-foreground max-w-2xl text-left">
-                                        Materi <strong>teks lengkap</strong> berisi studi kasus nyata — Web Dev, Android Dev, dan lainnya. Cocok buat anak SMK RPL yang mau jago beneran, bukan cuma teori. Akses sampai kamu lulus.
+                                        Materi <strong>teks lengkap</strong> berisi studi kasus nyata — Web Dev, Mobile Dev, dan lainnya. Cocok buat anak SMK RPL yang mau jago beneran, bukan cuma teori. Akses sampai kamu lulus.
                                     </p>
 
                                     {/* Action Button */}
@@ -360,7 +360,7 @@ return;
                                             </div>
                                             <div>
                                                 <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                                                    {cat.name === 'Web Dev' ? 'Web Development' : cat.name === 'Android Dev' ? 'Android Development' : cat.name}
+                                                    {cat.name === 'Web Dev' ? 'Web Development' : cat.name === 'Mobile Dev' ? 'Mobile Development' : cat.name}
                                                 </h3>
                                                 <span className="text-xs text-muted-foreground mt-0.5 block">{cat.courses_count} materi</span>
                                             </div>

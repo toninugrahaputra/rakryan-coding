@@ -13,8 +13,8 @@ export function PublicFooter() {
                 { label: 'Paket hemat', href: '/#paket' },
                 { label: 'Web Development', href: '/courses?category=Web+Dev' },
                 {
-                    label: 'Android Development',
-                    href: '/courses?category=Android+Dev',
+                    label: 'Mobile Development',
+                    href: '/courses?category=Mobile+Dev',
                 },
             ],
         },

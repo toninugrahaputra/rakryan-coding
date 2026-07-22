@@ -17,7 +17,7 @@ class CourseSeeder extends Seeder
         // 1. Buat Kategori
         $categories = [
             'Web Dev' => Category::firstOrCreate(['name' => 'Web Dev', 'slug' => 'web-dev']),
-            'Android Dev' => Category::firstOrCreate(['name' => 'Android Dev', 'slug' => 'android-dev']),
+            'Mobile Dev' => Category::firstOrCreate(['name' => 'Mobile Dev', 'slug' => 'mobile-dev']),
             'Backend & API' => Category::firstOrCreate(['name' => 'Backend & API', 'slug' => 'backend-api']),
             'Fundamental' => Category::firstOrCreate(['name' => 'Fundamental', 'slug' => 'fundamental']),
             'UI/UX' => Category::firstOrCreate(['name' => 'UI/UX', 'slug' => 'ui-ux']),
@@ -78,7 +78,7 @@ class CourseSeeder extends Seeder
 
         // 2. Buat Course Satuan
         $tokoOnline = $createCourse('Toko Online dengan Laravel', 'Web Dev', 'Studi kasus end-to-end: produk, keranjang, checkout, pembayaran.', 149000, 249000, 'Laravel · MySQL', '±14 mnt baca');
-        $todoAndroid = $createCourse('Aplikasi To-Do List Android', 'Android Dev', 'Kotlin + Jetpack Compose dari dasar sampai konek ke API.', 129000, 199000, 'Kotlin · Jetpack Compose', '±12 mnt baca');
+        $todoAndroid = $createCourse('Aplikasi To-Do List Android', 'Mobile Dev', 'Kotlin + Jetpack Compose dari dasar sampai konek ke API.', 129000, 199000, 'Kotlin · Jetpack Compose', '±12 mnt baca');
         $portfolioWeb = $createCourse('Personal Portfolio Website', 'Web Dev', 'Bikin portfolio siap dipajang saat PKL or interview kerja.', 99000, 169000, 'HTML · CSS · Tailwind', '±8 mnt baca');
         $restApi = $createCourse('REST API untuk Pemula', 'Backend & API', 'Buat REST API lengkap dari CRUD, middleware, sampai JWT auth.', 139000, 219000, 'Node.js · Express', '±10 mnt baca');
         $gitGithub = $createCourse('Git & GitHub untuk Pemula', 'Fundamental', 'Kuasai git init, commit, push origin main dan kolaborasi tim.', 0, null, 'Git · GitHub', '±6 mnt baca');
