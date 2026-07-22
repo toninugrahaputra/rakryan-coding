@@ -285,8 +285,8 @@ export default function Dashboard() {
                                     <span className="text-2xl font-extrabold text-foreground">
                                         {totalEnrolled}
                                     </span>
-                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground uppercase">
-                                        Course dimiliki
+                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground">
+                                        Course Dimiliki
                                     </span>
                                 </div>
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
@@ -304,8 +304,8 @@ export default function Dashboard() {
                                     <span className="text-2xl font-extrabold text-foreground">
                                         {totalCompleted}
                                     </span>
-                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground uppercase">
-                                        Course selesai
+                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground">
+                                        Course Selesai
                                     </span>
                                 </div>
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
@@ -326,8 +326,8 @@ export default function Dashboard() {
                                         </span>
                                         <Flame className="h-5 w-5 fill-current text-amber-500" />
                                     </div>
-                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground uppercase">
-                                        Hari streak
+                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground">
+                                        Hari Streak
                                     </span>
                                 </div>
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
@@ -345,8 +345,8 @@ export default function Dashboard() {
                                     <span className="text-2xl font-extrabold text-foreground">
                                         {userStats.total_chapters_read || 0}
                                     </span>
-                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground uppercase">
-                                        Bab selesai dibaca
+                                    <span className="mt-0.5 block text-[10px] font-bold text-muted-foreground">
+                                        Bab Selesai Dibaca
                                     </span>
                                 </div>
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600">
