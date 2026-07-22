@@ -1,15 +1,21 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import {
+    Award,
     CheckCircle2,
+    Code2,
     Play,
     BookOpen,
     ArrowLeft,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Images,
+    Infinity as InfinityIcon,
+    MessageCircle,
     Star,
     Lock,
     ShoppingCart,
+    Youtube,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { PublicFooter } from '@/components/public-footer';
@@ -155,7 +161,24 @@ function CourseDetailContent() {
 
     const [ratingHover, setRatingHover] = useState<number | null>(null);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [expandedContentIds, setExpandedContentIds] = useState<Set<number>>(
+        new Set(),
+    );
     const gallery = course.gallery ?? [];
+
+    function toggleContentExpanded(id: number) {
+        setExpandedContentIds((prev) => {
+            const next = new Set(prev);
+
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+
+            return next;
+        });
+    }
 
     const quickTags = [
         'Materi Jelas',
@@ -248,6 +271,16 @@ function CourseDetailContent() {
                                         Belajar
                                     </span>
                                 </div>
+
+                                <a
+                                    href="https://youtube.com/rakryancoding"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                                >
+                                    <Youtube className="h-4 w-4" />
+                                    Lihat Demo
+                                </a>
                             </div>
 
                             {/* Desktop: tampil di sini seperti semula. Mobile: dipindahkan ke atas deskripsi (lihat di bawah). */}
@@ -396,6 +429,54 @@ function CourseDetailContent() {
                                 )}
                             </div>
 
+                            {/* Benefit Course */}
+                            <div className="border-t border-border/50 pt-8">
+                                <h2 className="mb-6 text-xl font-bold">
+                                    Manfaat Course
+                                </h2>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    {[
+                                        {
+                                            icon: InfinityIcon,
+                                            title: 'Akses Seumur Hidup',
+                                            desc: 'Belajar kapan saja, ulang materi sepuasnya tanpa batas waktu.',
+                                        },
+                                        {
+                                            icon: Award,
+                                            title: 'Sertifikat Penyelesaian',
+                                            desc: 'Dapatkan sertifikat resmi setelah menyelesaikan semua modul.',
+                                        },
+                                        {
+                                            icon: MessageCircle,
+                                            title: 'Konsultasi dengan Instruktur',
+                                            desc: 'Tanya jawab langsung soal materi atau kendala project.',
+                                        },
+                                        {
+                                            icon: Code2,
+                                            title: 'Studi Kasus Nyata',
+                                            desc: 'Bukan cuma teori — langsung praktik bikin project sungguhan.',
+                                        },
+                                    ].map(({ icon: Icon, title, desc }) => (
+                                        <div
+                                            key={title}
+                                            className="flex gap-3 rounded-xl border border-border/50 bg-card/50 p-4"
+                                        >
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                                <Icon className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-foreground">
+                                                    {title}
+                                                </h3>
+                                                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                                                    {desc}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Curriculum / Lesson list */}
                             <div className="border-t border-border/50 pt-8">
                                 <div className="mb-6">
@@ -422,26 +503,55 @@ function CourseDetailContent() {
                                                 )}
                                                 <div className="space-y-3">
                                                     {section.contents.map(
-                                                        (content) => (
+                                                        (content) => {
+                                                            const hasSubTopics =
+                                                                !!content.sub_topics &&
+                                                                content
+                                                                    .sub_topics
+                                                                    .length >
+                                                                    0;
+                                                            const isExpanded =
+                                                                expandedContentIds.has(
+                                                                    content.id,
+                                                                );
+
+                                                            return (
                                                             <div
                                                                 key={content.id}
                                                                 className="rounded-xl border border-border/50 bg-card/50 p-4 transition-colors hover:bg-card/70"
                                                             >
                                                                 <div className="flex items-center justify-between gap-4">
-                                                                    <div className="flex items-center gap-3">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            hasSubTopics &&
+                                                                            toggleContentExpanded(
+                                                                                content.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            !hasSubTopics
+                                                                        }
+                                                                        className="flex flex-1 items-center gap-3 text-left disabled:cursor-default"
+                                                                    >
                                                                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
                                                                             {
                                                                                 content.order
                                                                             }
                                                                         </div>
-                                                                        <div>
+                                                                        <div className="flex flex-1 items-center gap-2">
                                                                             <h4 className="text-sm leading-snug font-bold text-foreground sm:text-base">
                                                                                 {
                                                                                     content.title
                                                                                 }
                                                                             </h4>
+                                                                            {hasSubTopics && (
+                                                                                <ChevronDown
+                                                                                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                                                />
+                                                                            )}
                                                                         </div>
-                                                                    </div>
+                                                                    </button>
 
                                                                     {/* Access action */}
                                                                     <div>
@@ -484,14 +594,11 @@ function CourseDetailContent() {
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Render sub topics */}
-                                                                {content.sub_topics &&
-                                                                    content
-                                                                        .sub_topics
-                                                                        .length >
-                                                                        0 && (
+                                                                {/* Render sub topics — accordion, collapsed secara default */}
+                                                                {hasSubTopics &&
+                                                                    isExpanded && (
                                                                         <div className="mt-3.5 ml-4 space-y-1.5 border-l border-border/40 pl-11">
-                                                                            {content.sub_topics.map(
+                                                                            {content.sub_topics!.map(
                                                                                 (
                                                                                     topic,
                                                                                     tIdx,
@@ -514,7 +621,8 @@ function CourseDetailContent() {
                                                                         </div>
                                                                     )}
                                                             </div>
-                                                        ),
+                                                            );
+                                                        },
                                                     )}
                                                 </div>
                                             </div>

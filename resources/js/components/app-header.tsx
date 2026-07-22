@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingBag, Ticket, Receipt, Bell, Moon, Sun } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Newspaper, Search, ShoppingBag, Ticket, Receipt, Bell, Moon, Sun } from 'lucide-react';
 import { useAppearance } from '@/hooks/use-appearance';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -102,6 +102,11 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                   icon: ShoppingBag,
               },
               {
+                  title: 'Artikel',
+                  href: '/articles',
+                  icon: Newspaper,
+              },
+              {
                   title: 'Voucher Saya',
                   href: '/vouchers',
                   icon: Ticket,
@@ -162,8 +167,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={dashboard()}
-                        prefetch
+                        href="/"
                         className="flex items-center space-x-2"
                     >
                         <AppLogo />

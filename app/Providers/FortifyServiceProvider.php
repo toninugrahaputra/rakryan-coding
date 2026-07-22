@@ -26,7 +26,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $url = $request->user()->hasRole('admin')
                     ? route('internal.dashboard')
-                    : route('dashboard');
+                    : route('home');
 
                 return $request->wantsJson()
                     ? response()->json(['redirect' => $url])
@@ -40,7 +40,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 return $request->wantsJson()
                     ? response()->json(['two_factor' => false])
-                    : redirect(route('dashboard'));
+                    : redirect(route('home'));
             }
         });
     }

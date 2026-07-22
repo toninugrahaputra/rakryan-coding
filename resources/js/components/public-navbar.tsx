@@ -1,15 +1,33 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import {
+    Bell,
     BookOpen,
     ChevronDown,
+    LayoutGrid,
+    LogOut,
     Menu,
     X,
     Moon,
+    Receipt,
+    ShieldCheck,
     Sun,
     Search,
+    Ticket,
+    UserRound,
     Loader2,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { PublicUserMenu } from '@/components/public-user-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,8 +35,14 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppearance } from '@/hooks/use-appearance';
-import { dashboard } from '@/routes';
+import { useInitials } from '@/hooks/use-initials';
+import { dashboard, logout } from '@/routes';
 import { login, register } from '@/routes';
+import { index as notificationsIndex } from '@/routes/notifications';
+import { index as ordersIndex } from '@/routes/orders';
+import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
+import { index as vouchersIndex } from '@/routes/vouchers';
 import type { Auth } from '@/types';
 
 interface SearchResult {
@@ -46,8 +70,12 @@ function formatPrice(price: number): string {
 }
 
 export function PublicNavbar() {
-    const { auth } = usePage<{ auth: Auth }>().props;
+    const { auth } = usePage<{
+        auth: Auth & { unread_notifications_count?: number };
+    }>().props;
+    const getInitials = useInitials();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
     const { appearance, updateAppearance } = useAppearance();
     const [searchModalOpen, setSearchModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -111,6 +139,17 @@ export function PublicNavbar() {
         setHasSearched(false);
     };
 
+    const handleConfirmLogout = () => {
+        setLogoutConfirmOpen(false);
+        setMobileOpen(false);
+        router.flushAll();
+        router.post(logout().url, {}, {
+            onFinish: () => {
+                window.location.href = '/';
+            },
+        });
+    };
+
     const courseLinks = [
         { label: 'Web Development', href: '/courses?category=Web+Dev' },
         { label: 'Mobile Development', href: '/courses?category=Mobile+Dev' },
@@ -170,39 +209,102 @@ export function PublicNavbar() {
 
                     {/* Desktop Actions */}
                     <div className="hidden items-center gap-3.5 md:flex">
-                        {/* Search Icon Trigger */}
-                        <button
-                            onClick={() => setSearchModalOpen(true)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/40 text-muted-foreground transition-colors hover:bg-muted"
-                            title="Cari course (Cmd+K)"
-                        >
-                            <Search className="h-4.5 w-4.5" />
-                        </button>
+                        {/* Grup ikon utilitas — satu pill, bukan kotak terpisah-pisah */}
+                        <div className="flex items-center overflow-hidden rounded-xl border border-border/40 text-muted-foreground">
+                            <button
+                                onClick={() => setSearchModalOpen(true)}
+                                className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
+                                title="Cari course (Cmd+K)"
+                            >
+                                <Search className="h-4.5 w-4.5" />
+                            </button>
 
-                        {/* Dark/Light Mode Button */}
-                        <button
-                            onClick={toggleTheme}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/40 text-muted-foreground transition-colors hover:bg-muted"
-                            title={
-                                isDark
-                                    ? 'Switch to Light Mode'
-                                    : 'Switch to Dark Mode'
-                            }
-                        >
-                            {isDark ? (
-                                <Sun className="h-4.5 w-4.5" />
-                            ) : (
-                                <Moon className="h-4.5 w-4.5" />
+                            <div className="h-5 w-px bg-border/40" />
+
+                            <button
+                                onClick={toggleTheme}
+                                className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
+                                title={
+                                    isDark
+                                        ? 'Switch to Light Mode'
+                                        : 'Switch to Dark Mode'
+                                }
+                            >
+                                {isDark ? (
+                                    <Sun className="h-4.5 w-4.5" />
+                                ) : (
+                                    <Moon className="h-4.5 w-4.5" />
+                                )}
+                            </button>
+
+                            {auth.user && (
+                                <>
+                                    <div className="h-5 w-px bg-border/40" />
+                                    <Link
+                                        href="/courses"
+                                        title="Katalog Course"
+                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
+                                    >
+                                        <BookOpen className="h-4.5 w-4.5" />
+                                    </Link>
+
+                                    <div className="h-5 w-px bg-border/40" />
+                                    <Link
+                                        href={vouchersIndex()}
+                                        title="Voucher Saya"
+                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
+                                    >
+                                        <Ticket className="h-4.5 w-4.5" />
+                                    </Link>
+
+                                    <div className="h-5 w-px bg-border/40" />
+                                    <Link
+                                        href={ordersIndex()}
+                                        title="Pesanan Saya"
+                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
+                                    >
+                                        <Receipt className="h-4.5 w-4.5" />
+                                    </Link>
+                                </>
                             )}
-                        </button>
+                        </div>
 
                         {auth.user ? (
-                            <Link
-                                href={dashboard()}
-                                className="flex items-center justify-center rounded-xl bg-[#B99430] px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#B99430]/15 transition-all hover:bg-[#725a15]"
-                            >
-                                Dashboard
-                            </Link>
+                            <>
+                                <Link
+                                    href={dashboard()}
+                                    className="flex items-center justify-center gap-1.5 rounded-xl bg-[#B99430] px-4 py-2 text-sm font-bold text-white shadow-sm shadow-[#B99430]/15 transition-all hover:bg-[#725a15]"
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                    Dashboard
+                                </Link>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="flex items-center gap-1 rounded-xl border border-border/40 p-1 outline-none transition-colors hover:bg-muted">
+                                        <Avatar className="h-7 w-7">
+                                            <AvatarImage
+                                                src={auth.user.avatar}
+                                                alt={auth.user.name}
+                                            />
+                                            <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+                                                {getInitials(auth.user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-64">
+                                        <PublicUserMenu
+                                            user={auth.user}
+                                            unreadNotificationsCount={
+                                                auth.unread_notifications_count
+                                            }
+                                            onLogoutClick={() =>
+                                                setLogoutConfirmOpen(true)
+                                            }
+                                        />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
                         ) : (
                             <>
                                 <Link
@@ -287,13 +389,106 @@ export function PublicNavbar() {
                             </button>
 
                             {auth.user ? (
-                                <Link
-                                    href={dashboard()}
-                                    className="flex items-center justify-center gap-2 rounded-xl bg-[#B99430] px-4 py-2.5 text-sm font-semibold text-white"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    Dashboard
-                                </Link>
+                                <>
+                                    <div className="flex items-center gap-2.5 rounded-xl border border-border/50 px-3 py-2.5">
+                                        <Avatar className="h-9 w-9">
+                                            <AvatarImage
+                                                src={auth.user.avatar}
+                                                alt={auth.user.name}
+                                            />
+                                            <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+                                                {getInitials(auth.user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-bold text-foreground">
+                                                {auth.user.name}
+                                            </p>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {auth.user.email}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick-access buttons */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Link
+                                            href={dashboard()}
+                                            className="flex items-center justify-center gap-1.5 rounded-xl bg-[#B99430] px-3 py-2.5 text-sm font-bold text-white"
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <LayoutGrid className="h-4 w-4" />
+                                            Dashboard
+                                        </Link>
+                                        <Link
+                                            href="/courses"
+                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-border/50 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <BookOpen className="h-4 w-4" />
+                                            Katalog Course
+                                        </Link>
+                                        <Link
+                                            href={vouchersIndex()}
+                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-border/50 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <Ticket className="h-4 w-4" />
+                                            Voucher Saya
+                                        </Link>
+                                        <Link
+                                            href={ordersIndex()}
+                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-border/50 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <Receipt className="h-4 w-4" />
+                                            Pesanan
+                                        </Link>
+                                    </div>
+
+                                    <div className="my-1 border-t border-border/50" />
+
+                                    <Link
+                                        href={notificationsIndex()}
+                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <Bell className="h-4 w-4" />
+                                        Notifikasi
+                                        {!!auth.unread_notifications_count && (
+                                            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                                                {
+                                                    auth.unread_notifications_count
+                                                }
+                                            </span>
+                                        )}
+                                    </Link>
+                                    <Link
+                                        href={profileEdit()}
+                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <UserRound className="h-4 w-4" />
+                                        Profil Saya
+                                    </Link>
+                                    <Link
+                                        href={securityEdit()}
+                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-[#000000] hover:bg-muted hover:text-primary dark:text-white"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <ShieldCheck className="h-4 w-4" />
+                                        Keamanan
+                                    </Link>
+                                    <button
+                                        onClick={() =>
+                                            setLogoutConfirmOpen(true)
+                                        }
+                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-bold text-destructive hover:bg-destructive/10"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        Keluar
+                                    </button>
+                                </>
                             ) : (
                                 <>
                                     <Link
@@ -316,6 +511,36 @@ export function PublicNavbar() {
                     </div>
                 )}
             </header>
+
+            {/* Logout Confirmation Dialog */}
+            <Dialog
+                open={logoutConfirmOpen}
+                onOpenChange={setLogoutConfirmOpen}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Konfirmasi Keluar</DialogTitle>
+                        <DialogDescription>
+                            Apakah Anda yakin ingin keluar dari akun Anda?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setLogoutConfirmOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            className="font-bold"
+                            onClick={handleConfirmLogout}
+                        >
+                            Keluar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Search Modal — rendered OUTSIDE header to avoid stacking context issues */}
             {searchModalOpen && (

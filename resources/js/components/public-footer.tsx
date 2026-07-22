@@ -9,21 +9,18 @@ export function PublicFooter() {
         {
             title: 'Produk',
             items: [
-                { label: 'Semua studi kasus', href: '/courses' },
-                { label: 'Paket hemat', href: '/#paket' },
                 { label: 'Web Development', href: '/courses?category=Web+Dev' },
                 {
                     label: 'Mobile Development',
                     href: '/courses?category=Mobile+Dev',
                 },
+                { label: 'Artikel', href: '/articles' },
             ],
         },
         {
             title: 'Rakryan',
             items: [
                 { label: 'Tentang kami', href: '/#tentang' },
-                { label: 'Karier', href: '/#karier' },
-                { label: 'Artikel', href: '/#artikel' },
             ],
         },
     ];
@@ -44,7 +41,7 @@ export function PublicFooter() {
                                 className="h-14 w-auto sm:h-16"
                             />
                         </Link>
-                        <p className="max-w-xs text-sm leading-relaxed font-medium text-white">
+                        <p className="max-w-xs text-base leading-relaxed font-medium text-white">
                             Platform belajar ngoding teks lengkap untuk semua
                             kalangan di seluruh Indonesia. Materi terstruktur,
                             dirancang biar kamu siap kerja atau bikin project
