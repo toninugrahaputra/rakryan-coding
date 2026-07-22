@@ -236,37 +236,6 @@ export function PublicNavbar() {
                                     <Moon className="h-4.5 w-4.5" />
                                 )}
                             </button>
-
-                            {auth.user && (
-                                <>
-                                    <div className="h-5 w-px bg-border/40" />
-                                    <Link
-                                        href="/courses"
-                                        title="Katalog Course"
-                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
-                                    >
-                                        <BookOpen className="h-4.5 w-4.5" />
-                                    </Link>
-
-                                    <div className="h-5 w-px bg-border/40" />
-                                    <Link
-                                        href={vouchersIndex()}
-                                        title="Voucher Saya"
-                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
-                                    >
-                                        <Ticket className="h-4.5 w-4.5" />
-                                    </Link>
-
-                                    <div className="h-5 w-px bg-border/40" />
-                                    <Link
-                                        href={ordersIndex()}
-                                        title="Pesanan Saya"
-                                        className="flex h-9 w-9 items-center justify-center transition-colors hover:bg-muted"
-                                    >
-                                        <Receipt className="h-4.5 w-4.5" />
-                                    </Link>
-                                </>
-                            )}
                         </div>
 
                         {auth.user ? (
