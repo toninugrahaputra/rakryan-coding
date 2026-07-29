@@ -7,9 +7,11 @@ use App\Actions\CourseContent\CreateCourseContent;
 use App\Actions\CourseContent\DeleteCourseContent;
 use App\Actions\CourseContent\GetCourseContentBySlug;
 use App\Actions\CourseContent\GetCourseContents;
+use App\Actions\CourseContent\ReorderCourseContents;
 use App\Actions\CourseContent\UpdateCourseContent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internal\CourseContentRequest;
+use App\Http\Requests\Internal\ReorderCourseContentsRequest;
 use App\Http\Resources\CourseContent\CourseContentListResource;
 use App\Http\Resources\CourseContent\CourseContentShowResource;
 use Illuminate\Http\RedirectResponse;
@@ -80,5 +82,14 @@ class CourseContentController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten berhasil dihapus.']);
 
         return redirect()->route('internal.courses.contents.index', $course);
+    }
+
+    public function reorder(ReorderCourseContentsRequest $request, string $course): RedirectResponse
+    {
+        $course = app(GetCourseBySlug::class)->handle($course);
+
+        app(ReorderCourseContents::class)->handle($course, $request->validated('order'));
+
+        return back();
     }
 }

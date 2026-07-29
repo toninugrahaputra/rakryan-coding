@@ -95,6 +95,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('courses/{course}/contents', [CourseContentController::class, 'index'])->name('courses.contents.index');
         Route::get('courses/{course}/contents/create', [CourseContentController::class, 'create'])->name('courses.contents.create');
         Route::post('courses/{course}/contents', [CourseContentController::class, 'store'])->name('courses.contents.store');
+        Route::patch('courses/{course}/contents/reorder', [CourseContentController::class, 'reorder'])->name('courses.contents.reorder');
         Route::get('courses/{course}/contents/{content}/edit', [CourseContentController::class, 'edit'])->name('courses.contents.edit');
         Route::match(['put', 'patch'], 'courses/{course}/contents/{content}', [CourseContentController::class, 'update'])->name('courses.contents.update');
         Route::delete('courses/{course}/contents/{content}', [CourseContentController::class, 'destroy'])->name('courses.contents.destroy');

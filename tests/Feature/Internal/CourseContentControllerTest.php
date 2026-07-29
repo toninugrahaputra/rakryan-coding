@@ -94,6 +94,38 @@ class CourseContentControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_reorder_contents(): void
+    {
+        $first = CourseContent::factory()->create(['course_id' => $this->course->id, 'order' => 1]);
+        $second = CourseContent::factory()->create(['course_id' => $this->course->id, 'order' => 2]);
+        $third = CourseContent::factory()->create(['course_id' => $this->course->id, 'order' => 3]);
+
+        $response = $this->actingAs($this->admin)->patch(
+            "/internal/courses/{$this->course->slug}/contents/reorder",
+            ['order' => [$third->id, $first->id, $second->id]]
+        );
+
+        $response->assertRedirect();
+        $this->assertSame(1, $third->fresh()->order);
+        $this->assertSame(2, $first->fresh()->order);
+        $this->assertSame(3, $second->fresh()->order);
+    }
+
+    public function test_reorder_rejects_content_from_another_course(): void
+    {
+        $ownContent = CourseContent::factory()->create(['course_id' => $this->course->id, 'order' => 1]);
+
+        $otherCourse = Course::create(['title' => 'Other Course', 'slug' => 'other-course', 'is_published' => false]);
+        $otherContent = CourseContent::factory()->create(['course_id' => $otherCourse->id, 'order' => 1]);
+
+        $response = $this->actingAs($this->admin)->patch(
+            "/internal/courses/{$this->course->slug}/contents/reorder",
+            ['order' => [$ownContent->id, $otherContent->id]]
+        );
+
+        $response->assertStatus(422);
+    }
+
     public function test_admin_can_delete_content(): void
     {
         Storage::fake('public');
