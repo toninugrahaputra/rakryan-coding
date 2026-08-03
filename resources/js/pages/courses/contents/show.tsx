@@ -99,17 +99,17 @@ export default function CourseContentShow({
                         {/* Back link */}
                         <Link
                             href={`/courses/${course.slug}`}
-                            className="inline-flex max-w-[200px] items-center gap-1.5 truncate text-xs font-bold text-muted-foreground transition-colors hover:text-primary sm:max-w-md sm:text-sm"
+                            className="inline-flex max-w-[220px] items-center gap-2 truncate text-base font-bold text-muted-foreground transition-colors hover:text-primary sm:max-w-md"
                         >
-                            <ArrowLeft className="h-4 w-4 shrink-0" />
+                            <ArrowLeft className="h-5 w-5 shrink-0" />
                             <span className="truncate">{course.title}</span>
                         </Link>
 
                         {/* Progress Indicator bar — disembunyikan untuk guest yang belum punya progress */}
                         {isLoggedIn ? (
-                            <div className="hidden items-center gap-4 text-xs font-bold sm:flex">
+                            <div className="hidden items-center gap-4 text-base font-bold sm:flex">
                                 <span className="text-muted-foreground">
-                                    Bab {progress.current_index}/
+                                    Modul {progress.current_index}/
                                     {progress.total_count}
                                 </span>
                                 <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
@@ -170,16 +170,16 @@ export default function CourseContentShow({
                 {/* ─── Main split layout (BWA Page 23) ─── */}
                 <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8 sm:px-6 lg:px-8">
                     {/* Left Sidebar: Lesson listing list (1/3 width on desktop) */}
-                    <aside className="hidden w-72 shrink-0 space-y-6 border-r border-border/40 pr-6 lg:block">
+                    <aside className="sticky top-24 hidden h-fit w-72 shrink-0 self-start space-y-6 border-r border-border/40 pr-6 lg:block">
                         <div className="space-y-1">
-                            <span className="block text-[10px] font-bold tracking-widest text-primary uppercase">
+                            <span className="block text-xs font-bold tracking-widest text-primary uppercase">
                                 MATERI BELAJAR
                             </span>
-                            <h3 className="line-clamp-2 text-sm leading-snug font-extrabold text-foreground">
+                            <h3 className="line-clamp-2 text-base leading-snug font-extrabold text-foreground">
                                 {course.title}
                             </h3>
                             {isLoggedIn && (
-                                <span className="mt-1 block text-[10px] font-bold text-emerald-600">
+                                <span className="mt-1 block text-xs font-bold text-emerald-600">
                                     {progress.percentage}% Selesai
                                 </span>
                             )}
@@ -225,8 +225,8 @@ export default function CourseContentShow({
                     <main className="min-w-0 flex-1 space-y-8">
                         {/* Title Header */}
                         <div className="space-y-2 border-b border-border/40 pb-5">
-                            <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                Bab {progress.current_index} dari{' '}
+                            <span className="text-sm font-bold tracking-widest text-muted-foreground uppercase">
+                                Modul {progress.current_index} dari{' '}
                                 {progress.total_count}
                             </span>
                             <h1 className="text-2xl leading-snug font-extrabold text-foreground sm:text-3xl">
