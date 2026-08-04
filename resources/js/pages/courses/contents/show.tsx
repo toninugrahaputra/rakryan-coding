@@ -6,13 +6,14 @@ import {
     Lock,
     Clock,
     Bookmark,
+    Menu,
     Moon,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
 import EditorJsRenderer from '@/components/editor-js-renderer';
 import ScrollToTopBottom from '@/components/scroll-to-top-bottom';
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
 
 interface Lesson {
     id: number;
@@ -68,6 +69,7 @@ export default function CourseContentShow({
 }: CourseContentShowProps) {
     const [isCompleting, setIsCompleting] = useState(false);
     const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     function handleComplete() {
         setIsCompleting(true);
@@ -169,20 +171,54 @@ export default function CourseContentShow({
 
                 {/* ─── Main split layout (BWA Page 23) ─── */}
                 <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8 sm:px-6 lg:px-8">
-                    {/* Left Sidebar: Lesson listing list (1/3 width on desktop) */}
-                    <aside className="sticky top-24 hidden h-fit w-72 shrink-0 self-start space-y-6 border-r border-border/40 pr-6 lg:block">
-                        <div className="space-y-1">
-                            <span className="block text-xs font-bold tracking-widest text-primary uppercase">
-                                MATERI BELAJAR
-                            </span>
-                            <h3 className="line-clamp-2 text-base leading-snug font-extrabold text-foreground">
-                                {course.title}
-                            </h3>
-                            {isLoggedIn && (
-                                <span className="mt-1 block text-xs font-bold text-emerald-600">
-                                    {progress.percentage}% Selesai
+                    {/* Mobile: backdrop saat daftar modul dibuka */}
+                    {isSidebarOpen && (
+                        <div
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="fixed inset-0 z-[45] bg-black/40 lg:hidden"
+                        />
+                    )}
+
+                    {/* Mobile: tombol mengambang untuk membuka daftar modul */}
+                    {!isSidebarOpen && (
+                        <button
+                            type="button"
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="fixed bottom-6 left-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
+                            aria-label="Buka daftar modul"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
+                    )}
+
+                    {/* Left Sidebar: Lesson listing list — drawer di mobile, kolom statis di desktop */}
+                    <aside
+                        className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] transform space-y-6 overflow-y-auto border-r border-border/40 bg-background p-6 shadow-2xl transition-transform duration-300 ease-out ${
+                            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                        } lg:sticky lg:top-24 lg:z-auto lg:h-fit lg:w-72 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:overflow-visible lg:bg-transparent lg:p-0 lg:pr-6 lg:shadow-none`}
+                    >
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="space-y-1">
+                                <span className="block text-xs font-bold tracking-widest text-primary uppercase">
+                                    MATERI BELAJAR
                                 </span>
-                            )}
+                                <h3 className="line-clamp-2 text-base leading-snug font-extrabold text-foreground">
+                                    {course.title}
+                                </h3>
+                                {isLoggedIn && (
+                                    <span className="mt-1 block text-xs font-bold text-emerald-600">
+                                        {progress.percentage}% Selesai
+                                    </span>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted lg:hidden"
+                                aria-label="Tutup daftar modul"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
                         </div>
 
                         <div className="mt-4 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
@@ -193,6 +229,7 @@ export default function CourseContentShow({
                                     <Link
                                         key={lesson.id}
                                         href={`/courses/${course.slug}/contents/${lesson.slug}`}
+                                        onClick={() => setIsSidebarOpen(false)}
                                         className={`flex items-center justify-between gap-3 rounded-xl border p-3 text-left transition-colors ${
                                             isActive
                                                 ? 'border-primary bg-primary/5 font-extrabold text-primary shadow-xs'
@@ -334,7 +371,3 @@ export default function CourseContentShow({
         </>
     );
 }
-
-CourseContentShow.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[]}>{page}</AppLayout>
-);

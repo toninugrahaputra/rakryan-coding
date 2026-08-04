@@ -131,7 +131,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             </SheetTrigger>
                             <SheetContent
                                 side="left"
-                                className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
+                                className="flex h-full w-64 flex-col items-stretch justify-between bg-background"
                             >
                                 <SheetTitle className="sr-only">
                                     Navigation menu
@@ -146,7 +146,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                 <Link
                                                     key={item.title}
                                                     href={item.href}
-                                                    className="flex items-center space-x-2 font-medium"
+                                                    className="flex items-center space-x-2 font-medium text-foreground transition-colors hover:text-primary"
                                                 >
                                                     {item.icon && (
                                                         <item.icon className="h-5 w-5" />
