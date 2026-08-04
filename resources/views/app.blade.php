@@ -27,7 +27,7 @@
         <meta name="twitter:image" content="{{ $ogImage }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        <script nonce="{{ $cspNonce }}">
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
