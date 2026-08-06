@@ -34,7 +34,7 @@ class ArticleAiGeneratorService
             'Authorization' => 'Bearer '.$this->apiKey,
             'Content-Type' => 'application/json',
         ])
-            ->timeout(120)
+            ->timeout(240)
             ->post('https://openrouter.ai/api/v1/chat/completions', [
                 'model' => $this->model,
                 'max_tokens' => 8000,
