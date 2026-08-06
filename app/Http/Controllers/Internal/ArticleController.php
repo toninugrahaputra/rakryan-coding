@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
+use Throwable;
 
 class ArticleController extends Controller
 {
@@ -50,6 +51,10 @@ class ArticleController extends Controller
             );
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => 'Gagal terhubung ke layanan AI. Coba lagi beberapa saat.'], 422);
         }
 
         return response()->json([
