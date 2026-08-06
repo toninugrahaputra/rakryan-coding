@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingBag, Ticket, Receipt, Bell, Moon, Sun } from 'lucide-react';
+import { BookOpen, FileText, Folder, LayoutGrid, Menu, Search, ShoppingBag, Ticket, Receipt, Bell, Moon, Sun } from 'lucide-react';
 import { useAppearance } from '@/hooks/use-appearance';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -73,6 +73,11 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                   title: 'Courses',
                   href: '/internal/courses',
                   icon: BookOpen,
+              },
+              {
+                  title: 'Articles',
+                  href: '/internal/articles',
+                  icon: FileText,
               },
               {
                   title: 'Products',

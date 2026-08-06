@@ -5,6 +5,7 @@ namespace Tests\Feature\Internal;
 use App\Models\Article;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -77,6 +78,68 @@ class ArticleControllerTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['slug']);
+    }
+
+    public function test_admin_can_generate_article_content_with_ai(): void
+    {
+        config(['services.openrouter.api_key' => 'test-key']);
+
+        Http::fake([
+            'openrouter.ai/*' => Http::response([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => json_encode([
+                                'excerpt' => 'Ringkasan singkat.',
+                                'blocks' => [
+                                    ['type' => 'header', 'data' => ['text' => 'Judul', 'level' => 2]],
+                                    ['type' => 'paragraph', 'data' => ['text' => 'Isi paragraf.']],
+                                ],
+                            ]),
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson('/internal/articles/generate-ai', ['title' => 'Cara Belajar Laravel']);
+
+        $response->assertStatus(200);
+        $response->assertJson(['excerpt' => 'Ringkasan singkat.']);
+        $response->assertJsonCount(2, 'content.blocks');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://openrouter.ai/api/v1/chat/completions'
+            && $request['model'] === 'nvidia/nemotron-3-ultra-550b-a55b:free');
+    }
+
+    public function test_non_admin_cannot_generate_article_content_with_ai(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->postJson('/internal/articles/generate-ai', ['title' => 'Cara Belajar Laravel']);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_generate_ai_requires_title(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->postJson('/internal/articles/generate-ai', []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_generate_ai_returns_error_when_api_key_missing(): void
+    {
+        config(['services.openrouter.api_key' => null]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson('/internal/articles/generate-ai', ['title' => 'Cara Belajar Laravel']);
+
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['message']);
     }
 
     public function test_admin_can_view_edit_form(): void

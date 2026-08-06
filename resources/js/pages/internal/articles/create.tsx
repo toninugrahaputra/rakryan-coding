@@ -1,7 +1,8 @@
 import type { OutputData } from '@editorjs/editorjs';
 import { Head, router } from '@inertiajs/react';
+import { Sparkles } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { store } from '@/actions/App/Http/Controllers/Internal/ArticleController';
+import { generateAi, store } from '@/actions/App/Http/Controllers/Internal/ArticleController';
 import { store as storeEditorImage } from '@/actions/App/Http/Controllers/Internal/EditorImageController';
 import EditorJsComponent from '@/components/editor-js';
 import type { EditorJsRef } from '@/components/editor-js';
@@ -13,6 +14,19 @@ import { Switch } from '@/components/ui/switch';
 import { slugify } from '@/lib/slugify';
 import { uploadEditorImages } from '@/lib/uploadEditorImages';
 import { index } from '@/routes/internal/articles';
+
+function getCsrfHeaders(): Record<string, string> {
+    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+    const xsrfCookie = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1] ?? '';
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
+    if (xsrfCookie) headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfCookie);
+
+    return headers;
+}
 
 export default function ArticlesCreate() {
     const editorRef = useRef<EditorJsRef>(null);
@@ -27,10 +41,51 @@ export default function ArticlesCreate() {
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
+    const [generating, setGenerating] = useState(false);
 
     function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const title = e.target.value;
         setForm((prev) => ({ ...prev, title, slug: slugify(title) }));
+    }
+
+    async function handleGenerateAi() {
+        if (!form.title.trim() || generating) return;
+
+        setGenerating(true);
+        setErrors((prev) => ({ ...prev, ai: '' }));
+
+        try {
+            const body = new FormData();
+            body.append('title', form.title);
+
+            const response = await fetch(generateAi.url(), {
+                method: 'POST',
+                headers: getCsrfHeaders(),
+                body,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErrors((prev) => ({
+                    ...prev,
+                    ai: data.message ?? 'Gagal generate artikel dengan AI.',
+                }));
+
+                return;
+            }
+
+            await editorRef.current?.render(data.content);
+            setForm((prev) => ({
+                ...prev,
+                content: data.content,
+                excerpt: prev.excerpt || (data.excerpt ?? ''),
+            }));
+        } catch {
+            setErrors((prev) => ({ ...prev, ai: 'Gagal terhubung ke server. Periksa koneksi dan coba lagi.' }));
+        } finally {
+            setGenerating(false);
+        }
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -168,7 +223,24 @@ export default function ArticlesCreate() {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label>Konten</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>Konten</Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!form.title.trim() || generating}
+                                    onClick={handleGenerateAi}
+                                >
+                                    <Sparkles className="h-4 w-4" />
+                                    {generating ? 'Membuat draf...' : 'Generate dengan AI'}
+                                </Button>
+                            </div>
+                            {errors.ai && (
+                                <p className="text-sm text-destructive">
+                                    {errors.ai}
+                                </p>
+                            )}
                             {errors.content && (
                                 <p className="text-sm text-destructive">
                                     {errors.content}

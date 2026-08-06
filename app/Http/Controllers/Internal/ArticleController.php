@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Internal;
 
 use App\Actions\Article\CreateArticle;
 use App\Actions\Article\DeleteArticle;
+use App\Actions\Article\GenerateArticleContent;
 use App\Actions\Article\GetArticleBySlug;
 use App\Actions\Article\GetPaginatedArticles;
 use App\Actions\Article\UpdateArticle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internal\ArticleRequest;
+use App\Http\Requests\Internal\GenerateArticleContentRequest;
 use App\Http\Resources\Article\ArticleListResource;
 use App\Http\Resources\Article\ArticleShowResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class ArticleController extends Controller
 {
@@ -36,6 +40,26 @@ class ArticleController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel berhasil ditambahkan.']);
 
         return redirect()->route('internal.articles.index');
+    }
+
+    public function generateAi(GenerateArticleContentRequest $request): JsonResponse
+    {
+        try {
+            $result = app(GenerateArticleContent::class)->handle(
+                $request->validated('title'),
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'excerpt' => $result['excerpt'],
+            'content' => [
+                'time' => (int) (microtime(true) * 1000),
+                'blocks' => $result['blocks'],
+                'version' => '2.31.6',
+            ],
+        ]);
     }
 
     public function edit(string $article): Response

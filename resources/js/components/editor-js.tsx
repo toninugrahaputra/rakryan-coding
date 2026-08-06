@@ -380,6 +380,7 @@ class ImageAlignTune {
 // ── Types ─────────────────────────────────────────────────────────────────
 export type EditorJsRef = {
     flush: () => Promise<{ data: OutputData; files: File[]; deletedUrls: string[] }>;
+    render: (data: OutputData) => Promise<void>;
 };
 
 type Props = {
@@ -853,6 +854,13 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
             const deletedUrls = [...initialImageUrlsRef.current].filter((url) => !currentPermanentUrls.has(url));
 
             return { data: { ...outputData, blocks }, files, deletedUrls };
+        },
+        async render(data: OutputData) {
+            const editor = editorRef.current;
+            if (!editor) return;
+
+            await editor.render(data);
+            onChangeRef.current?.(await editor.save());
         },
     }));
 
