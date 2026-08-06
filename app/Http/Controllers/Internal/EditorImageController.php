@@ -24,7 +24,7 @@ class EditorImageController extends Controller
 
         return response()->json([
             'success' => 1,
-            'file' => ['url' => asset("storage/{$path}")],
+            'file' => ['url' => "/storage/{$path}"],
         ]);
     }
 }
