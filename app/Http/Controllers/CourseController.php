@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Category\GetCategoriesWithCourseCount;
 use App\Actions\Course\GetCourseBySlug;
-use App\Actions\Course\GetPaginatedCourses;
+use App\Actions\Course\GetPaginatedPublishedCourses;
 use App\Actions\User\GetPurchasedCourses;
 use App\Actions\User\HasPurchasedCourse;
 use App\Http\Resources\Course\CourseListResource;
@@ -17,7 +17,7 @@ class CourseController extends Controller
 {
     public function index(Request $request): Response
     {
-        $courses = app(GetPaginatedCourses::class)->handle();
+        $courses = app(GetPaginatedPublishedCourses::class)->handle();
 
         /** Dapatkan course ID yang sudah dibeli user (jika login) */
         $purchasedCourseIds = [];

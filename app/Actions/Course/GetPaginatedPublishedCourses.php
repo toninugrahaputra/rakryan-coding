@@ -5,12 +5,13 @@ namespace App\Actions\Course;
 use App\Models\Course;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class GetPaginatedCourses
+class GetPaginatedPublishedCourses
 {
     public function handle(): LengthAwarePaginator
     {
         $query = Course::with(['category', 'technologies', 'products' => fn ($q) => $q->where('is_published', true)->orderBy('price')])
-            ->withCount('contents');
+            ->withCount('contents')
+            ->where('is_published', true);
 
         // Search by title
         if ($search = request()->input('search')) {

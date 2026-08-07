@@ -39,6 +39,19 @@ class CourseControllerTest extends TestCase
         $response->assertInertia(fn ($page) => $page->component('internal/courses/index'));
     }
 
+    public function test_admin_courses_index_includes_draft_courses(): void
+    {
+        Course::factory()->create(['title' => 'Published Course', 'is_published' => true]);
+        Course::factory()->create(['title' => 'Draft Course', 'is_published' => false]);
+
+        $response = $this->actingAs($this->admin)->get('/internal/courses');
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('internal/courses/index')
+            ->has('courses.data', 2)
+        );
+    }
+
     public function test_non_admin_cannot_view_courses(): void
     {
         $response = $this->actingAs($this->user)->get('/internal/courses');
