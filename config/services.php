@@ -45,4 +45,10 @@ return [
         'model' => env('OPENROUTER_MODEL', 'inclusionai/ling-3.0-flash:free'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];

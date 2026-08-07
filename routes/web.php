@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\CourseContentController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSearchController;
@@ -22,6 +23,11 @@ Route::get('articles/{article}', [ArticleController::class, 'show'])->name('arti
 
 // Guest bisa mengakses preview modul gratis (3 modul pertama course gratis) tanpa login.
 Route::get('courses/{course}/contents/{content}', [CourseContentController::class, 'show'])->name('courses.contents.show');
+
+Route::middleware('guest')->group(function () {
+    Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -1,4 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
+import { redirect as googleRedirect } from '@/actions/App/Http/Controllers/Auth/GoogleAuthController';
+import GoogleIcon from '@/components/google-icon';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -6,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
@@ -88,6 +91,21 @@ export default function Login({ status, canResetPassword }: Props) {
                                 Log in
                             </Button>
                         </div>
+
+                        <div className="flex items-center gap-3">
+                            <Separator className="flex-1" />
+                            <span className="text-xs text-muted-foreground">
+                                or
+                            </span>
+                            <Separator className="flex-1" />
+                        </div>
+
+                        <Button variant="outline" className="w-full" asChild>
+                            <a href={googleRedirect.url()}>
+                                <GoogleIcon className="size-4" />
+                                Continue with Google
+                            </a>
+                        </Button>
 
                         <div className="text-center text-sm text-muted-foreground">
                             Don't have an account?{' '}
