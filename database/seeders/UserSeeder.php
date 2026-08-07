@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         $admin = User::firstOrCreate(
             ['email' => 'admin@rcoding.com'],
-            ['name' => 'Admin', 'admin07sukses' => Hash::make('admin07sukses')],
+            ['name' => 'Admin', 'password' => Hash::make('admin07sukses')],
         );
         $admin->assignRole('admin');
 
