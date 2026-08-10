@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Voucher;
 
+use App\Actions\Voucher\RedeemVoucher;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class RedeemVoucherTest extends TestCase
@@ -181,6 +183,34 @@ class RedeemVoucherTest extends TestCase
             'user_id' => $user->id,
             'voucher_id' => $voucher->id,
             'order_id' => null,
+        ]);
+    }
+
+    public function test_redeem_action_throws_when_quota_is_already_exhausted(): void
+    {
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->create(['quota' => 1, 'usage_count' => 1]);
+
+        $this->expectException(ValidationException::class);
+
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000);
+    }
+
+    public function test_redeem_action_does_not_increment_usage_count_past_quota(): void
+    {
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->create(['quota' => 1, 'usage_count' => 1]);
+
+        try {
+            app(RedeemVoucher::class)->handle($voucher, $user, 10000);
+        } catch (ValidationException) {
+            // expected — quota already exhausted
+        }
+
+        $this->assertSame(1, $voucher->fresh()->usage_count);
+        $this->assertDatabaseMissing('voucher_usages', [
+            'voucher_id' => $voucher->id,
+            'user_id' => $user->id,
         ]);
     }
 }

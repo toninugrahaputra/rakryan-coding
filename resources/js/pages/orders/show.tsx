@@ -44,9 +44,16 @@ interface OrdersShowProps {
     order: Order;
     justReturnedFromXendit: boolean;
     auth: {
-        user: { email: string } | null;
+        user: { name: string; email: string } | null;
     };
 }
+
+const COMPANY = {
+    name: 'Rakryan Coding',
+    address:
+        'Jl. Bend. Palasari No.Kav 5, Karangbesuki, Kec. Sukun, Kota Malang, Jawa Timur 65149',
+    phone: '085126464454',
+};
 
 function formatPrice(price: number): string {
     return new Intl.NumberFormat('id-ID', {
@@ -69,6 +76,7 @@ export default function OrdersShow({
     const courses = order.product?.courses || [];
     const firstCourse = courses[0];
     const userEmail = auth?.user?.email || 'user@rakryancoding.id';
+    const userName = auth?.user?.name || '-';
 
     // Countdown Timer: pakai valid_until asli dari invoice Xendit,
     // fallback 24 jam dari order dibuat untuk order lama yang belum punya valid_until.
@@ -171,11 +179,11 @@ export default function OrdersShow({
                                     <div className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs font-semibold text-blue-700 sm:text-sm dark:text-blue-300">
                                         <CheckCircle2 className="h-5 w-5 shrink-0" />
                                         <span>
-                                            Kamu baru saja kembali dari
-                                            halaman pembayaran Xendit. Kami
-                                            sedang mengonfirmasi status
-                                            pembayaranmu — halaman ini akan
-                                            update otomatis begitu selesai.
+                                            Kamu baru saja kembali dari halaman
+                                            pembayaran Xendit. Kami sedang
+                                            mengonfirmasi status pembayaranmu —
+                                            halaman ini akan update otomatis
+                                            begitu selesai.
                                         </span>
                                     </div>
                                 )}
@@ -288,6 +296,31 @@ export default function OrdersShow({
                                 {/* Order Invoice Info */}
                                 <Card className="border-border/50 shadow-sm">
                                     <CardContent className="space-y-6 p-6">
+                                        {/* Invoice Letterhead */}
+                                        <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-5">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src="/assets/images/og-image.png"
+                                                    alt={COMPANY.name}
+                                                    className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                                                />
+                                                <div>
+                                                    <h2 className="text-sm font-extrabold text-foreground sm:text-base">
+                                                        {COMPANY.name}
+                                                    </h2>
+                                                    <p className="mt-0.5 max-w-[220px] text-[10px] leading-snug text-muted-foreground sm:max-w-xs sm:text-xs">
+                                                        {COMPANY.address}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground sm:text-xs">
+                                                        {COMPANY.phone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="shrink-0 text-[10px] font-bold tracking-widest text-muted-foreground uppercase sm:text-xs">
+                                                Invoice
+                                            </span>
+                                        </div>
+
                                         <div>
                                             <h3 className="mb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                                                 RINGKASAN PESANAN
@@ -303,11 +336,10 @@ export default function OrdersShow({
                                                 </div>
                                                 <div className="flex justify-between border-b border-border/40 pb-2.5">
                                                     <span className="text-muted-foreground">
-                                                        Produk
+                                                        Nama pembeli
                                                     </span>
                                                     <span className="font-bold text-foreground">
-                                                        {order.product?.title ||
-                                                            '-'}
+                                                        {userName}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-border/40 pb-2.5">
@@ -341,7 +373,40 @@ export default function OrdersShow({
                                                             : '-'}
                                                     </span>
                                                 </div>
-                                                <div className="flex justify-between pt-1 text-base font-extrabold">
+                                            </div>
+                                        </div>
+
+                                        {/* Rincian Pembelian */}
+                                        <div className="border-t border-border/40 pt-5">
+                                            <h3 className="mb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                RINCIAN PEMBELIAN
+                                            </h3>
+                                            <div className="space-y-3.5 text-xs sm:text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-foreground">
+                                                        {order.product?.title ||
+                                                            '-'}
+                                                    </span>
+                                                    <span className="font-bold text-foreground">
+                                                        {formatPrice(
+                                                            order.total_amount,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {order.discount_amount > 0 && (
+                                                    <div className="flex justify-between text-emerald-600">
+                                                        <span>
+                                                            Diskon voucher
+                                                        </span>
+                                                        <span className="font-bold">
+                                                            -
+                                                            {formatPrice(
+                                                                order.discount_amount,
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between border-t border-border/40 pt-3.5 text-base font-extrabold">
                                                     <span className="text-foreground">
                                                         Total dibayar
                                                     </span>
