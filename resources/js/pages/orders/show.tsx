@@ -276,8 +276,8 @@ export default function OrdersShow({
                         {/* ─── PAID / SUCCESS STATE (Page 14) ─── */}
                         {isPaid && (
                             <div className="space-y-6">
-                                {/* Success Header Box */}
-                                <div className="flex flex-col items-center space-y-4 rounded-3xl border border-emerald-500/15 bg-emerald-500/5 p-6 py-10 text-center">
+                                {/* Success Header Box — sifatnya cuma UX seremoni di layar, nggak relevan buat dokumen invoice yang dicetak */}
+                                <div className="flex flex-col items-center space-y-4 rounded-3xl border border-emerald-500/15 bg-emerald-500/5 p-6 py-10 text-center print:hidden">
                                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 shadow-sm">
                                         <CheckCircle className="h-9 w-9" />
                                     </div>
@@ -297,28 +297,28 @@ export default function OrdersShow({
                                 <Card className="border-border/50 shadow-sm">
                                     <CardContent className="space-y-6 p-6">
                                         {/* Invoice Letterhead */}
-                                        <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-5">
-                                            <div className="flex items-center gap-3">
+                                        <div className="border-b border-border/40 pb-5">
+                                            <div className="flex items-start justify-between gap-4">
                                                 <img
                                                     src="/assets/images/og-image.png"
                                                     alt={COMPANY.name}
-                                                    className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                                                    className="h-12 w-auto object-contain"
                                                 />
-                                                <div>
-                                                    <h2 className="text-sm font-extrabold text-foreground sm:text-base">
-                                                        {COMPANY.name}
-                                                    </h2>
-                                                    <p className="mt-0.5 max-w-[220px] text-[10px] leading-snug text-muted-foreground sm:max-w-xs sm:text-xs">
-                                                        {COMPANY.address}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground sm:text-xs">
-                                                        {COMPANY.phone}
-                                                    </p>
-                                                </div>
+                                                <span className="shrink-0 pt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase sm:text-xs">
+                                                    Invoice
+                                                </span>
                                             </div>
-                                            <span className="shrink-0 text-[10px] font-bold tracking-widest text-muted-foreground uppercase sm:text-xs">
-                                                Invoice
-                                            </span>
+                                            <div className="mt-3">
+                                                <h2 className="text-sm font-extrabold text-foreground sm:text-base">
+                                                    {COMPANY.name}
+                                                </h2>
+                                                <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground sm:text-xs">
+                                                    {COMPANY.address}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground sm:text-xs">
+                                                    {COMPANY.phone}
+                                                </p>
+                                            </div>
                                         </div>
 
                                         <div>
