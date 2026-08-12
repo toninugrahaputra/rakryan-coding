@@ -11,7 +11,10 @@ class GetPaginatedPublishedCourses
     {
         $query = Course::with(['category', 'technologies', 'products' => fn ($q) => $q->where('is_published', true)->orderBy('price')])
             ->withCount('contents')
-            ->where('is_published', true);
+            ->where('is_published', true)
+            // Course published tapi tidak punya produk published sama sekali harus tetap
+            // disembunyikan dari katalog publik — tidak ada yang bisa dibeli dari situ.
+            ->whereHas('products', fn ($q) => $q->where('is_published', true));
 
         // Search by title
         if ($search = request()->input('search')) {
