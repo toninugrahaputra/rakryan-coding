@@ -13,6 +13,14 @@ import { useState, useEffect } from 'react';
 import { cancel } from '@/actions/App/Http/Controllers/OrderController';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 
 interface Course {
@@ -83,6 +91,7 @@ export default function OrdersShow({
 
     const [isCopied, setIsCopied] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
     async function handleCopyLink() {
         if (!order.payment_url) return;
@@ -97,13 +106,17 @@ export default function OrdersShow({
     }
 
     function handleCancel() {
-        if (!confirm('Yakin mau batalkan pesanan ini?')) return;
-
         setIsCancelling(true);
         router.patch(
             cancel(order.id).url,
             {},
-            { preserveScroll: true, onFinish: () => setIsCancelling(false) },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setIsCancelling(false);
+                    setShowCancelConfirm(false);
+                },
+            },
         );
     }
 
@@ -303,7 +316,9 @@ export default function OrdersShow({
                                         <div className="text-center">
                                             <button
                                                 type="button"
-                                                onClick={handleCancel}
+                                                onClick={() =>
+                                                    setShowCancelConfirm(true)
+                                                }
                                                 disabled={isCancelling}
                                                 className="text-xs font-semibold text-muted-foreground underline-offset-2 hover:text-destructive hover:underline disabled:opacity-50"
                                             >
@@ -601,6 +616,40 @@ export default function OrdersShow({
                     </div>
                 </main>
             </div>
+
+            <Dialog
+                open={showCancelConfirm}
+                onOpenChange={setShowCancelConfirm}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Batalkan Pesanan</DialogTitle>
+                        <DialogDescription>
+                            Yakin mau batalkan pesanan{' '}
+                            <strong>{order.order_number}</strong>? Tindakan ini
+                            tidak dapat dibatalkan.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowCancelConfirm(false)}
+                            disabled={isCancelling}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleCancel}
+                            disabled={isCancelling}
+                        >
+                            {isCancelling
+                                ? 'Membatalkan...'
+                                : 'Ya, batalkan pesanan'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
