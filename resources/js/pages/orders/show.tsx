@@ -1,4 +1,4 @@
-import { Head, Link, usePoll } from '@inertiajs/react';
+import { Head, Link, router, usePoll } from '@inertiajs/react';
 import {
     CheckCircle2,
     AlertCircle,
@@ -6,8 +6,11 @@ import {
     ShieldCheck,
     FileText,
     CheckCircle,
+    Copy,
+    Check,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cancel } from '@/actions/App/Http/Controllers/OrderController';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -77,6 +80,32 @@ export default function OrdersShow({
     const firstCourse = courses[0];
     const userEmail = auth?.user?.email || 'user@rakryancoding.id';
     const userName = auth?.user?.name || '-';
+
+    const [isCopied, setIsCopied] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    async function handleCopyLink() {
+        if (!order.payment_url) return;
+
+        try {
+            await navigator.clipboard.writeText(order.payment_url);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch {
+            // Clipboard API tidak tersedia (mis. konteks non-HTTPS) — abaikan secara diam-diam.
+        }
+    }
+
+    function handleCancel() {
+        if (!confirm('Yakin mau batalkan pesanan ini?')) return;
+
+        setIsCancelling(true);
+        router.patch(
+            cancel(order.id).url,
+            {},
+            { preserveScroll: true, onFinish: () => setIsCancelling(false) },
+        );
+    }
 
     // Countdown Timer: pakai valid_until asli dari invoice Xendit,
     // fallback 24 jam dari order dibuat untuk order lama yang belum punya valid_until.
@@ -232,27 +261,56 @@ export default function OrdersShow({
                                             </span>
                                         </div>
 
-                                        {/* Tombol aksi: bayar asli (payment_url), ganti metode */}
+                                        {/* Tombol aksi: bayar asli (payment_url), salin link, batalkan */}
                                         <div className="flex flex-col gap-3 sm:flex-row">
                                             {order.payment_url && (
-                                                <Button
-                                                    asChild
-                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
-                                                >
-                                                    <a href={order.payment_url}>
-                                                        Lanjutkan Pembayaran ➔
-                                                    </a>
-                                                </Button>
+                                                <>
+                                                    <Button
+                                                        asChild
+                                                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-5 text-xs font-bold text-white shadow-sm hover:bg-[#725a15]"
+                                                    >
+                                                        <a
+                                                            href={
+                                                                order.payment_url
+                                                            }
+                                                        >
+                                                            Lanjutkan Pembayaran
+                                                            ➔
+                                                        </a>
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={handleCopyLink}
+                                                        className="flex items-center justify-center gap-1.5 rounded-xl py-5 text-xs font-bold sm:w-auto"
+                                                    >
+                                                        {isCopied ? (
+                                                            <>
+                                                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                                                Tersalin
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Copy className="h-3.5 w-3.5" />
+                                                                Salin link
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </>
                                             )}
-                                            <Button
-                                                variant="outline"
-                                                className="flex-1 rounded-xl py-5 text-xs font-bold"
-                                                asChild
+                                        </div>
+
+                                        <div className="text-center">
+                                            <button
+                                                type="button"
+                                                onClick={handleCancel}
+                                                disabled={isCancelling}
+                                                className="text-xs font-semibold text-muted-foreground underline-offset-2 hover:text-destructive hover:underline disabled:opacity-50"
                                             >
-                                                <Link href="/courses">
-                                                    Ganti metode
-                                                </Link>
-                                            </Button>
+                                                {isCancelling
+                                                    ? 'Membatalkan...'
+                                                    : 'Batalkan pesanan'}
+                                            </button>
                                         </div>
                                     </CardContent>
                                 </Card>
