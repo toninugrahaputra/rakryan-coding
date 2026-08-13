@@ -18,12 +18,13 @@ class NotificationController extends Controller
 
         return Inertia::render('notifications/index', [
             'notifications' => $notifications->map(fn ($n) => [
-                'id'         => $n->id,
-                'title'      => $n->title,
-                'message'    => $n->message,
-                'is_read'    => $n->is_read,
+                'id' => $n->id,
+                'title' => $n->title,
+                'message' => $n->message,
+                'url' => $n->url,
+                'is_read' => $n->is_read,
                 'created_at' => $n->created_at->diffForHumans(),
-                'raw_date'   => $n->created_at->toDateString(),
+                'raw_date' => $n->created_at->toDateString(),
             ]),
         ]);
     }

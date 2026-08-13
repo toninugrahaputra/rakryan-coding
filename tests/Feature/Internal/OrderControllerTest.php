@@ -171,6 +171,25 @@ class OrderControllerTest extends TestCase
         $response->assertSessionHasErrors('status');
     }
 
+    public function test_approving_order_notifies_buyer(): void
+    {
+        $product = Product::factory()->create(['title' => 'Laravel Basics']);
+        $buyer = User::factory()->create();
+        $order = Order::factory()->pending()->create([
+            'user_id' => $buyer->id,
+            'product_id' => $product->id,
+        ]);
+
+        $this->actingAs($this->admin)->patch("/internal/orders/{$order->order_number}/approve");
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $buyer->id,
+            'title' => 'Pembelian Berhasil! 🎉',
+            'url' => route('orders.show', $order),
+            'is_read' => false,
+        ]);
+    }
+
     public function test_approving_order_creates_exactly_one_subscription(): void
     {
         $product = Product::factory()->create();

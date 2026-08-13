@@ -9,6 +9,7 @@ interface Notification {
     id: number;
     title: string;
     message: string;
+    url: string | null;
     is_read: boolean;
     created_at: string;
     raw_date: string;
@@ -26,8 +27,27 @@ export default function NotificationsIndex({
         'all' | 'unread' | 'transaction' | 'activity'
     >('all');
 
-    function handleMarkRead(id: number) {
-        router.post(`/notifications/${id}/read`);
+    function handleNotificationClick(notif: Notification) {
+        if (!notif.is_read) {
+            router.post(
+                `/notifications/${notif.id}/read`,
+                {},
+                {
+                    preserveScroll: true,
+                    onFinish: () => {
+                        if (notif.url) {
+                            router.visit(notif.url);
+                        }
+                    },
+                },
+            );
+
+            return;
+        }
+
+        if (notif.url) {
+            router.visit(notif.url);
+        }
     }
 
     function handleMarkAllRead() {
@@ -215,8 +235,9 @@ export default function NotificationsIndex({
                                                 <div
                                                     key={notif.id}
                                                     onClick={() =>
-                                                        !notif.is_read &&
-                                                        handleMarkRead(notif.id)
+                                                        handleNotificationClick(
+                                                            notif,
+                                                        )
                                                     }
                                                     className={`flex cursor-pointer gap-4 rounded-2xl border p-4.5 transition-all ${
                                                         notif.is_read

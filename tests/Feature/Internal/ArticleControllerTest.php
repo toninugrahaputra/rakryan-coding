@@ -68,6 +68,42 @@ class ArticleControllerTest extends TestCase
         $this->assertDatabaseHas('articles', ['slug' => 'cara-menangani-error', 'is_published' => true]);
     }
 
+    public function test_creating_published_article_notifies_all_users(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/articles', [
+            'title' => 'Cara Menangani Error',
+            'slug' => 'cara-menangani-error',
+            'excerpt' => 'Tips singkat menangani error.',
+            'content' => ['time' => 1, 'blocks' => [], 'version' => '2.29.0'],
+            'is_published' => true,
+        ]);
+
+        $response->assertRedirect('/internal/articles');
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->admin->id,
+            'title' => 'Artikel Baru! 📰',
+            'url' => route('articles.show', 'cara-menangani-error'),
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->user->id,
+            'title' => 'Artikel Baru! 📰',
+            'url' => route('articles.show', 'cara-menangani-error'),
+        ]);
+    }
+
+    public function test_creating_unpublished_article_does_not_notify(): void
+    {
+        $this->actingAs($this->admin)->post('/internal/articles', [
+            'title' => 'Cara Menangani Error',
+            'slug' => 'cara-menangani-error',
+            'excerpt' => 'Tips singkat menangani error.',
+            'is_published' => false,
+        ]);
+
+        $this->assertDatabaseCount('notifications', 0);
+    }
+
     public function test_create_requires_unique_slug(): void
     {
         Article::factory()->create(['slug' => 'existing-slug']);

@@ -96,6 +96,72 @@ class ProductTest extends TestCase
         $this->assertCount(3, $product->courses);
     }
 
+    public function test_creating_published_product_notifies_all_users(): void
+    {
+        $course = Course::factory()->create();
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Laravel Basics',
+            'slug' => 'laravel-basics',
+            'type' => 'single',
+            'price' => 99000,
+            'is_published' => true,
+            'is_favourite' => false,
+            'course_ids' => [$course->id],
+        ]);
+
+        $response->assertRedirect('/internal/products');
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->admin->id,
+            'title' => 'Produk Baru Tersedia! 🚀',
+            'url' => route('courses.show', $course),
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->user->id,
+            'title' => 'Produk Baru Tersedia! 🚀',
+            'url' => route('courses.show', $course),
+        ]);
+    }
+
+    public function test_creating_published_bundle_product_notifies_with_catalog_link(): void
+    {
+        $courses = Course::factory()->count(2)->create();
+
+        $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Full Stack Bundle',
+            'slug' => 'full-stack-bundle',
+            'type' => 'bundle',
+            'price' => 299000,
+            'is_published' => true,
+            'is_favourite' => false,
+            'course_ids' => $courses->pluck('id')->toArray(),
+        ]);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->admin->id,
+            'title' => 'Produk Baru Tersedia! 🚀',
+            'url' => route('courses.index'),
+        ]);
+    }
+
+    public function test_creating_unpublished_product_does_not_notify(): void
+    {
+        $course = Course::factory()->create();
+
+        $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Laravel Basics',
+            'slug' => 'laravel-basics',
+            'type' => 'single',
+            'price' => 99000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'course_ids' => [$course->id],
+        ]);
+
+        $this->assertDatabaseCount('notifications', 0);
+    }
+
     public function test_single_product_cannot_have_more_than_one_course(): void
     {
         $courses = Course::factory()->count(2)->create();

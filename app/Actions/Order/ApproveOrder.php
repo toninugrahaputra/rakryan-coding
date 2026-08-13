@@ -2,6 +2,7 @@
 
 namespace App\Actions\Order;
 
+use App\Actions\Notification\NotifyUser;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
@@ -11,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class ApproveOrder
 {
+    public function __construct(private NotifyUser $notifyUser) {}
+
     public function handle(Order $order, User $approvedBy): Order
     {
         if ($order->status !== OrderStatus::Pending) {
@@ -31,6 +34,15 @@ class ApproveOrder
                 ['order_id' => $order->id],
             );
         });
+
+        $order->loadMissing('product', 'user');
+
+        $this->notifyUser->handle(
+            $order->user,
+            'Pembelian Berhasil! 🎉',
+            "Selamat! Kamu berhasil membeli \"{$order->product->title}\". Yuk mulai belajar sekarang!",
+            route('orders.show', $order),
+        );
 
         return $order;
     }
