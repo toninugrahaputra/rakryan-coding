@@ -5,15 +5,16 @@ import {
     Eye,
     Lock,
     Clock,
-    Bookmark,
     Menu,
     Moon,
+    Sun,
     X,
 } from 'lucide-react';
 import { useState } from 'react';
 import EditorJsRenderer from '@/components/editor-js-renderer';
 import ScrollToTopBottom from '@/components/scroll-to-top-bottom';
 import { Button } from '@/components/ui/button';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface Lesson {
     id: number;
@@ -70,6 +71,13 @@ export default function CourseContentShow({
     const [isCompleting, setIsCompleting] = useState(false);
     const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { appearance, updateAppearance } = useAppearance();
+
+    const isDark = appearance === 'dark';
+
+    function toggleTheme() {
+        updateAppearance(isDark ? 'light' : 'dark');
+    }
 
     function handleComplete() {
         setIsCompleting(true);
@@ -150,11 +158,20 @@ export default function CourseContentShow({
                             >
                                 A
                             </button>
-                            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted">
-                                <Bookmark className="h-4 w-4" />
-                            </button>
-                            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted">
-                                <Moon className="h-4 w-4" />
+                            <button
+                                onClick={toggleTheme}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground hover:bg-muted"
+                                title={
+                                    isDark
+                                        ? 'Ganti ke Mode Terang'
+                                        : 'Ganti ke Mode Gelap'
+                                }
+                            >
+                                {isDark ? (
+                                    <Sun className="h-4 w-4" />
+                                ) : (
+                                    <Moon className="h-4 w-4" />
+                                )}
                             </button>
                         </div>
                     </div>
