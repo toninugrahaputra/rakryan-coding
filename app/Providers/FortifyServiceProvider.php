@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\GetPasswordRequirements;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -38,9 +39,19 @@ class FortifyServiceProvider extends ServiceProvider
         {
             public function toResponse($request)
             {
-                return $request->wantsJson()
-                    ? response()->json(['two_factor' => false])
-                    : redirect(route('home'));
+                if ($request->wantsJson()) {
+                    return response()->json(['two_factor' => false]);
+                }
+
+                Inertia::flash('toast', [
+                    'type' => 'success',
+                    'message' => 'Akun berhasil dibuat. Selamat datang di Rakryan Coding!',
+                ]);
+
+                // Guest yang tadinya diarahkan ke login/daftar dari halaman terkunci
+                // (mis. checkout atau modul berbayar) dikembalikan ke sana, sama seperti
+                // perilaku LoginResponse. Beranda hanya dipakai kalau tidak ada tujuan.
+                return redirect()->intended(route('home'));
             }
         });
     }
@@ -90,6 +101,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::registerView(fn () => Inertia::render('auth/register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'passwordRequirements' => app(GetPasswordRequirements::class)->handle(),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));

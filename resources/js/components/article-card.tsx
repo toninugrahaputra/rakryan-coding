@@ -30,7 +30,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
                     </div>
                 )}
 
-                <span className="absolute top-3 left-3 rounded-full bg-background/95 px-2.5 py-0.5 text-[9px] font-bold text-primary uppercase shadow-xs backdrop-blur-xs">
+                <span className="absolute top-3 left-3 rounded-full bg-background/95 px-2.5 py-0.5 text-badge text-primary uppercase shadow-xs backdrop-blur-xs">
                     Artikel
                 </span>
             </div>
@@ -38,24 +38,24 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
             {/* Content Details */}
             <div className="flex flex-1 flex-col justify-between gap-4 p-4.5">
                 <div className="space-y-1.5">
-                    <h3 className="line-clamp-2 text-base leading-snug font-bold text-foreground transition-colors group-hover:text-primary">
+                    <h3 className="line-clamp-2 text-card-title text-foreground transition-colors group-hover:text-primary">
                         {article.title}
                     </h3>
                     {article.excerpt && (
-                        <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                        <p className="line-clamp-2 text-body-sm text-muted-foreground">
                             {article.excerpt}
                         </p>
                     )}
                 </div>
 
-                <span className="text-[10px] font-medium text-muted-foreground">
+                <span className="text-caption font-medium text-muted-foreground">
                     {article.created_at}
                 </span>
             </div>
 
             {/* CTA Footer */}
             <div className="border-t border-border/40 p-4 pt-3.5">
-                <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#725a15]">
+                <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-button text-white shadow-sm transition-colors hover:bg-[#725a15]">
                     Baca artikel
                     <ArrowRight className="h-3.5 w-3.5" />
                 </div>

@@ -89,14 +89,14 @@ export function CourseCard({
 
                 {/* Category badge */}
                 {categoryName && (
-                    <span className="absolute top-3 left-3 rounded-full bg-background/95 px-2.5 py-0.5 text-[9px] font-bold text-primary uppercase shadow-xs backdrop-blur-xs">
+                    <span className="absolute top-3 left-3 rounded-full bg-background/95 px-2.5 py-0.5 text-badge text-primary uppercase shadow-xs backdrop-blur-xs">
                         {categoryName}
                     </span>
                 )}
 
                 {/* Status Dimiliki badge */}
                 {isPurchased && (
-                    <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold text-white uppercase shadow-xs">
+                    <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-badge text-white uppercase shadow-xs">
                         <CheckCircle className="h-3 w-3" />
                         Dimiliki
                     </span>
@@ -106,7 +106,7 @@ export function CourseCard({
             {/* Content Details */}
             <div className="flex flex-1 flex-col justify-between gap-4 p-4.5">
                 <div className="space-y-2">
-                    <h3 className="line-clamp-2 text-base leading-snug font-bold text-foreground transition-colors group-hover:text-primary">
+                    <h3 className="line-clamp-2 text-card-title text-foreground transition-colors group-hover:text-primary">
                         {course.title}
                     </h3>
 
@@ -119,9 +119,13 @@ export function CourseCard({
                                     className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background"
                                 >
                                     {tech.logo_url ? (
-                                        <img src={tech.logo_url} alt={tech.name} className="h-full w-full object-contain p-1" />
+                                        <img
+                                            src={tech.logo_url}
+                                            alt={tech.name}
+                                            className="h-full w-full object-contain p-1"
+                                        />
                                     ) : (
-                                        <span className="text-[10px] font-bold text-muted-foreground">
+                                        <span className="text-badge text-muted-foreground">
                                             {tech.name.charAt(0)}
                                         </span>
                                     )}
@@ -132,33 +136,33 @@ export function CourseCard({
                 </div>
 
                 <div className="space-y-3 border-t border-border/40 pt-3">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between text-caption text-muted-foreground">
                         <span>{course.contents_count} bab</span>
                     </div>
 
                     {/* Price Tag Row */}
                     <div className="flex flex-wrap items-center justify-between gap-1">
                         {isPurchased ? (
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <div className="flex items-center gap-1.5 text-price text-emerald-600 dark:text-emerald-400">
                                 <CheckCircle className="h-4 w-4 shrink-0" />
                                 <span>Siap Belajar</span>
                             </div>
                         ) : isFree ? (
-                            <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <span className="text-price text-emerald-600 dark:text-emerald-400">
                                 Gratis
                             </span>
                         ) : (
                             <>
                                 <div className="flex flex-col">
-                                    <span className="text-xs text-muted-foreground line-through">
+                                    <span className="text-price-strike text-muted-foreground line-through">
                                         {formatPrice(strikePriceVal)}
                                     </span>
-                                    <span className="text-sm font-extrabold text-foreground">
+                                    <span className="text-price text-foreground">
                                         {formatPrice(actualPriceVal)}
                                     </span>
                                 </div>
                                 {discountPercent > 0 && (
-                                    <span className="rounded border border-emerald-500/15 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
+                                    <span className="rounded border border-emerald-500/15 bg-emerald-500/10 px-1.5 py-0.5 text-caption font-bold text-emerald-600">
                                         Hemat {discountPercent}%
                                     </span>
                                 )}
@@ -171,24 +175,24 @@ export function CourseCard({
             {/* CTA Button Footer */}
             <div className="border-t border-border/40 p-4 pt-3.5">
                 {isPurchased ? (
-                    <div className="flex w-full items-center justify-center gap-1 rounded-xl border border-emerald-500/15 bg-emerald-500/10 py-2 text-center text-xs font-bold text-emerald-600">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/15 bg-emerald-500/10 py-2 text-center text-button text-emerald-600">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Lanjutkan Belajar
                     </div>
                 ) : !isLoggedIn ? (
                     // Tampilan saja yang diubah (icon + teks) — flow klik tetap ke halaman detail course seperti semula,
                     // proses login/checkout sesungguhnya baru terjadi di halaman detail course.
-                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-button text-white shadow-sm">
                         <ShoppingCart className="h-3.5 w-3.5" />
                         Beli Sekarang
                     </div>
                 ) : isFree ? (
-                    <div className="flex w-full items-center justify-center gap-1 rounded-xl bg-primary py-2 text-center text-xs font-bold text-primary-foreground hover:bg-primary/95">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-center text-button text-primary-foreground hover:bg-primary/95">
                         <ArrowRight className="h-3.5 w-3.5" />
                         Daftar Gratis
                     </div>
                 ) : (
-                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-sm font-bold text-white shadow-sm hover:bg-[#725a15]">
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B99430] py-2 text-center text-button text-white shadow-sm hover:bg-[#725a15]">
                         <ShoppingCart className="h-3.5 w-3.5" />
                         Beli Sekarang
                     </div>

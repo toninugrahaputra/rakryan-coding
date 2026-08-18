@@ -351,7 +351,7 @@ export default function CourseContentShow({
                                         asChild
                                         className="rounded-xl bg-[#B99430] px-8 py-3.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#725a15]"
                                     >
-                                        <Link href="/login">
+                                        <Link href={`/orders/create?course=${course.slug}`}>
                                             Login untuk melanjutkan belajar ➔
                                         </Link>
                                     </Button>

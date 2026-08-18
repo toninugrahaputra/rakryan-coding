@@ -13,6 +13,75 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    /* ── Skala tipografi ──────────────────────────────────────────────────
+       Setiap token membawa ukuran + tinggi baris + tebal sekaligus, jadi satu
+       peran teks cukup ditulis satu kelas (mis. `text-title`), tidak dirangkai
+       ulang di tiap file. Jangan menambah `font-*` di samping token ini kecuali
+       memang sengaja menyimpang dari skala.
+
+       Judul memakai clamp() supaya mengalir mengikuti lebar layar tanpa rantai
+       breakpoint: nilai minimum tercapai di ~640px, maksimum di ~1280px. */
+
+    /* Judul */
+    --text-display: clamp(2.25rem, 0.75rem + 3.75vw, 3.75rem); /* 36 → 60 */
+    --text-display--line-height: 1.1;
+    --text-display--font-weight: 800;
+    --text-display--letter-spacing: -0.025em;
+
+    --text-title: clamp(1.875rem, 1.5rem + 0.9375vw, 2.25rem); /* 30 → 36 */
+    --text-title--line-height: 1.2;
+    --text-title--font-weight: 800;
+    --text-title--letter-spacing: -0.025em;
+
+    --text-subtitle: 1.25rem; /* 20 */
+    --text-subtitle--line-height: 1.4;
+    --text-subtitle--font-weight: 700;
+
+    --text-card-title: 1rem; /* 16 */
+    --text-card-title--line-height: 1.4;
+    --text-card-title--font-weight: 700;
+
+    /* Deskripsi */
+    --text-lead: clamp(1rem, 0.875rem + 0.3125vw, 1.125rem); /* 16 → 18 */
+    --text-lead--line-height: 1.7;
+
+    --text-body: 1rem; /* 16 */
+    --text-body--line-height: 1.6;
+
+    --text-body-sm: 0.875rem; /* 14 */
+    --text-body-sm--line-height: 1.6;
+
+    --text-caption: 0.75rem; /* 12 */
+    --text-caption--line-height: 1.5;
+
+    /* Label & komponen */
+    --text-badge: 0.625rem; /* 10 — label mikro di atas thumbnail */
+    --text-badge--line-height: 1.2;
+    --text-badge--font-weight: 700;
+    --text-badge--letter-spacing: 0.04em;
+
+    --text-eyebrow: 0.75rem; /* 12 */
+    --text-eyebrow--line-height: 1.2;
+    --text-eyebrow--font-weight: 700;
+    --text-eyebrow--letter-spacing: 0.08em;
+
+    --text-button: 0.875rem; /* 14 */
+    --text-button--line-height: 1.2;
+    --text-button--font-weight: 700;
+
+    --text-price: 1.125rem; /* 18 */
+    --text-price--line-height: 1.2;
+    --text-price--font-weight: 800;
+
+    /* Varian ringkas untuk baris padat seperti hasil pencarian, supaya harga
+       tidak jadi lebih besar dari judul barisnya sendiri. */
+    --text-price-sm: 0.875rem; /* 14 */
+    --text-price-sm--line-height: 1.2;
+    --text-price-sm--font-weight: 800;
+
+    --text-price-strike: 0.875rem; /* 14 */
+    --text-price-strike--line-height: 1.2;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);

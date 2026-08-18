@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Actions\Fortify\GetPasswordRequirements;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -44,15 +45,35 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null,
-        );
+        // Aturannya dirakit dari GetPasswordRequirements supaya ambang yang divalidasi
+        // di sini dan yang ditampilkan di halaman auth berasal dari satu definisi.
+        Password::defaults(function (): Password {
+            $requirements = app(GetPasswordRequirements::class)->handle();
+
+            $rule = Password::min($requirements['min']);
+
+            if ($requirements['letters']) {
+                $rule->letters();
+            }
+
+            if ($requirements['mixedCase']) {
+                $rule->mixedCase();
+            }
+
+            if ($requirements['numbers']) {
+                $rule->numbers();
+            }
+
+            if ($requirements['symbols']) {
+                $rule->symbols();
+            }
+
+            if ($requirements['uncompromised']) {
+                $rule->uncompromised();
+            }
+
+            return $rule;
+        });
     }
 
     /**

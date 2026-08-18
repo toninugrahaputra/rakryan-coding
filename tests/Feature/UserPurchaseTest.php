@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Voucher;
 use App\Services\XenditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Role;
@@ -253,6 +254,53 @@ class UserPurchaseTest extends TestCase
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->where('orders.data.0.voucher_usage.voucher.code', 'NGODING26')
             ->where('orders.data.0.channel_name', 'Xendit Gateway')
+        );
+    }
+
+    public function test_orders_index_exposes_course_cover_as_a_full_url(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create([
+            'is_published' => true,
+            'thumbnail' => 'courses/cover.jpg',
+        ]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $this->actingAs($user)->post(route('orders.store'), [
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(
+                'orders.data.0.product.courses.0.thumbnail',
+                Storage::disk('public')->url('courses/cover.jpg'),
+            )
+        );
+    }
+
+    public function test_orders_index_leaves_cover_null_when_course_has_no_thumbnail(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create([
+            'is_published' => true,
+            'thumbnail' => null,
+        ]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        $this->actingAs($user)->post(route('orders.store'), [
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('orders.data.0.product.courses.0.thumbnail', null)
         );
     }
 

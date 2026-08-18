@@ -181,14 +181,12 @@ export default function Welcome({
                                     animation="fade-up"
                                     className="space-y-8 lg:col-span-6"
                                 >
-                                    <h1 className="text-left text-4xl leading-[1.1] font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                                        Belajar ngoding <br />
-                                        dari nol sampai <br />
+                                    <h1 className="text-center text-display text-balance text-foreground lg:text-left">
+                                        Belajar ngoding dari nol sampai{' '}
                                         <span className="relative inline-block text-primary">
                                             bikin project
                                             <span className="absolute right-0 bottom-2 left-0 -z-10 h-3 rounded-sm bg-[#eab308]/30" />
                                         </span>{' '}
-                                        <br />
                                         sendiri.
                                     </h1>
 
@@ -201,7 +199,7 @@ export default function Welcome({
                                         />
                                     </div>
 
-                                    <p className="max-w-2xl text-left text-base leading-relaxed text-muted-foreground sm:text-lg">
+                                    <p className="mx-auto max-w-2xl text-center text-lead text-muted-foreground lg:mx-0 lg:text-left">
                                         Bukan sekadar teori. Kamu bisa langsung
                                         praktik bikin project Web, Mobile, dan
                                         Game, lewat studi kasus nyata. Materi
@@ -210,11 +208,11 @@ export default function Welcome({
                                     </p>
 
                                     {/* Action Button */}
-                                    <div className="flex flex-wrap items-center gap-4">
+                                    <div className="flex flex-wrap items-center justify-center gap-4 lg:justify-start">
                                         {auth.user ? (
                                             <Link
                                                 href="/dashboard"
-                                                className="group flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-lg hover:shadow-primary/20 active:translate-y-0 active:shadow-md"
+                                                className="group flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-button text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-lg hover:shadow-primary/20 active:translate-y-0 active:shadow-md"
                                             >
                                                 Lanjutkan Belajar Anda
                                                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -222,7 +220,7 @@ export default function Welcome({
                                         ) : (
                                             <Link
                                                 href="/courses"
-                                                className="group flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-lg hover:shadow-primary/20 active:translate-y-0 active:shadow-md"
+                                                className="group flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-button text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-lg hover:shadow-primary/20 active:translate-y-0 active:shadow-md"
                                             >
                                                 Lihat Semua Course
                                                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -257,17 +255,17 @@ export default function Welcome({
                                 <ScrollReveal animation="scale-in">
                                     <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md md:p-10">
                                         <div className="pointer-events-none absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl" />
-                                        <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:text-left">
-                                            <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+                                        <div className="flex flex-col items-center gap-6 lg:flex-row lg:justify-between lg:text-left">
+                                            <div className="flex flex-col items-center gap-4 lg:flex-row lg:gap-6">
                                                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eab308]/20 text-[#eab308] shadow-inner">
                                                     <Ticket className="h-7 w-7" />
                                                 </div>
-                                                <div className="space-y-1.5 text-center sm:text-left">
-                                                    <p className="text-lg font-black tracking-tight text-white uppercase sm:text-xl md:text-2xl">
+                                                <div className="space-y-1.5 text-center lg:text-left">
+                                                    <p className="text-subtitle text-white uppercase">
                                                         Voucher aktif ini
                                                         spesial buat kamu
                                                     </p>
-                                                    <p className="text-xs font-extrabold tracking-wide text-[#eab308] sm:text-sm md:text-base">
+                                                    <p className="text-body-sm font-bold text-[#eab308]">
                                                         {formatVoucherDiscount(
                                                             vouchers[0],
                                                         )}
@@ -284,7 +282,7 @@ export default function Welcome({
                                                         vouchers[0].code,
                                                     )
                                                 }
-                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-sm font-black text-slate-950 uppercase shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
+                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-button text-slate-950 uppercase shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
                                             >
                                                 {copiedCode === vouchers[0].code
                                                     ? 'Tersalin!'
@@ -306,16 +304,16 @@ export default function Welcome({
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
                             <ScrollReveal
                                 animation="fade-up"
-                                className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                                className="mb-12 flex flex-col items-center gap-6 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left"
                             >
                                 <div>
-                                    <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wider text-primary uppercase">
+                                    <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-eyebrow text-primary uppercase">
                                         COURSE PILIHAN
                                     </span>
-                                    <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                                    <h2 className="text-title text-foreground">
                                         Course yang langsung menghasilkan karya
                                     </h2>
-                                    <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                    <p className="mx-auto mt-3 max-w-2xl text-body text-muted-foreground lg:mx-0">
                                         Tiap course dirancang dari studi kasus
                                         nyata, dikerjain end-to-end sampai
                                         project benar-benar jadi — siap kamu
@@ -326,7 +324,7 @@ export default function Welcome({
 
                                 <Link
                                     href="/courses"
-                                    className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary transition-colors hover:text-primary/80"
+                                    className="group inline-flex shrink-0 items-center gap-1.5 text-button text-primary transition-colors hover:text-primary/80"
                                 >
                                     Lihat lainnya
                                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -334,7 +332,7 @@ export default function Welcome({
                             </ScrollReveal>
 
                             {featuredCourses.length === 0 ? (
-                                <p className="py-10 text-center text-sm text-muted-foreground">
+                                <p className="py-10 text-center text-body-sm text-muted-foreground">
                                     Belum ada studi kasus saat ini.
                                 </p>
                             ) : (
@@ -371,17 +369,17 @@ export default function Welcome({
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
                             <ScrollReveal
                                 animation="fade-up"
-                                className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                                className="mb-12 flex flex-col items-center gap-6 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left"
                             >
                                 <div>
-                                    <span className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wider text-primary uppercase">
+                                    <span className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-eyebrow text-primary uppercase">
                                         <Newspaper className="h-3 w-3" />
                                         ARTIKEL
                                     </span>
-                                    <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                                    <h2 className="text-title text-foreground">
                                         Belajar dari artikel juga bisa
                                     </h2>
-                                    <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
+                                    <p className="mx-auto mt-3 max-w-xl text-body text-muted-foreground lg:mx-0">
                                         Tips, tutorial singkat, sampai cara
                                         menangani error yang sering ditemui pas
                                         ngoding.
@@ -390,7 +388,7 @@ export default function Welcome({
 
                                 <Link
                                     href="/articles"
-                                    className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary transition-colors hover:text-primary/80"
+                                    className="group inline-flex shrink-0 items-center gap-1.5 text-button text-primary transition-colors hover:text-primary/80"
                                 >
                                     Lihat lainnya
                                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -398,7 +396,7 @@ export default function Welcome({
                             </ScrollReveal>
 
                             {articles.length === 0 ? (
-                                <p className="py-10 text-center text-sm text-muted-foreground">
+                                <p className="py-10 text-center text-body-sm text-muted-foreground">
                                     Belum ada artikel saat ini.
                                 </p>
                             ) : (
@@ -428,17 +426,17 @@ export default function Welcome({
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
                             <ScrollReveal
                                 animation="fade-up"
-                                className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                                className="mb-12 flex flex-col items-center gap-6 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left"
                             >
                                 <div>
-                                    <span className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wider text-primary uppercase">
+                                    <span className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-eyebrow text-primary uppercase">
                                         <ImageIcon className="h-3 w-3" />
                                         HASIL PROJECT
                                     </span>
-                                    <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                                    <h2 className="text-title text-foreground">
                                         Galeri hasil project
                                     </h2>
-                                    <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
+                                    <p className="mx-auto mt-3 max-w-xl text-body text-muted-foreground lg:mx-0">
                                         Contoh nyata project yang udah jadi dari
                                         studi kasus di Rakryan Coding.
                                     </p>
@@ -470,7 +468,7 @@ export default function Welcome({
                             </ScrollReveal>
 
                             {projectGallery.length === 0 ? (
-                                <p className="py-10 text-center text-sm text-muted-foreground">
+                                <p className="py-10 text-center text-body-sm text-muted-foreground">
                                     Belum ada galeri hasil project saat ini.
                                 </p>
                             ) : (
@@ -508,11 +506,11 @@ export default function Welcome({
                                                 />
                                                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 via-black/0 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                                     {item.course_title && (
-                                                        <span className="line-clamp-1 text-xs font-bold text-white">
+                                                        <span className="line-clamp-1 text-caption font-bold text-white">
                                                             {item.course_title}
                                                         </span>
                                                     )}
-                                                    <span className="mt-0.5 text-[10px] font-medium text-white/70">
+                                                    <span className="mt-0.5 text-caption font-medium text-white/70">
                                                         Lihat course →
                                                     </span>
                                                 </div>
@@ -534,10 +532,10 @@ export default function Welcome({
                                 animation="fade-up"
                                 className="mb-14 text-center"
                             >
-                                <span className="mb-2.5 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wider text-primary uppercase">
+                                <span className="mb-2.5 inline-block rounded-full bg-primary/10 px-3 py-1 text-eyebrow text-primary uppercase">
                                     FAQ
                                 </span>
-                                <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                                <h2 className="text-title text-foreground">
                                     Pertanyaan yang sering ditanya
                                 </h2>
                             </ScrollReveal>
@@ -559,7 +557,7 @@ export default function Welcome({
                                         >
                                             <button
                                                 onClick={() => toggleFaq(idx)}
-                                                className="flex w-full items-center justify-between gap-4 p-5 text-left text-sm font-bold transition-colors hover:bg-muted/10 sm:text-base"
+                                                className="flex w-full items-center justify-between gap-4 p-5 text-left text-body font-bold transition-colors hover:bg-muted/10"
                                             >
                                                 <span>{q}</span>
                                                 <ChevronDown
@@ -571,7 +569,7 @@ export default function Welcome({
                                                 className={`grid transition-all duration-300 ease-out ${activeFaq === idx ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                                             >
                                                 <div className="overflow-hidden">
-                                                    <div className="border-t border-border/20 bg-muted/5 p-5 pt-0 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                                                    <div className="border-t border-border/20 bg-muted/5 p-5 pt-0 text-body-sm text-muted-foreground">
                                                         {a}
                                                     </div>
                                                 </div>

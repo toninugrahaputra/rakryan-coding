@@ -1,8 +1,11 @@
 import { Form, Head } from '@inertiajs/react';
+import { useState } from 'react';
 import { redirect as googleRedirect } from '@/actions/App/Http/Controllers/Auth/GoogleAuthController';
 import GoogleIcon from '@/components/google-icon';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { PasswordRequirements } from '@/components/password-requirements';
+import type { PasswordRequirementsData } from '@/components/password-requirements';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +17,17 @@ import { store } from '@/routes/register';
 
 type Props = {
     passwordRules: string;
+    passwordRequirements: PasswordRequirementsData;
 };
 
-export default function Register({ passwordRules }: Props) {
+export default function Register({
+    passwordRules,
+    passwordRequirements,
+}: Props) {
+    // Input dibiarkan tak terkontrol supaya `resetOnSuccess` milik <Form> tetap bekerja;
+    // state ini hanya melacak nilainya untuk kebutuhan daftar ketentuan.
+    const [password, setPassword] = useState('');
+
     return (
         <>
             <Head title="Register" />
@@ -71,8 +82,18 @@ export default function Register({ passwordRules }: Props) {
                                     name="password"
                                     placeholder="Password"
                                     passwordrules={passwordRules}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    aria-describedby="password-requirements"
                                 />
                                 <InputError message={errors.password} />
+                                <PasswordRequirements
+                                    id="password-requirements"
+                                    requirements={passwordRequirements}
+                                    value={password}
+                                    className="mt-1"
+                                />
                             </div>
 
                             <div className="grid gap-2">

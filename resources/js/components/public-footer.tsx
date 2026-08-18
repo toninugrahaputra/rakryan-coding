@@ -19,18 +19,20 @@ export function PublicFooter() {
         },
         {
             title: 'Rakryan',
-            items: [
-                { label: 'Tentang kami', href: '/#tentang' },
-            ],
+            items: [{ label: 'Tentang kami', href: '/#tentang' }],
         },
     ];
 
     return (
         <footer className="border-t border-border/50 bg-[#111116] py-14 text-[#b3b3ba]">
             <div className="mx-auto max-w-7xl space-y-12 px-6 lg:px-8">
-                <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+                {/* 5 kolom baru dipakai mulai xl (1280px). Sebelumnya lg (1024px), yang
+                    persis selebar tablet portrait — di situ tiap kolom cuma ±163px sehingga
+                    alamat email meluber. Di md–lg dipakai 3 kolom: blok brand mengambil satu
+                    baris penuh, lalu tiga kolom tautan berjajar dengan ruang yang lega. */}
+                <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
                     {/* Brand / Logo */}
-                    <div className="space-y-6 sm:col-span-2 lg:col-span-2">
+                    <div className="space-y-6 sm:col-span-2 md:col-span-3 xl:col-span-2 xl:pr-6">
                         <Link
                             href="/"
                             className="flex items-center transition-opacity hover:opacity-85"
@@ -41,7 +43,7 @@ export function PublicFooter() {
                                 className="h-14 w-auto sm:h-16"
                             />
                         </Link>
-                        <p className="max-w-xs text-base leading-relaxed font-medium text-white">
+                        <p className="max-w-xs text-body font-medium text-white">
                             Platform belajar ngoding teks lengkap untuk semua
                             kalangan di seluruh Indonesia. Materi terstruktur,
                             dirancang biar kamu siap kerja atau bikin project
@@ -88,7 +90,7 @@ export function PublicFooter() {
                     {/* Columns */}
                     {sections.map((sec, idx) => (
                         <div key={idx} className="space-y-4">
-                            <h4 className="text-xl font-bold text-white">
+                            <h4 className="text-subtitle text-white">
                                 {sec.title}
                             </h4>
                             <ul className="flex flex-col gap-2.5">
@@ -97,14 +99,14 @@ export function PublicFooter() {
                                         {item.href.startsWith('/#') ? (
                                             <a
                                                 href={item.href}
-                                                className="text-base font-medium text-white transition-colors hover:text-primary"
+                                                className="text-body font-medium text-white transition-colors hover:text-primary"
                                             >
                                                 {item.label}
                                             </a>
                                         ) : (
                                             <Link
                                                 href={item.href}
-                                                className="text-base font-medium text-white transition-colors hover:text-primary"
+                                                className="text-body font-medium text-white transition-colors hover:text-primary"
                                             >
                                                 {item.label}
                                             </Link>
@@ -115,28 +117,32 @@ export function PublicFooter() {
                         </div>
                     ))}
 
-                    {/* Kontak */}
-                    <div className="space-y-4">
-                        <h4 className="text-xl font-bold text-white">
-                            Kontak
-                        </h4>
+                    {/* Kontak — diberi dua kolom karena alamat emailnya paling panjang
+                        di antara semua tautan footer. */}
+                    <div className="space-y-4 xl:col-span-2">
+                        <h4 className="text-subtitle text-white">Kontak</h4>
                         <ul className="flex flex-col gap-2.5">
                             <li>
                                 <a
                                     href="tel:+6285126464454"
-                                    className="flex items-center gap-2 text-base font-medium text-white transition-colors hover:text-primary"
+                                    className="flex items-start gap-2 text-body font-medium text-white transition-colors hover:text-primary"
                                 >
-                                    <Phone className="h-4 w-4 shrink-0" />
-                                    +62 851-2646-4454
+                                    <Phone className="mt-1 h-4 w-4 shrink-0" />
+                                    <span>+62 851-2646-4454</span>
                                 </a>
                             </li>
                             <li>
+                                {/* `break-words` hanya memecah kalau alamatnya benar-benar
+                                    tidak muat sebaris — beda dengan `break-all` yang memotong
+                                    di tengah kata meski kurang beberapa piksel saja. */}
                                 <a
                                     href="mailto:hello@rakryancoding.id"
-                                    className="flex items-center gap-2 text-base font-medium text-white transition-colors hover:text-primary"
+                                    className="flex items-start gap-2 text-body font-medium text-white transition-colors hover:text-primary"
                                 >
-                                    <Mail className="h-4 w-4 shrink-0" />
-                                    hello@rakryancoding.id
+                                    <Mail className="mt-1 h-4 w-4 shrink-0" />
+                                    <span className="break-words">
+                                        hello@rakryancoding.id
+                                    </span>
                                 </a>
                             </li>
                         </ul>
@@ -144,7 +150,7 @@ export function PublicFooter() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="border-t border-white/5 pt-8 text-center text-xs font-medium text-slate-500">
+                <div className="border-t border-white/5 pt-8 text-center text-caption font-medium text-slate-500">
                     <span>
                         &copy; {year} Rakryan Coding · Dibuat untuk calon
                         developer di seluruh Indonesia

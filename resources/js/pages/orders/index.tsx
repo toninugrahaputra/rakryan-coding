@@ -29,6 +29,7 @@ interface Order {
             id: number;
             title: string;
             slug: string;
+            thumbnail: string | null;
         }>;
     };
 }
@@ -277,10 +278,28 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
 
                                     {/* Card Body: Details & Pricing */}
                                     <div className="flex gap-4">
-                                        {/* Course Icon Placeholder */}
-                                        <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-primary/5 text-xs font-bold text-[#eab308]">
-                                            &lt;/&gt;
-                                        </div>
+                                        {/* Cover course pertama pada paket. Kalau course-nya
+                                            belum punya gambar, kotak lama tetap dipakai supaya
+                                            tinggi kartu tidak berubah-ubah. */}
+                                        {order.product?.courses?.[0]
+                                            ?.thumbnail ? (
+                                            <img
+                                                src={
+                                                    order.product.courses[0]
+                                                        .thumbnail
+                                                }
+                                                alt={
+                                                    order.product.courses[0]
+                                                        .title
+                                                }
+                                                loading="lazy"
+                                                className="h-14 w-20 shrink-0 rounded-lg border border-border/50 object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-primary/5 text-xs font-bold text-[#eab308]">
+                                                &lt;/&gt;
+                                            </div>
+                                        )}
                                         <div className="min-w-0 flex-1">
                                             <span className="block text-[9px] font-bold tracking-wider text-primary uppercase">
                                                 PAKET •{' '}
@@ -299,8 +318,7 @@ export default function OrdersIndex({ orders }: OrdersIndexProps) {
                                                         {' '}
                                                         • voucher{' '}
                                                         {
-                                                            order
-                                                                .voucher_usage
+                                                            order.voucher_usage
                                                                 .voucher.code
                                                         }
                                                     </>

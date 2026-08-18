@@ -1,28 +1,26 @@
 import { Link } from '@inertiajs/react';
-import { Bell, LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import { LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
-import { index as notificationsIndex } from '@/routes/notifications';
 import { edit as profileEdit } from '@/routes/profile';
 import { edit as securityEdit } from '@/routes/security';
 import type { User } from '@/types';
 
 type Props = {
     user: User;
-    unreadNotificationsCount?: number;
     onLogoutClick: () => void;
 };
 
-/** Isi dropdown akun di navbar publik — dipakai di dalam DropdownMenuContent. Dashboard/Pesanan/Voucher sudah tampil sebagai tombol langsung di navbar, jadi tidak diulang di sini. */
-export function PublicUserMenu({
-    user,
-    unreadNotificationsCount = 0,
-    onLogoutClick,
-}: Props) {
+/**
+ * Isi dropdown akun di navbar publik — dipakai di dalam DropdownMenuContent.
+ * Dashboard/Pesanan/Voucher sudah tampil sebagai menu langsung di navbar, dan
+ * Notifikasi punya ikon loncengnya sendiri di sana, jadi tidak diulang di sini.
+ */
+export function PublicUserMenu({ user, onLogoutClick }: Props) {
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
@@ -32,17 +30,6 @@ export function PublicUserMenu({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem asChild>
-                <Link href={notificationsIndex()} className="cursor-pointer">
-                    <Bell className="h-4 w-4" />
-                    Notifikasi
-                    {unreadNotificationsCount > 0 && (
-                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                            {unreadNotificationsCount}
-                        </span>
-                    )}
-                </Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
                 <Link href={profileEdit()} className="cursor-pointer">
                     <UserRound className="h-4 w-4" />

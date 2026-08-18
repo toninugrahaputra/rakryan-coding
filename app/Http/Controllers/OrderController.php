@@ -153,7 +153,16 @@ class OrderController extends Controller
         $orders = Order::where('user_id', $request->user()->id)
             ->with(['product.courses', 'voucherUsage.voucher'])
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->paginate(10)
+            ->through(function (Order $order): Order {
+                $order->product?->courses->each(function (Course $course): void {
+                    $course->thumbnail = $course->thumbnail
+                        ? Storage::disk('public')->url($course->thumbnail)
+                        : null;
+                });
+
+                return $order;
+            });
 
         return Inertia::render('orders/index', [
             'orders' => $orders,

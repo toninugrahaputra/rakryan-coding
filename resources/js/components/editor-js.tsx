@@ -36,6 +36,9 @@ import {
     Undo2,
 } from 'lucide-react';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 hljs.registerLanguage('javascript', javascript);
 hljs.registerLanguage('typescript', typescript);
@@ -772,6 +775,8 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
 
+    /** File Word yang menunggu konfirmasi sebelum menimpa isi editor. */
+    const [pendingWordFile, setPendingWordFile] = useState<File | null>(null);
     const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
     const [activeBlockType, setActiveBlockType] = useState('paragraph');
     const [activeListStyle, setActiveListStyle] = useState('unordered');
@@ -864,17 +869,36 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
         },
     }));
 
-    // ── Word import ───────────────────────────────────────────────────────
+    // Editor kosong → impor langsung. Sudah ada isinya → file ditahan dulu dan
+    // konfirmasinya lewat Dialog. Berbeda dengan confirm() bawaan yang sinkron,
+    // alurnya harus dipecah jadi dua tahap.
     async function handleWordImport(file: File) {
         const editor = editorRef.current;
-        if (!editor) return;
+
+        if (!editor) {
+            return;
+        }
 
         const existing = await editor.save();
-        if (existing.blocks.length > 0 && !confirm('Konten editor saat ini akan diganti dengan isi file Word. Lanjutkan?')) {
+
+        if (existing.blocks.length > 0) {
+            setPendingWordFile(file);
+
+            return;
+        }
+
+        await runWordImport(file);
+    }
+
+    async function runWordImport(file: File) {
+        const editor = editorRef.current;
+
+        if (!editor) {
             return;
         }
 
         setIsImporting(true);
+
         try {
             const mammoth = await import('mammoth');
             const arrayBuffer = await file.arrayBuffer();
@@ -907,14 +931,15 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
 
             const blocks = await htmlToEditorBlocks(html, imageHandler);
             if (!blocks.length) {
-                alert('Tidak ada konten yang dapat diimpor dari file ini.');
+                toast.error('Tidak ada konten yang dapat diimpor dari file ini.');
                 return;
             }
             await editor.render({ time: Date.now(), blocks, version: '2.31.6' });
             const data = await editor.save();
             onChangeRef.current?.(data);
+            toast.success('Konten dari file Word berhasil diimpor.');
         } catch {
-            alert('Gagal mengimpor file Word. Pastikan file berformat .docx.');
+            toast.error('Gagal mengimpor file Word. Pastikan file berformat .docx.');
         } finally {
             setIsImporting(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1324,6 +1349,43 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
                     />
                 </div>
             )}
+
+            {/* Konfirmasi timpa isi editor sebelum impor Word */}
+            <Dialog
+                open={pendingWordFile !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingWordFile(null);
+                        // Input direset supaya file yang sama bisa dipilih ulang; tanpa ini
+                        // browser tidak memicu onChange untuk file yang identik.
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Timpa konten editor?</DialogTitle>
+                        <DialogDescription>
+                            Seluruh isi editor saat ini akan diganti dengan isi file Word{' '}
+                            <span className="font-medium text-foreground">{pendingWordFile?.name}</span>. Tindakan ini tidak bisa dibatalkan.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPendingWordFile(null)}>
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const file = pendingWordFile;
+                                setPendingWordFile(null);
+                                if (file) void runWordImport(file);
+                            }}
+                        >
+                            Ya, timpa
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 });

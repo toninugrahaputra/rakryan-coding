@@ -370,9 +370,9 @@ function CourseDetailContent() {
                                         Lanjutkan Belajar
                                     </Link>
                                 ) : !isLoggedIn ? (
-                                    // Guest: tampilan tombol "Beli Sekarang", tapi flow tetap arahkan ke halaman Login (tidak diubah)
+                                    // Guest: arahkan ke halaman checkout agar setelah login diarahkan kembali ke sini (via url.intended)
                                     <Link
-                                        href="/login"
+                                        href={`/orders/create?course=${course.slug}`}
                                         className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
                                     >
                                         <ShoppingCart className="h-4 w-4" />
