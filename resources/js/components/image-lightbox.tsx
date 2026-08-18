@@ -16,8 +16,8 @@ function LightboxFigure({ image }: { image: LightboxImage }) {
     const [magnified, setMagnified] = useState(false);
 
     return (
-        <figure className="flex max-h-[85vh] flex-col">
-            <div className="flex-1 overflow-auto p-3 pt-10">
+        <figure className="flex h-[85vh] flex-col">
+            <div className="min-h-0 flex-1 overflow-auto p-3 pt-10">
                 <img
                     src={image.src}
                     alt={image.caption ?? ''}
@@ -26,7 +26,7 @@ function LightboxFigure({ image }: { image: LightboxImage }) {
                         'mx-auto rounded-md',
                         magnified
                             ? 'w-[220%] max-w-none cursor-zoom-out sm:w-[150%]'
-                            : 'max-h-[70vh] w-auto max-w-full cursor-zoom-in object-contain',
+                            : 'h-full w-full cursor-zoom-in object-contain',
                     )}
                 />
             </div>

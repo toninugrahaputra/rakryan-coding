@@ -116,13 +116,13 @@ export function CourseCard({
                                 <span
                                     key={tech.id}
                                     title={tech.name}
-                                    className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted"
                                 >
                                     {tech.logo_url ? (
                                         <img
                                             src={tech.logo_url}
                                             alt={tech.name}
-                                            className="h-full w-full object-contain p-1"
+                                            className="h-full w-full object-contain p-1.5"
                                         />
                                     ) : (
                                         <span className="text-badge text-muted-foreground">
