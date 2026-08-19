@@ -75,6 +75,22 @@ class SeoMetaTest extends TestCase
         $articleResponse->assertSee('content="Kumpulan artikel, tips, dan tutorial singkat', false);
     }
 
+    public function test_google_site_verification_tag_is_absent_by_default(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertDontSee('name="google-site-verification"', false);
+    }
+
+    public function test_google_site_verification_tag_is_rendered_when_configured(): void
+    {
+        config(['services.google.site_verification' => 'test-verification-code']);
+
+        $response = $this->get('/');
+
+        $response->assertSee('name="google-site-verification" content="test-verification-code"', false);
+    }
+
     public function test_seo_meta_does_not_leak_between_requests(): void
     {
         $course = Course::factory()->create([
