@@ -4,6 +4,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventBackHistoryCache;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             PreventBackHistoryCache::class,
             SecurityHeaders::class,
+            TrackPageView::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BarChart3,
     BookOpen,
     Bell,
     ChevronDown,
@@ -60,6 +61,7 @@ import { index as productsIndex } from '@/routes/internal/products';
 import { profile as settingsProfile } from '@/routes/internal/settings';
 import { index as technologiesIndex } from '@/routes/internal/technologies';
 import { index as usersIndex } from '@/routes/internal/users';
+import { index as visitsIndex } from '@/routes/internal/visits';
 import { index as vouchersIndex } from '@/routes/internal/vouchers';
 import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
@@ -143,6 +145,17 @@ export function AppAdminHeader({ breadcrumbs = [] }: Props) {
     };
 
     const navGroups: NavGroup[] = [
+        {
+            title: 'Analitik',
+            items: [
+                {
+                    title: 'Kunjungan',
+                    href: visitsIndex.url(),
+                    icon: BarChart3,
+                    matchPrefix: true,
+                },
+            ],
+        },
         {
             title: 'Konten',
             items: [

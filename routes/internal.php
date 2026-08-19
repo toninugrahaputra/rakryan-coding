@@ -10,6 +10,7 @@ use App\Http\Controllers\Internal\OrderController;
 use App\Http\Controllers\Internal\ProductController;
 use App\Http\Controllers\Internal\TechnologyController;
 use App\Http\Controllers\Internal\UserController;
+use App\Http\Controllers\Internal\VisitController;
 use App\Http\Controllers\Internal\VoucherController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -22,6 +23,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->name('internal.')
     ->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // Visits
+        Route::get('visits', [VisitController::class, 'index'])->name('visits.index');
 
         // Users
         Route::get('users', [UserController::class, 'index'])->name('users.index');
