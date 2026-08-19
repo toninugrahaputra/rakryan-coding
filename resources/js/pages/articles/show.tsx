@@ -1,9 +1,10 @@
 import type { OutputData } from '@editorjs/editorjs';
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ArrowLeft, Newspaper } from 'lucide-react';
 import EditorJsRenderer from '@/components/editor-js-renderer';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
+import { Seo } from '@/components/seo';
 
 interface ArticleShowProps {
     article: {
@@ -14,17 +15,41 @@ interface ArticleShowProps {
         content: OutputData | null;
         thumbnail: string | null;
         created_at: string;
+        published_at_iso: string;
+        updated_at_iso: string;
     };
 }
 
 export default function ArticleShow({ article }: ArticleShowProps) {
+    const articleJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: article.title,
+        description: article.excerpt ?? undefined,
+        image: article.thumbnail ?? undefined,
+        datePublished: article.published_at_iso,
+        dateModified: article.updated_at_iso,
+        author: {
+            '@type': 'Organization',
+            name: 'Rakryan Coding',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'Rakryan Coding',
+        },
+    };
+
     return (
         <>
-            <Head title={article.title}>
-                {article.excerpt && (
-                    <meta name="description" content={article.excerpt} />
-                )}
-            </Head>
+            <Seo
+                title={article.title}
+                description={
+                    article.excerpt ?? `Baca artikel "${article.title}" di Rakryan Coding.`
+                }
+                image={article.thumbnail}
+                type="article"
+                jsonLd={articleJsonLd}
+            />
 
             <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
                 <PublicNavbar />

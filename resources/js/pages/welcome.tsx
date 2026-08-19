@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     ArrowRight,
     ChevronDown,
@@ -15,6 +15,7 @@ import { CourseCard } from '@/components/course-card';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
+import { Seo } from '@/components/seo';
 import { WhatsappFloatButton } from '@/components/whatsapp-float-button';
 import { useClipboard } from '@/hooks/use-clipboard';
 
@@ -154,12 +155,10 @@ export default function Welcome({
 
     return (
         <>
-            <Head title="Platform Belajar Coding">
-                <meta
-                    name="description"
-                    content="Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri."
-                />
-            </Head>
+            <Seo
+                title="Platform Belajar Coding"
+                description="Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri."
+            />
 
             <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
                 {/* Navbar */}

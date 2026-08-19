@@ -19,6 +19,8 @@ class ArticleShowResource extends JsonResource
             'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
             'is_published' => $this->is_published,
             'created_at' => $this->created_at->format('d-m-Y'),
+            'published_at_iso' => $this->created_at->toIso8601String(),
+            'updated_at_iso' => $this->updated_at->toIso8601String(),
         ];
     }
 }

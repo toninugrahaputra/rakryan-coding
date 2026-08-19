@@ -1,2 +1,11 @@
 User-agent: *
-Disallow:
+Disallow: /internal/
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /settings/
+Disallow: /notifications
+Disallow: /vouchers
+Disallow: /auth/
+Disallow: /search/
+
+Sitemap: https://rcoding.rakryan.id/sitemap.xml

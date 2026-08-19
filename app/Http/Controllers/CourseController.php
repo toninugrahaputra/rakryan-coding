@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Actions\Category\GetCategoriesWithCourseCount;
 use App\Actions\Course\GetCourseBySlug;
 use App\Actions\Course\GetPaginatedPublishedCourses;
+use App\Actions\Seo\ShareSeoMeta;
 use App\Actions\User\GetPurchasedCourses;
 use App\Actions\User\HasPurchasedCourse;
 use App\Http\Resources\Course\CourseListResource;
 use App\Http\Resources\Course\CourseShowResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +27,11 @@ class CourseController extends Controller
             $purchased = app(GetPurchasedCourses::class)->handle($user);
             $purchasedCourseIds = $purchased->pluck('id')->toArray();
         }
+
+        app(ShareSeoMeta::class)->handle(
+            'Katalog Courses',
+            'Jelajahi semua course coding dan teknologi digital tersedia di Rakryan Coding.',
+        );
 
         return Inertia::render('courses/index', [
             'courses' => CourseListResource::collection($courses),
@@ -63,6 +70,12 @@ class CourseController extends Controller
             'galleries',
             'technologies',
         ]);
+
+        app(ShareSeoMeta::class)->handle(
+            $course->title,
+            $course->description,
+            $course->thumbnail ? Storage::disk('public')->url($course->thumbnail) : null,
+        );
 
         return Inertia::render('courses/show', [
             'course' => new CourseShowResource($course),

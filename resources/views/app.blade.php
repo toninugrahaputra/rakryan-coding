@@ -6,25 +6,30 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         @php
-            $ogTitle = config('app.name', 'Rakryan Coding');
-            $ogDescription = 'Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri.';
-            $ogImage = asset('assets/images/og-image.png');
+            $seoTitle = $seo['title'] ?? config('app.name', 'Rakryan Coding');
+            $seoDescription = $seo['description'] ?? 'Platform belajar ngoding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri.';
+            $seoImage = $seo['image'] ?? asset('assets/images/og-image.png');
+            $seoType = $seo['type'] ?? 'website';
+            $seoUrl = $seo['url'] ?? url()->current();
         @endphp
 
-        <meta name="description" content="{{ $ogDescription }}">
+        <meta data-inertia="description" name="description" content="{{ $seoDescription }}">
+        <link data-inertia="canonical" rel="canonical" href="{{ $seoUrl }}">
 
         {{-- Open Graph / Twitter Card — dibaca oleh crawler link-preview (WhatsApp, Telegram, dll) yang tidak menjalankan JS,
-             jadi tag ini harus ada di sini, bukan hanya lewat <Head> Inertia di masing-masing halaman. --}}
-        <meta property="og:type" content="website">
-        <meta property="og:site_name" content="{{ $ogTitle }}">
-        <meta property="og:title" content="{{ $ogTitle }}">
-        <meta property="og:description" content="{{ $ogDescription }}">
-        <meta property="og:image" content="{{ $ogImage }}">
-        <meta property="og:url" content="{{ url()->current() }}">
+             jadi tag ini harus di-render server-side lewat $seo (ShareSeoMeta), bukan hanya lewat <Head> Inertia. --}}
+        <meta property="og:type" data-inertia="og:type" content="{{ $seoType }}">
+        <meta property="og:site_name" content="{{ config('app.name', 'Rakryan Coding') }}">
+        <meta property="og:locale" content="id_ID">
+        <meta property="og:title" data-inertia="og:title" content="{{ $seoTitle }}">
+        <meta property="og:description" data-inertia="og:description" content="{{ $seoDescription }}">
+        <meta property="og:image" data-inertia="og:image" content="{{ $seoImage }}">
+        <meta property="og:image:alt" data-inertia="og:image:alt" content="{{ $seoTitle }}">
+        <meta property="og:url" data-inertia="og:url" content="{{ $seoUrl }}">
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="{{ $ogTitle }}">
-        <meta name="twitter:description" content="{{ $ogDescription }}">
-        <meta name="twitter:image" content="{{ $ogImage }}">
+        <meta name="twitter:title" data-inertia="twitter:title" content="{{ $seoTitle }}">
+        <meta name="twitter:description" data-inertia="twitter:description" content="{{ $seoDescription }}">
+        <meta name="twitter:image" data-inertia="twitter:image" content="{{ $seoImage }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script nonce="{{ $cspNonce }}">

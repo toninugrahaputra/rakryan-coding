@@ -9,12 +9,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, '__invoke'])->name('home');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('courses/{course}', [CourseController::class, 'show'])->name('courses.show');
 Route::get('search/courses', CourseSearchController::class)->name('courses.search');

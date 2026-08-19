@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import {
     Award,
     CheckCircle2,
@@ -20,6 +20,7 @@ import {
 import { useState, useEffect } from 'react';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
+import { Seo } from '@/components/seo';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Link } from '@/components/ui/link';
@@ -234,9 +235,48 @@ function CourseDetailContent() {
         }
     }, [isCompleted, hasReviewed]);
 
+    const courseJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Course',
+        name: course.title,
+        description: course.description ?? undefined,
+        image: course.thumbnail ?? undefined,
+        provider: {
+            '@type': 'Organization',
+            name: 'Rakryan Coding',
+        },
+        ...(course.reviews_count && course.reviews_count > 0
+            ? {
+                  aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: course.rating,
+                      reviewCount: course.reviews_count,
+                  },
+              }
+            : {}),
+        ...(course.has_product
+            ? {
+                  offers: {
+                      '@type': 'Offer',
+                      price: course.price ?? 0,
+                      priceCurrency: 'IDR',
+                      availability: 'https://schema.org/InStock',
+                  },
+              }
+            : {}),
+    };
+
     return (
         <>
-            <Head title={course.title} />
+            <Seo
+                title={course.title}
+                description={
+                    course.description ??
+                    `Belajar ${course.title} bersama Rakryan Coding.`
+                }
+                image={course.thumbnail}
+                jsonLd={courseJsonLd}
+            />
 
             <main className="flex-1 py-10">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">

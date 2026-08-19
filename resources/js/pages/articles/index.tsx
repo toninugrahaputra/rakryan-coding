@@ -1,10 +1,11 @@
-import { Head, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Newspaper, Search } from 'lucide-react';
 import { ArticleCard } from '@/components/article-card';
 import type { ArticleCardData } from '@/components/article-card';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
+import { Seo } from '@/components/seo';
 import type { PaginatedResource } from '@/types/ui';
 
 interface ArticlesIndexProps {
@@ -42,12 +43,10 @@ export default function ArticlesIndex({
             <PublicNavbar />
 
             <main className="flex-1">
-                <Head title="Artikel">
-                    <meta
-                        name="description"
-                        content="Kumpulan artikel, tips, dan tutorial singkat seputar coding dari Rakryan Coding."
-                    />
-                </Head>
+                <Seo
+                    title="Artikel"
+                    description="Kumpulan artikel, tips, dan tutorial singkat seputar coding dari Rakryan Coding."
+                />
 
                 <ScrollReveal animation="slide-right">
                     <section className="bg-muted/40 py-14 sm:py-16">

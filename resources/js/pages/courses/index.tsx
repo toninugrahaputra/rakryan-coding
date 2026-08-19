@@ -1,4 +1,4 @@
-import { Head, usePage, router } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import { Search, SlidersHorizontal, BookOpen, X } from 'lucide-react';
 import { useState } from 'react';
 import { CourseCard } from '@/components/course-card';
@@ -6,6 +6,7 @@ import type { CourseCardData } from '@/components/course-card';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
+import { Seo } from '@/components/seo';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import type { PaginatedResource } from '@/types/ui';
@@ -62,12 +63,10 @@ function CatalogContent() {
 
     return (
         <>
-            <Head title="Katalog Courses">
-                <meta
-                    name="description"
-                    content="Jelajahi semua course coding dan teknologi digital tersedia di Rakryan Coding."
-                />
-            </Head>
+            <Seo
+                title="Katalog Courses"
+                description="Jelajahi semua course coding dan teknologi digital tersedia di Rakryan Coding."
+            />
 
             {/* Page Header */}
             <ScrollReveal animation="slide-right">

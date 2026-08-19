@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Article\GetLatestArticles;
 use App\Actions\Course\GetFeaturedCourses;
 use App\Actions\Course\GetRandomProjectGallery;
+use App\Actions\Seo\ShareSeoMeta;
 use App\Http\Resources\Article\ArticleListResource;
 use App\Http\Resources\Course\CourseListResource;
 use App\Models\Category;
@@ -13,7 +14,6 @@ use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class WelcomeController extends Controller
 {
@@ -52,21 +52,26 @@ class WelcomeController extends Controller
             ->limit(1)
             ->get()
             ->map(fn (Voucher $v) => [
-                'code'         => $v->code,
-                'name'         => $v->name,
-                'type'         => $v->type->value,
-                'value'        => $v->value,
+                'code' => $v->code,
+                'name' => $v->name,
+                'type' => $v->type->value,
+                'value' => $v->value,
                 'max_discount' => $v->max_discount,
                 'min_purchase' => $v->min_purchase,
-                'ends_at'      => $v->ends_at?->translatedFormat('d M Y'),
+                'ends_at' => $v->ends_at?->translatedFormat('d M Y'),
             ]);
+
+        app(ShareSeoMeta::class)->handle(
+            'Platform Belajar Coding',
+            'Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri.',
+        );
 
         return Inertia::render('welcome', [
             'featuredCourses' => CourseListResource::collection($featuredCourses),
-            'articles'        => ArticleListResource::collection($articles),
-            'projectGallery'  => $projectGallery,
-            'stats'           => $stats,
-            'vouchers'        => $vouchers,
+            'articles' => ArticleListResource::collection($articles),
+            'projectGallery' => $projectGallery,
+            'stats' => $stats,
+            'vouchers' => $vouchers,
         ]);
     }
 }
