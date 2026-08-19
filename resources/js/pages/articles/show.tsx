@@ -21,6 +21,28 @@ interface ArticleShowProps {
 }
 
 export default function ArticleShow({ article }: ArticleShowProps) {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Beranda', item: origin },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Artikel',
+                item: `${origin}/articles`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `${origin}/articles/${article.slug}`,
+            },
+        ],
+    };
+
     const articleJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Article',
@@ -48,7 +70,7 @@ export default function ArticleShow({ article }: ArticleShowProps) {
                 }
                 image={article.thumbnail}
                 type="article"
-                jsonLd={articleJsonLd}
+                jsonLd={[articleJsonLd, breadcrumbJsonLd]}
             />
 
             <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">

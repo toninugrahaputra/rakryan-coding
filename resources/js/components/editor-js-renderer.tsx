@@ -111,6 +111,7 @@ function renderBlock(
                         <img
                             src={url}
                             alt={block.data.caption ?? ''}
+                            loading="lazy"
                             className="max-w-full rounded-lg"
                         />
                     </button>

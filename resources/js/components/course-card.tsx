@@ -79,6 +79,7 @@ export function CourseCard({
                     <img
                         src={course.thumbnail}
                         alt={course.title}
+                        loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-102"
                     />
                 ) : (
@@ -122,6 +123,7 @@ export function CourseCard({
                                         <img
                                             src={tech.logo_url}
                                             alt={tech.name}
+                                            loading="lazy"
                                             className="h-full w-full object-contain p-1.5"
                                         />
                                     ) : (

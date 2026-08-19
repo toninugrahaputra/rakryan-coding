@@ -40,6 +40,7 @@ export function PublicFooter() {
                             <img
                                 src="/assets/images/logo-full.svg"
                                 alt="Rakryan Coding"
+                                loading="lazy"
                                 className="h-14 w-auto sm:h-16"
                             />
                         </Link>

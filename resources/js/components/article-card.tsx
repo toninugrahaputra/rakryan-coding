@@ -22,6 +22,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
                     <img
                         src={article.thumbnail}
                         alt={article.title}
+                        loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-102"
                     />
                 ) : (

@@ -153,11 +153,55 @@ export default function Welcome({
         },
     ];
 
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    const faqJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(({ q, a }) => ({
+            '@type': 'Question',
+            name: q,
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: a,
+            },
+        })),
+    };
+
+    const organizationJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Rakryan Coding',
+        url: origin,
+        logo: `${origin}/assets/images/logo-full.svg`,
+        sameAs: [
+            'https://instagram.com/rakryancoding',
+            'https://tiktok.com/@rakryancoding',
+            'https://youtube.com/rakryancoding',
+        ],
+    };
+
+    const websiteJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Rakryan Coding',
+        url: origin,
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+                '@type': 'EntryPoint',
+                urlTemplate: `${origin}/courses?search={search_term_string}`,
+            },
+            'query-input': 'required name=search_term_string',
+        },
+    };
+
     return (
         <>
             <Seo
                 title="Platform Belajar Coding"
                 description="Platform belajar coding teks lengkap untuk semua kalangan di seluruh Indonesia. Materi terstruktur, dirancang biar kamu siap kerja atau bikin project sendiri."
+                jsonLd={[faqJsonLd, organizationJsonLd, websiteJsonLd]}
             />
 
             <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
@@ -501,6 +545,7 @@ export default function Welcome({
                                                         item.course_title ??
                                                         'Hasil project'
                                                     }
+                                                    loading="lazy"
                                                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 via-black/0 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">

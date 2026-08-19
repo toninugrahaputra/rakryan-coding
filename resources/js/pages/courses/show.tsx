@@ -94,6 +94,7 @@ function TechnologyList({ technologies }: { technologies: NonNullable<Course['te
                                 <img
                                     src={tech.logo_url}
                                     alt={tech.name}
+                                    loading="lazy"
                                     className="h-full w-full object-contain p-2"
                                 />
                             </span>
@@ -235,6 +236,28 @@ function CourseDetailContent() {
         }
     }, [isCompleted, hasReviewed]);
 
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Beranda', item: origin },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Katalog Courses',
+                item: `${origin}/courses`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: course.title,
+                item: `${origin}/courses/${course.slug}`,
+            },
+        ],
+    };
+
     const courseJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Course',
@@ -275,7 +298,7 @@ function CourseDetailContent() {
                     `Belajar ${course.title} bersama Rakryan Coding.`
                 }
                 image={course.thumbnail}
-                jsonLd={courseJsonLd}
+                jsonLd={[courseJsonLd, breadcrumbJsonLd]}
             />
 
             <main className="flex-1 py-10">
@@ -703,6 +726,7 @@ function CourseDetailContent() {
                                                 <img
                                                     src={image.url}
                                                     alt={`Contoh hasil project ${course.title} ${idx + 1}`}
+                                                    loading="lazy"
                                                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
