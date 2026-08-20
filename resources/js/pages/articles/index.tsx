@@ -1,11 +1,13 @@
 import { router } from '@inertiajs/react';
-import { Newspaper, Search } from 'lucide-react';
+import { Newspaper, Search, X } from 'lucide-react';
+import { useState } from 'react';
 import { ArticleCard } from '@/components/article-card';
 import type { ArticleCardData } from '@/components/article-card';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import { Seo } from '@/components/seo';
+import { Button } from '@/components/ui/button';
 import type { PaginatedResource } from '@/types/ui';
 
 interface ArticlesIndexProps {
@@ -19,6 +21,8 @@ export default function ArticlesIndex({
     articles,
     filters,
 }: ArticlesIndexProps) {
+    const [searchValue, setSearchValue] = useState(filters.search ?? '');
+
     const visit = (params: Record<string, string>) => {
         const query = new URLSearchParams(window.location.search);
         Object.entries(params).forEach(([k, v]) => {
@@ -68,18 +72,44 @@ export default function ArticlesIndex({
                                 <input
                                     type="text"
                                     placeholder="Cari artikel..."
-                                    className="w-full rounded-xl border border-input bg-background py-3 pr-4 pl-10 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                                    className="w-full rounded-xl border border-input bg-background py-3 pr-20 pl-10 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                                    value={searchValue}
+                                    onChange={(e) =>
+                                        setSearchValue(e.target.value)
+                                    }
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
-                                            visit({
-                                                search: (
-                                                    e.target as HTMLInputElement
-                                                ).value,
-                                            });
+                                            visit({ search: searchValue });
                                         }
                                     }}
-                                    defaultValue={filters.search || ''}
                                 />
+                                <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
+                                    {searchValue && (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            aria-label="Hapus pencarian"
+                                            onClick={() => {
+                                                setSearchValue('');
+                                                visit({ search: '' });
+                                            }}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="default"
+                                        size="icon-sm"
+                                        aria-label="Cari"
+                                        onClick={() =>
+                                            visit({ search: searchValue })
+                                        }
+                                    >
+                                        <Search className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </section>

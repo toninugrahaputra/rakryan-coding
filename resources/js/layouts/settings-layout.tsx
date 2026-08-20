@@ -2,12 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { User, Shield, Palette, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { ScrollReveal } from '@/components/scroll-reveal';
-import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
-import { logout } from '@/routes';
-import { edit as appearanceEdit } from '@/routes/appearance';
-import { edit as profileEdit } from '@/routes/profile';
-import { edit as securityEdit } from '@/routes/security';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -16,50 +11,84 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
+import { logout } from '@/routes';
+import { edit as appearanceEdit } from '@/routes/appearance';
+import { dashboard as internalDashboard } from '@/routes/internal';
+import {
+    profile as internalProfileEdit,
+    security as internalSecurityEdit,
+    appearance as internalAppearanceEdit,
+} from '@/routes/internal/settings';
+import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
 
 type Tab = {
     title: string;
     href: string;
     icon: React.ComponentType<{ className?: string }>;
-    matchPaths?: string[];
+    matchPaths: string[];
 };
 
-const TABS: Tab[] = [
-    {
-        title: 'Profil',
-        href: profileEdit().url,
-        icon: User,
-        matchPaths: ['/settings/profile', '/settings'],
-    },
-    {
-        title: 'Keamanan',
-        href: securityEdit().url,
-        icon: Shield,
-        matchPaths: ['/settings/security'],
-    },
-    {
-        title: 'Tampilan',
-        href: appearanceEdit().url,
-        icon: Palette,
-        matchPaths: ['/settings/appearance'],
-    },
-];
+/** Tab & breadcrumb ikut konteks: halaman ini juga dipakai untuk panel admin (/internal/settings/*). */
+function buildTabs(isInternal: boolean): Tab[] {
+    return isInternal
+        ? [
+              {
+                  title: 'Profil',
+                  href: internalProfileEdit().url,
+                  icon: User,
+                  matchPaths: ['/internal/settings/profile', '/internal/settings'],
+              },
+              {
+                  title: 'Keamanan',
+                  href: internalSecurityEdit().url,
+                  icon: Shield,
+                  matchPaths: ['/internal/settings/security'],
+              },
+              {
+                  title: 'Tampilan',
+                  href: internalAppearanceEdit().url,
+                  icon: Palette,
+                  matchPaths: ['/internal/settings/appearance'],
+              },
+          ]
+        : [
+              {
+                  title: 'Profil',
+                  href: profileEdit().url,
+                  icon: User,
+                  matchPaths: ['/settings/profile', '/settings'],
+              },
+              {
+                  title: 'Keamanan',
+                  href: securityEdit().url,
+                  icon: Shield,
+                  matchPaths: ['/settings/security'],
+              },
+              {
+                  title: 'Tampilan',
+                  href: appearanceEdit().url,
+                  icon: Palette,
+                  matchPaths: ['/settings/appearance'],
+              },
+          ];
+}
 
 type Props = {
     children: React.ReactNode;
 };
 
 export default function SettingsLayout({ children }: Props) {
-    const currentPath = window.location.pathname;
+    const { currentUrl } = useCurrentUrl();
+    const isInternal = currentUrl.startsWith('/internal');
+    const TABS = buildTabs(isInternal);
     const [isOpen, setIsOpen] = useState(false);
 
     function isTabActive(tab: Tab): boolean {
-        if (tab.matchPaths) {
-            return tab.matchPaths.some((p) => currentPath === p || currentPath.startsWith(p + '?'));
-        }
-
-        return currentPath === tab.href;
+        return tab.matchPaths.some((p) => currentUrl === p || currentUrl.startsWith(p + '?'));
     }
 
     function handleLogout() {
@@ -78,8 +107,11 @@ export default function SettingsLayout({ children }: Props) {
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: '/dashboard' },
-                { title: 'Pengaturan', href: '/settings/profile' },
+                {
+                    title: 'Dashboard',
+                    href: isInternal ? internalDashboard().url : '/dashboard',
+                },
+                { title: 'Pengaturan', href: TABS[0].href },
             ]}
         >
             <div className="px-4 py-6 font-sans">
