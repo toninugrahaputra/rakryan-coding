@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Internal;
 
+use App\Models\Category;
 use App\Models\Course;
 use App\Models\Technology;
 use App\Models\User;
@@ -90,6 +91,24 @@ class CourseControllerTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['slug']);
+    }
+
+    public function test_edit_form_includes_current_category_id_for_prefill(): void
+    {
+        $category = Category::create(['name' => 'Web Dev', 'slug' => 'web-dev']);
+        $course = Course::create([
+            'title' => 'Portfolio Website',
+            'slug' => 'portfolio-website',
+            'category_id' => $category->id,
+            'is_published' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get("/internal/courses/{$course->slug}/edit");
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('internal/courses/edit')
+            ->where('course.category_id', $category->id)
+        );
     }
 
     public function test_admin_can_update_course(): void

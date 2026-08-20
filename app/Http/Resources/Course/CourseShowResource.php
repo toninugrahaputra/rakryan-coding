@@ -49,6 +49,7 @@ class CourseShowResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
+            'category_id' => $this->category_id,
             'category' => $this->whenLoaded('category', fn () => $this->category instanceof Category ? $this->category->name : null),
             'is_published' => $this->is_published,
             'price' => $cheapestProduct?->price ?? null,
