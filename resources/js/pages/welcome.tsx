@@ -16,6 +16,7 @@ import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import { Seo } from '@/components/seo';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { WhatsappFloatButton } from '@/components/whatsapp-float-button';
 import { useClipboard } from '@/hooks/use-clipboard';
 
@@ -107,11 +108,26 @@ export default function Welcome({
 }: WelcomeProps) {
     const [activeFaq, setActiveFaq] = useState<number | null>(null);
     const [copiedCode, copyVoucherCode] = useClipboard();
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const projectGalleryRef = useRef<HTMLDivElement>(null);
 
     const toggleFaq = (index: number) => {
         setActiveFaq(activeFaq === index ? null : index);
     };
+
+    function showPrevProjectImage() {
+        setLightboxIndex((idx) =>
+            idx === null
+                ? null
+                : (idx - 1 + projectGallery.length) % projectGallery.length,
+        );
+    }
+
+    function showNextProjectImage() {
+        setLightboxIndex((idx) =>
+            idx === null ? null : (idx + 1) % projectGallery.length,
+        );
+    }
 
     const scrollProjectGallery = (direction: 'left' | 'right') => {
         const el = projectGalleryRef.current;
@@ -531,13 +547,12 @@ export default function Welcome({
                                             }
                                             className="w-[280px] shrink-0 snap-start sm:w-[360px]"
                                         >
-                                            <Link
-                                                href={
-                                                    item.course_slug
-                                                        ? `/courses/${item.course_slug}`
-                                                        : '/courses'
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setLightboxIndex(idx)
                                                 }
-                                                className="group relative block aspect-video w-full overflow-hidden rounded-2xl border-2 border-border/80 bg-muted"
+                                                className="group relative block aspect-video w-full cursor-zoom-in overflow-hidden rounded-2xl border-2 border-border/80 bg-muted"
                                             >
                                                 <img
                                                     src={item.url}
@@ -555,16 +570,93 @@ export default function Welcome({
                                                         </span>
                                                     )}
                                                     <span className="mt-0.5 text-caption font-medium text-white/70">
-                                                        Lihat course →
+                                                        Klik untuk perbesar
                                                     </span>
                                                 </div>
-                                            </Link>
+                                            </button>
                                         </ScrollReveal>
                                     ))}
                                 </div>
                             )}
                         </div>
                     </section>
+
+                    {/* Lightbox galeri project — ukuran menyesuaikan gambar (object-contain), bukan dialog fixed */}
+                    <Dialog
+                        open={lightboxIndex !== null}
+                        onOpenChange={(open) => !open && setLightboxIndex(null)}
+                    >
+                        <DialogContent className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl">
+                            <DialogTitle className="sr-only">
+                                {lightboxIndex !== null &&
+                                projectGallery[lightboxIndex]?.course_title
+                                    ? `Hasil project ${projectGallery[lightboxIndex].course_title}`
+                                    : 'Galeri hasil project'}
+                            </DialogTitle>
+                            {lightboxIndex !== null &&
+                                projectGallery[lightboxIndex] && (
+                                    <div>
+                                        <div className="relative">
+                                            <img
+                                                src={
+                                                    projectGallery[
+                                                        lightboxIndex
+                                                    ].url
+                                                }
+                                                alt={
+                                                    projectGallery[
+                                                        lightboxIndex
+                                                    ].course_title ??
+                                                    'Hasil project'
+                                                }
+                                                className="max-h-[80vh] w-full rounded-xl object-contain"
+                                            />
+                                            {projectGallery.length > 1 && (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            showPrevProjectImage
+                                                        }
+                                                        aria-label="Gambar sebelumnya"
+                                                        className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                                    >
+                                                        <ChevronLeft className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            showNextProjectImage
+                                                        }
+                                                        aria-label="Gambar berikutnya"
+                                                        className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                                    >
+                                                        <ChevronRight className="h-5 w-5" />
+                                                    </button>
+                                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">
+                                                        {lightboxIndex + 1} /{' '}
+                                                        {projectGallery.length}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Di bawah gambar, center — bukan overlay lagi supaya tidak numpuk dengan tombol navigasi/close */}
+                                        {projectGallery[lightboxIndex]
+                                            .course_slug && (
+                                            <div className="flex justify-center pt-3">
+                                                <Link
+                                                    href={`/courses/${projectGallery[lightboxIndex].course_slug}`}
+                                                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                                                >
+                                                    Lihat course →
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                        </DialogContent>
+                    </Dialog>
 
                     {/* ─── FAQ ACCORDION ────────────────────────── */}
                     <section
