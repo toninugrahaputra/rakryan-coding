@@ -882,7 +882,10 @@ function CourseDetailContent() {
                 open={lightboxIndex !== null}
                 onOpenChange={(open) => !open && setLightboxIndex(null)}
             >
-                <DialogContent className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl">
+                <DialogContent
+                    className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl"
+                    closeClassName="text-white bg-black/40 hover:bg-black/60 hover:text-white rounded-full opacity-100"
+                >
                     <DialogTitle className="sr-only">
                         Galeri hasil project {course.title}
                     </DialogTitle>
