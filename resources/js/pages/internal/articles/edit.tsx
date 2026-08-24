@@ -1,6 +1,7 @@
 import type { OutputData } from '@editorjs/editorjs';
 import { Head, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { update } from '@/actions/App/Http/Controllers/Internal/ArticleController';
 import { store as storeEditorImage } from '@/actions/App/Http/Controllers/Internal/EditorImageController';
 import EditorJsComponent from '@/components/editor-js';
@@ -88,6 +89,7 @@ export default function ArticlesEdit({ article }: { article: ArticleProp }) {
             onError: (errs) => {
                 setErrors(errs);
                 setProcessing(false);
+                toast.error(Object.values(errs)[0] ?? 'Gagal menyimpan artikel. Periksa isian form.');
             },
             onFinish: () => setProcessing(false),
         });

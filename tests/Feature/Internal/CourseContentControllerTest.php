@@ -94,6 +94,35 @@ class CourseContentControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_update_content_with_deleted_image(): void
+    {
+        Storage::fake('public');
+
+        $content = CourseContent::factory()->create([
+            'course_id' => $this->course->id,
+        ]);
+
+        $imagePath = "courses/{$this->course->slug}/{$content->slug}/removed.png";
+        Storage::disk('public')->put($imagePath, 'fake-image-content');
+
+        $response = $this->actingAs($this->admin)->put(
+            "/internal/courses/{$this->course->slug}/contents/{$content->slug}",
+            [
+                'section_name' => $content->section_name,
+                'title' => $content->title,
+                'slug' => $content->slug,
+                'is_published' => $content->is_published,
+                'content' => $content->content,
+                'sub_topics' => $content->sub_topics,
+                'deleted_images' => ["/storage/{$imagePath}"],
+            ]
+        );
+
+        $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
+        $response->assertSessionDoesntHaveErrors();
+        Storage::disk('public')->assertMissing($imagePath);
+    }
+
     public function test_admin_can_reorder_contents(): void
     {
         $first = CourseContent::factory()->create(['course_id' => $this->course->id, 'order' => 1]);

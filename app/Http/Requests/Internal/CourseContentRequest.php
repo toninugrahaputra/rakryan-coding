@@ -37,7 +37,7 @@ class CourseContentRequest extends FormRequest
             'sub_topics' => ['nullable', 'string'],
             'is_published' => ['boolean'],
             'deleted_images' => ['nullable', 'array'],
-            'deleted_images.*' => ['nullable', 'string', 'url'],
+            'deleted_images.*' => ['nullable', 'string'],
         ];
     }
 }

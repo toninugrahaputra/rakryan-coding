@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import type { OutputData } from '@editorjs/editorjs';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import EditorJsComponent, { type EditorJsRef } from '@/components/editor-js';
 import ScrollToTopBottom from '@/components/scroll-to-top-bottom';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,11 @@ export default function ContentsEdit({ course, content }: { course: Course; cont
             is_published: form.is_published,
             deleted_images: deletedUrls,
         }, {
-            onError: (errs) => { setErrors(errs); setProcessing(false); },
+            onError: (errs) => {
+                setErrors(errs);
+                setProcessing(false);
+                toast.error(Object.values(errs)[0] ?? 'Gagal menyimpan konten. Periksa isian form.');
+            },
             onFinish: () => setProcessing(false),
         });
     }
