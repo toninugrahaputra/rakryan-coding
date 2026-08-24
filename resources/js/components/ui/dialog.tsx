@@ -47,10 +47,12 @@ function DialogOverlay({
 function DialogContent({
   className,
   closeClassName,
+  closeIconClassName,
   children,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   closeClassName?: string
+  closeIconClassName?: string
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -70,7 +72,7 @@ function DialogContent({
             closeClassName
           )}
         >
-          <XIcon />
+          <XIcon className={closeIconClassName} />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

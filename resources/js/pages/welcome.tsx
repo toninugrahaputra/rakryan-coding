@@ -588,7 +588,8 @@ export default function Welcome({
                     >
                         <DialogContent
                             className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl"
-                            closeClassName="text-white bg-black/40 hover:bg-black/60 hover:text-white rounded-full opacity-100"
+                            closeClassName="-top-3 -right-3 sm:-right-6 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black opacity-100 shadow-md hover:bg-white hover:text-black"
+                            closeIconClassName="size-5"
                         >
                             <DialogTitle className="sr-only">
                                 {lightboxIndex !== null &&
