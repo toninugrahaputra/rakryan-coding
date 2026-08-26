@@ -241,12 +241,12 @@ export default function Welcome({
                                     className="space-y-8 lg:col-span-6"
                                 >
                                     <h1 className="text-center text-display text-balance text-foreground lg:text-left">
-                                        Belajar ngoding dari nol sampai{' '}
+                                        Ngoding itu gampang kalau{' '}
                                         <span className="relative inline-block text-primary">
-                                            bikin project
+                                            langsung praktik
                                             <span className="absolute right-0 bottom-2 left-0 -z-10 h-3 rounded-sm bg-[#eab308]/30" />
-                                        </span>{' '}
-                                        sendiri.
+                                        </span>
+                                        .
                                     </h1>
 
                                     {/* Mobile only: gambar hero tampil di sini, di bawah judul */}
