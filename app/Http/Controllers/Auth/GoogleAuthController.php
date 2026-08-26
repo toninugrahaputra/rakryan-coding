@@ -30,7 +30,7 @@ class GoogleAuthController extends Controller
 
         Auth::login($user, remember: true);
 
-        $url = $user->hasRole('admin') ? route('internal.dashboard') : route('home');
+        $url = $user->hasRole('admin') ? route('internal.dashboard') : route('dashboard');
 
         return redirect()->intended($url);
     }

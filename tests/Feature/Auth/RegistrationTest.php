@@ -67,7 +67,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('home', absolute: false));
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     /**
@@ -98,7 +98,7 @@ class RegistrationTest extends TestCase
         $response->assertRedirect($intended);
     }
 
-    public function test_registration_falls_back_to_home_without_an_intended_page()
+    public function test_registration_falls_back_to_dashboard_without_an_intended_page()
     {
         Role::create(['name' => 'user']);
 
@@ -109,7 +109,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $response->assertRedirect(route('home', absolute: false));
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     public function test_successful_registration_flashes_a_success_toast()

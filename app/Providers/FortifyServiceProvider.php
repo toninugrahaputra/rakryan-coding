@@ -27,7 +27,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $url = $request->user()->hasRole('admin')
                     ? route('internal.dashboard')
-                    : route('home');
+                    : route('dashboard');
 
                 return $request->wantsJson()
                     ? response()->json(['redirect' => $url])
@@ -50,8 +50,8 @@ class FortifyServiceProvider extends ServiceProvider
 
                 // Guest yang tadinya diarahkan ke login/daftar dari halaman terkunci
                 // (mis. checkout atau modul berbayar) dikembalikan ke sana, sama seperti
-                // perilaku LoginResponse. Beranda hanya dipakai kalau tidak ada tujuan.
-                return redirect()->intended(route('home'));
+                // perilaku LoginResponse. Dashboard hanya dipakai kalau tidak ada tujuan.
+                return redirect()->intended(route('dashboard'));
             }
         });
     }
