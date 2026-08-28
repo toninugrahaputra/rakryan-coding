@@ -4,6 +4,8 @@ type UploadResult =
     | { ok: true; content: OutputData }
     | { ok: false; failedIndexes: number[] };
 
+const UPLOAD_TIMEOUT_MS = 30_000;
+
 export async function uploadEditorImages(content: OutputData, files: File[], uploadUrl: string): Promise<UploadResult> {
     const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
     const xsrfCookie = document.cookie
@@ -24,17 +26,25 @@ export async function uploadEditorImages(content: OutputData, files: File[], upl
             if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
             if (decodedXsrf) headers['X-XSRF-TOKEN'] = decodedXsrf;
 
-            const res = await fetch(uploadUrl, { 
-                method: 'POST', 
-                headers, 
-                body 
-            });
-            
-            if (res.ok) {
-                const json = await res.json();
-                urlMap[`__PENDING_${i}__`] = json.file.url;
-            } else {
-                failedIndexes.push(i + 1);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
+            try {
+                const res = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers,
+                    body,
+                    signal: controller.signal,
+                });
+
+                if (res.ok) {
+                    const json = await res.json();
+                    urlMap[`__PENDING_${i}__`] = json.file.url;
+                } else {
+                    failedIndexes.push(i + 1);
+                }
+            } finally {
+                clearTimeout(timeoutId);
             }
         } catch {
             failedIndexes.push(i + 1);

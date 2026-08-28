@@ -4,6 +4,7 @@ namespace Tests\Feature\Internal;
 
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\CourseGallery;
 use App\Models\Technology;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -123,6 +124,92 @@ class CourseControllerTest extends TestCase
 
         $response->assertRedirect('/internal/courses');
         $this->assertDatabaseHas('courses', ['id' => $course->id, 'title' => 'New Title']);
+    }
+
+    public function test_admin_can_add_gallery_video_via_full_youtube_url(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/courses', [
+            'title' => 'Toko Online App',
+            'slug' => 'toko-online-app',
+            'is_published' => false,
+            'gallery_youtube_urls' => ['https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s'],
+        ]);
+
+        $response->assertRedirect('/internal/courses');
+
+        $course = Course::where('slug', 'toko-online-app')->firstOrFail();
+        $this->assertDatabaseHas('course_galleries', [
+            'course_id' => $course->id,
+            'type' => 'video',
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+    }
+
+    public function test_admin_can_add_gallery_video_via_short_youtube_url(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/courses', [
+            'title' => 'Toko Online App',
+            'slug' => 'toko-online-app',
+            'is_published' => false,
+            'gallery_youtube_urls' => ['https://youtu.be/dQw4w9WgXcQ'],
+        ]);
+
+        $response->assertRedirect('/internal/courses');
+        $this->assertDatabaseHas('course_galleries', [
+            'type' => 'video',
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+    }
+
+    public function test_invalid_youtube_url_is_rejected(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/courses', [
+            'title' => 'Toko Online App',
+            'slug' => 'toko-online-app',
+            'is_published' => false,
+            'gallery_youtube_urls' => ['https://example.com/not-a-video'],
+        ]);
+
+        $response->assertSessionHasErrors(['gallery_youtube_urls.0']);
+        $this->assertDatabaseMissing('courses', ['slug' => 'toko-online-app']);
+    }
+
+    public function test_gallery_image_and_video_count_is_capped_combined(): void
+    {
+        $course = Course::factory()->create();
+        CourseGallery::factory()->count(3)->create(['course_id' => $course->id, 'type' => 'image']);
+
+        $this->actingAs($this->admin)->put("/internal/courses/{$course->slug}", [
+            'title' => $course->title,
+            'slug' => $course->slug,
+            'is_published' => $course->is_published,
+            'gallery_youtube_urls' => [
+                'https://youtu.be/dQw4w9WgXcQ',
+                'https://youtu.be/jNQXAC9IVRw',
+            ],
+        ]);
+
+        $this->assertSame(CourseGallery::MAX_PER_COURSE, $course->galleries()->count());
+    }
+
+    public function test_admin_can_remove_gallery_video(): void
+    {
+        $course = Course::factory()->create();
+        $video = CourseGallery::factory()->create([
+            'course_id' => $course->id,
+            'type' => 'video',
+            'path' => null,
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+
+        $this->actingAs($this->admin)->put("/internal/courses/{$course->slug}", [
+            'title' => $course->title,
+            'slug' => $course->slug,
+            'is_published' => $course->is_published,
+            'remove_gallery_ids' => [$video->id],
+        ]);
+
+        $this->assertDatabaseMissing('course_galleries', ['id' => $video->id]);
     }
 
     public function test_admin_can_attach_technologies_when_creating_course(): void

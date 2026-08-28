@@ -8,6 +8,7 @@ import {
     CheckCircle,
     Copy,
     Check,
+    Download,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cancel } from '@/actions/App/Http/Controllers/OrderController';
@@ -28,6 +29,9 @@ interface Course {
     title: string;
     slug: string;
     contents_count: number;
+    pivot: {
+        is_bonus: boolean;
+    };
 }
 
 interface Order {
@@ -47,6 +51,8 @@ interface Order {
     product: {
         id: number;
         title: string;
+        slug: string;
+        type: 'single' | 'bundle' | 'source_code';
         courses: Course[];
     };
 }
@@ -85,7 +91,9 @@ export default function OrdersShow({
     const isExpired = order.status === 'expired';
 
     const courses = order.product?.courses || [];
-    const firstCourse = courses[0];
+    const mainCourses = courses.filter((c) => !c.pivot.is_bonus);
+    const bonusCourses = courses.filter((c) => c.pivot.is_bonus);
+    const firstCourse = mainCourses[0] ?? courses[0];
     const userEmail = auth?.user?.email || 'user@rakryancoding.id';
     const userName = auth?.user?.name || '-';
 
@@ -492,6 +500,28 @@ export default function OrdersShow({
                                             </div>
                                         </div>
 
+                                        {/* Source Code Download */}
+                                        {order.product.type === 'source_code' ? (
+                                            <div className="space-y-4 border-t border-border/40 pt-6 print:hidden">
+                                                <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                                    Source code siap diunduh
+                                                </h4>
+
+                                                <Button
+                                                    className="w-full gap-2 rounded-xl"
+                                                    asChild
+                                                >
+                                                    <a
+                                                        href={`/source-code/${order.product.slug}/download`}
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                        Download Source Code
+                                                    </a>
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                        <>
                                         {/* Opened Courses List */}
                                         <div className="space-y-4 border-t border-border/40 pt-6">
                                             <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -500,7 +530,7 @@ export default function OrdersShow({
                                             </h4>
 
                                             <div className="grid gap-3.5">
-                                                {courses.map((c) => (
+                                                {mainCourses.map((c) => (
                                                     <div
                                                         key={c.id}
                                                         className="flex items-center justify-between rounded-xl border border-border/50 bg-card/60 p-4"
@@ -536,6 +566,58 @@ export default function OrdersShow({
                                                 ))}
                                             </div>
                                         </div>
+
+                                        {bonusCourses.length > 0 && (
+                                            <div className="space-y-4 border-t border-border/40 pt-6">
+                                                <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
+                                                    🎉 Bonus Course Gratis
+                                                </h4>
+
+                                                <div className="grid gap-3.5">
+                                                    {bonusCourses.map((c) => (
+                                                        <div
+                                                            key={c.id}
+                                                            className="flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-2 w-2 rounded-full bg-amber-500" />
+                                                                <div>
+                                                                    <h5 className="flex items-center gap-1.5 text-xs leading-snug font-bold text-foreground sm:text-sm">
+                                                                        {
+                                                                            c.title
+                                                                        }
+                                                                        <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold tracking-wide text-amber-600 uppercase dark:text-amber-400">
+                                                                            Bonus
+                                                                        </span>
+                                                                    </h5>
+                                                                    <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                                                                        {
+                                                                            c.contents_count
+                                                                        }{' '}
+                                                                        bab
+                                                                        pembelajaran
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                className="rounded-lg text-xs font-bold text-primary hover:bg-primary/10 print:hidden"
+                                                                asChild
+                                                            >
+                                                                <Link
+                                                                    href={`/courses/${c.slug}`}
+                                                                >
+                                                                    Mulai ➔
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        </>
+                                        )}
 
                                         {/* Action buttons */}
                                         <div className="flex flex-col gap-3 border-t border-border/40 pt-6 sm:flex-row print:hidden">

@@ -24,13 +24,15 @@ type ProductProp = {
     title: string;
     slug: string;
     description: string | null;
-    type: 'single' | 'bundle';
+    type: 'single' | 'bundle' | 'source_code';
     thumbnail: string | null;
+    has_source_code_file: boolean;
     price: number;
     price_strikethrough: number | null;
     is_published: boolean;
     is_favourite: boolean;
     course_ids: number[];
+    bonus_course_ids: number[];
 };
 
 export default function ProductsEdit({ product, courses }: { product: ProductProp; courses: Course[] }) {
@@ -44,9 +46,11 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
         is_published: product.is_published,
         is_favourite: product.is_favourite,
         course_ids: product.course_ids,
+        bonus_course_ids: product.bonus_course_ids,
     });
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
     const [thumbnailCleared, setThumbnailCleared] = useState(false);
+    const [sourceCodeFile, setSourceCodeFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -55,8 +59,11 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
         setForm((prev) => ({ ...prev, title, slug: slugify(title) }));
     }
 
-    function handleTypeChange(type: 'single' | 'bundle') {
-        setForm((prev) => ({ ...prev, type, course_ids: [] }));
+    function handleTypeChange(type: 'single' | 'bundle' | 'source_code') {
+        setForm((prev) => ({ ...prev, type, course_ids: [], bonus_course_ids: [] }));
+        if (type !== 'source_code') {
+            setSourceCodeFile(null);
+        }
     }
 
     function handleSubmit(e: React.FormEvent) {
@@ -67,6 +74,7 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
             ...form,
             price: form.price === '' ? '' : Number(form.price),
             price_strikethrough: form.price_strikethrough === '' ? null : Number(form.price_strikethrough),
+            source_code_file: sourceCodeFile,
         };
 
         if (thumbnailFile) {
@@ -177,26 +185,64 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
                                 <SelectContent>
                                     <SelectItem value="single">Single (1 course)</SelectItem>
                                     <SelectItem value="bundle">Bundle (beberapa course)</SelectItem>
+                                    <SelectItem value="source_code">Source Code (tanpa course)</SelectItem>
                                 </SelectContent>
                             </Select>
                             {errors.type && <p className="text-destructive text-sm">{errors.type}</p>}
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            <Label>
-                                Course{form.type === 'bundle' ? 's' : ''}
-                                <span className="text-muted-foreground ml-1 text-xs">
-                                    {form.type === 'single' ? '(pilih 1)' : '(pilih beberapa)'}
-                                </span>
-                            </Label>
-                            <CourseSheetSelector
-                                courses={courses}
-                                value={form.course_ids}
-                                onChange={(ids) => setForm((p) => ({ ...p, course_ids: ids }))}
-                                type={form.type}
-                                error={errors.course_ids}
-                            />
-                        </div>
+                        {form.type === 'source_code' ? (
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="source_code_file">File Source Code (.zip, maks 50MB)</Label>
+                                <input
+                                    id="source_code_file"
+                                    type="file"
+                                    accept=".zip"
+                                    onChange={(e) => setSourceCodeFile(e.target.files?.[0] ?? null)}
+                                    className="border-input file:bg-primary file:text-primary-foreground flex w-full rounded-md border bg-transparent text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2 file:text-xs file:font-semibold"
+                                />
+                                {sourceCodeFile ? (
+                                    <p className="text-muted-foreground text-xs">{sourceCodeFile.name}</p>
+                                ) : product.has_source_code_file ? (
+                                    <p className="text-muted-foreground text-xs">File sudah ada. Kosongkan jika tidak ingin menggantinya.</p>
+                                ) : null}
+                                {errors.source_code_file && <p className="text-destructive text-sm">{errors.source_code_file}</p>}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                <Label>
+                                    Course{form.type === 'bundle' ? 's' : ''}
+                                    <span className="text-muted-foreground ml-1 text-xs">
+                                        {form.type === 'single' ? '(pilih 1)' : '(pilih beberapa)'}
+                                    </span>
+                                </Label>
+                                <CourseSheetSelector
+                                    courses={courses}
+                                    value={form.course_ids}
+                                    onChange={(ids) => setForm((p) => ({ ...p, course_ids: ids }))}
+                                    type={form.type}
+                                    error={errors.course_ids}
+                                />
+                            </div>
+                        )}
+
+                        {form.type !== 'source_code' && (
+                            <div className="flex flex-col gap-2">
+                                <Label>
+                                    Course Bonus
+                                    <span className="text-muted-foreground ml-1 text-xs">
+                                        (gratis, tidak tampil di katalog)
+                                    </span>
+                                </Label>
+                                <CourseSheetSelector
+                                    courses={courses}
+                                    value={form.bonus_course_ids}
+                                    onChange={(ids) => setForm((p) => ({ ...p, bonus_course_ids: ids }))}
+                                    type="bundle"
+                                    error={errors.bonus_course_ids}
+                                />
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex items-center gap-3">

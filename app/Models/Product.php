@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['title', 'slug', 'description', 'type', 'thumbnail', 'price', 'price_strikethrough', 'is_published', 'is_favourite'])]
+#[Fillable(['title', 'slug', 'description', 'type', 'thumbnail', 'source_code_path', 'price', 'price_strikethrough', 'is_published', 'is_favourite'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -35,7 +35,7 @@ class Product extends Model
 
     public function courses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class);
+        return $this->belongsToMany(Course::class)->using(CourseProduct::class)->withPivot('is_bonus');
     }
 
     public function vouchers(): BelongsToMany

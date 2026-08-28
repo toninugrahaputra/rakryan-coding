@@ -10,6 +10,7 @@ class IsFreeCourse
     {
         $cheapestProduct = $course->products()
             ->where('is_published', true)
+            ->where('course_product.is_bonus', false)
             ->orderBy('price')
             ->first();
 

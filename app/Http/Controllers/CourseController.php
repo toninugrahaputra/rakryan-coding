@@ -66,7 +66,8 @@ class CourseController extends Controller
                     $q->where('user_id', $user->id);
                 }
             },
-            'products' => fn ($q) => $q->where('is_published', true)->orderBy('price'),
+            'products' => fn ($q) => $q->where('is_published', true)->where('course_product.is_bonus', false)->orderBy('price'),
+            'products.courses' => fn ($q) => $q->wherePivot('is_bonus', true),
             'galleries',
             'technologies',
         ]);

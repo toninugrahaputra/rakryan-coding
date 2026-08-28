@@ -6,13 +6,16 @@ import {
     CheckCircle2,
     Clock3,
     DollarSign,
+    Eye,
     Layers,
     Package,
     ShoppingBag,
     Sparkles,
     Ticket,
     TrendingUp,
+    UserCheck,
     UserPlus,
+    Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,6 +59,12 @@ interface ChartItem {
     registrations: number;
 }
 
+interface VisitsToday {
+    total_visits: number;
+    guest_visits: number;
+    unique_logged_in_visitors: number;
+}
+
 type AdminDashboardProps = {
     stats: {
         users: number;
@@ -72,6 +81,7 @@ type AdminDashboardProps = {
         latest_users: LatestUser[];
         latest_orders: LatestOrder[];
         chart_data: ChartItem[];
+        visits_today: VisitsToday;
     };
 };
 
@@ -111,6 +121,12 @@ export default function AdminDashboard() {
         { label: 'Vouchers', value: stats.vouchers, icon: Ticket },
         { label: 'Products', value: stats.products, icon: Package },
         { label: 'Categories', value: stats.categories, icon: Layers },
+    ];
+
+    const visitStatCards = [
+        { label: 'Total Kunjungan', value: stats.visits_today.total_visits, icon: Eye },
+        { label: 'Pengunjung Terdaftar', value: stats.visits_today.unique_logged_in_visitors, icon: UserCheck },
+        { label: 'Kunjungan Tamu', value: stats.visits_today.guest_visits, icon: Users },
     ];
 
     const maxSales = Math.max(...stats.chart_data.map((d) => d.sales), 1);
@@ -440,6 +456,54 @@ export default function AdminDashboard() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* ─── Kunjungan Website ─── */}
+                <div className="rounded-xl border">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b p-4">
+                        <div>
+                            <h3 className="text-sm font-semibold">
+                                Kunjungan Website Hari Ini
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                                Ringkasan trafik rcoding.rakryan.id
+                            </p>
+                        </div>
+                        <Button asChild variant="outline" size="sm">
+                            <Link
+                                href="/internal/visits"
+                                className="inline-flex items-center gap-1"
+                            >
+                                Lihat detail{' '}
+                                <ArrowUpRight className="h-3.5 w-3.5" />
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3 sm:gap-4">
+                        {visitStatCards.map((card) => {
+                            const Icon = card.icon;
+
+                            return (
+                                <div
+                                    key={card.label}
+                                    className="flex items-center gap-2.5 rounded-lg border p-2.5 sm:gap-3 sm:p-3"
+                                >
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                                        <Icon className="h-4.5 w-4.5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-xs font-medium text-muted-foreground">
+                                            {card.label}
+                                        </p>
+                                        <p className="text-sm font-bold text-foreground">
+                                            {card.value}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* ─── Latest Users & Orders ─── */}

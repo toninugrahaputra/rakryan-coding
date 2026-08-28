@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Internal;
 
+use App\Actions\Notification\NotifyAllUsers;
 use App\Models\Article;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -102,6 +105,24 @@ class ArticleControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('notifications', 0);
+    }
+
+    public function test_publishing_article_succeeds_even_if_notification_fails(): void
+    {
+        $this->mock(NotifyAllUsers::class, function ($mock) {
+            $mock->shouldReceive('handle')->andThrow(new RuntimeException('notification service down'));
+        });
+
+        $response = $this->actingAs($this->admin)->post('/internal/articles', [
+            'title' => 'Cara Menangani Error',
+            'slug' => 'cara-menangani-error',
+            'excerpt' => 'Tips singkat menangani error.',
+            'content' => ['time' => 1, 'blocks' => [], 'version' => '2.29.0'],
+            'is_published' => true,
+        ]);
+
+        $response->assertRedirect('/internal/articles');
+        $this->assertDatabaseHas('articles', ['slug' => 'cara-menangani-error', 'is_published' => true]);
     }
 
     public function test_create_requires_unique_slug(): void
@@ -201,6 +222,27 @@ class ArticleControllerTest extends TestCase
 
         $response->assertRedirect('/internal/articles');
         $this->assertDatabaseHas('articles', ['id' => $article->id, 'title' => 'New Title', 'is_published' => false]);
+    }
+
+    public function test_admin_can_update_article_with_deleted_image(): void
+    {
+        Storage::fake('public');
+
+        $article = Article::factory()->create(['slug' => 'old-title']);
+        $imagePath = "articles/{$article->slug}/removed.png";
+        Storage::disk('public')->put($imagePath, 'fake-image-content');
+
+        $response = $this->actingAs($this->admin)->put("/internal/articles/{$article->slug}", [
+            'title' => $article->title,
+            'slug' => $article->slug,
+            'excerpt' => $article->excerpt,
+            'is_published' => $article->is_published,
+            'deleted_images' => ["/storage/{$imagePath}"],
+        ]);
+
+        $response->assertRedirect('/internal/articles');
+        $response->assertSessionDoesntHaveErrors();
+        Storage::disk('public')->assertMissing($imagePath);
     }
 
     public function test_admin_can_delete_article(): void

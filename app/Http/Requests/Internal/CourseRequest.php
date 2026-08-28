@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Internal;
 
+use App\Actions\Course\ExtractYoutubeVideoId;
 use App\Models\CourseGallery;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -32,6 +34,15 @@ class CourseRequest extends FormRequest
             'gallery.*' => ['image', 'mimes:jpeg,png,webp', 'max:8192'],
             'remove_gallery_ids' => ['nullable', 'array'],
             'remove_gallery_ids.*' => ['integer'],
+            'gallery_youtube_urls' => ['nullable', 'array'],
+            'gallery_youtube_urls.*' => [
+                'string',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! app(ExtractYoutubeVideoId::class)->handle($value)) {
+                        $fail('Link YouTube tidak valid.');
+                    }
+                },
+            ],
             'technology_ids' => ['nullable', 'array'],
             'technology_ids.*' => ['integer', 'exists:technologies,id'],
         ];

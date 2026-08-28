@@ -28,6 +28,7 @@ createInertiaApp({
             case name === 'welcome':
             case name.startsWith('courses/'):
             case name.startsWith('articles/'):
+            case name.startsWith('source-code/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

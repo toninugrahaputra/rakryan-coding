@@ -44,4 +44,22 @@ class CourseControllerTest extends TestCase
             ->where('courses.data.0.title', 'Has Published Product')
         );
     }
+
+    public function test_public_courses_index_excludes_bonus_only_courses(): void
+    {
+        $mainCourse = Course::factory()->create(['title' => 'Main Bundle Course', 'is_published' => true]);
+        $bonusCourse = Course::factory()->create(['title' => 'Bonus Companion Course', 'is_published' => true]);
+
+        $product = Product::factory()->published()->create();
+        $product->courses()->attach($mainCourse->id, ['is_bonus' => false]);
+        $product->courses()->attach($bonusCourse->id, ['is_bonus' => true]);
+
+        $response = $this->get('/courses');
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('courses/index')
+            ->has('courses.data', 1)
+            ->where('courses.data.0.title', 'Main Bundle Course')
+        );
+    }
 }

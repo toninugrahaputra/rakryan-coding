@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         // Visits
         Route::get('visits', [VisitController::class, 'index'])->name('visits.index');
+        Route::get('visits/logged-in', [VisitController::class, 'loggedIn'])->name('visits.logged-in');
 
         // Users
         Route::get('users', [UserController::class, 'index'])->name('users.index');

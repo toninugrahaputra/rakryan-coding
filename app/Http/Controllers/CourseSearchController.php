@@ -17,8 +17,9 @@ class CourseSearchController extends Controller
             return response()->json([]);
         }
 
-        $courses = Course::with(['category', 'products' => fn ($q) => $q->where('is_published', true)->orderBy('price')])
+        $courses = Course::with(['category', 'products' => fn ($q) => $q->where('is_published', true)->where('course_product.is_bonus', false)->orderBy('price')])
             ->where('is_published', true)
+            ->whereHas('products', fn ($q) => $q->where('is_published', true)->where('course_product.is_bonus', false))
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
                     ->orWhereHas('category', fn ($q2) => $q2->where('name', 'like', "%{$query}%"));

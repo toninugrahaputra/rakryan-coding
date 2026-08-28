@@ -21,6 +21,8 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $productSlug = $this->route('product');
+        $isSourceCode = $this->input('type') === ProductType::SourceCode->value;
+        $requiresSourceCodeFile = $isSourceCode && $this->isMethod('post');
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -32,8 +34,11 @@ class ProductRequest extends FormRequest
             'price_strikethrough' => ['nullable', 'integer', 'min:0', 'gt:price'],
             'is_published' => ['boolean'],
             'is_favourite' => ['boolean'],
-            'course_ids' => ['required', 'array', 'min:1'],
+            'course_ids' => ['array'],
             'course_ids.*' => ['integer', Rule::exists('courses', 'id')->whereNull('deleted_at')],
+            'bonus_course_ids' => ['nullable', 'array'],
+            'bonus_course_ids.*' => ['integer', Rule::exists('courses', 'id')->whereNull('deleted_at')],
+            'source_code_file' => [$requiresSourceCodeFile ? 'required' : 'nullable', 'file', 'mimes:zip', 'max:51200'],
         ];
     }
 
@@ -42,9 +47,18 @@ class ProductRequest extends FormRequest
         $validator->after(function (Validator $v) {
             $type = $this->input('type');
             $courseIds = $this->input('course_ids', []);
+            $bonusCourseIds = $this->input('bonus_course_ids', []);
+
+            if ($type !== ProductType::SourceCode->value && count($courseIds) < 1) {
+                $v->errors()->add('course_ids', 'Pilih minimal 1 course.');
+            }
 
             if ($type === ProductType::Single->value && count($courseIds) > 1) {
                 $v->errors()->add('course_ids', 'Produk single hanya boleh memiliki 1 course.');
+            }
+
+            if (array_intersect($courseIds, $bonusCourseIds) !== []) {
+                $v->errors()->add('bonus_course_ids', 'Course yang sama tidak boleh dipilih sebagai course utama dan bonus sekaligus.');
             }
         });
     }

@@ -25,7 +25,7 @@ class ProductFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'description' => $this->faker->sentence(),
-            'type' => $this->faker->randomElement(ProductType::cases()),
+            'type' => $this->faker->randomElement([ProductType::Single, ProductType::Bundle]),
             'price' => $this->faker->numberBetween(50000, 500000),
             'price_strikethrough' => null,
             'is_published' => false,
@@ -41,6 +41,11 @@ class ProductFactory extends Factory
     public function bundle(): static
     {
         return $this->state(['type' => ProductType::Bundle]);
+    }
+
+    public function sourceCode(): static
+    {
+        return $this->state(['type' => ProductType::SourceCode]);
     }
 
     public function published(): static

@@ -60,6 +60,17 @@ class SitemapTest extends TestCase
         $response->assertDontSee(route('courses.show', $course), false);
     }
 
+    public function test_sitemap_excludes_bonus_only_course(): void
+    {
+        $bonusCourse = Course::factory()->create(['is_published' => true, 'slug' => 'bonus-only-course']);
+        $product = Product::factory()->single()->published()->create();
+        $product->courses()->attach($bonusCourse->id, ['is_bonus' => true]);
+
+        $response = $this->get('/sitemap.xml');
+
+        $response->assertDontSee(route('courses.show', $bonusCourse), false);
+    }
+
     public function test_sitemap_includes_published_article(): void
     {
         $article = Article::factory()->create(['is_published' => true]);

@@ -50,6 +50,74 @@ class UserPurchaseTest extends TestCase
         );
     }
 
+    public function test_checkout_page_includes_bonus_courses_in_the_product_payload(): void
+    {
+        $user = User::factory()->create();
+        $mainCourse = Course::factory()->create(['is_published' => true]);
+        $bonusCourse = Course::factory()->create(['is_published' => true, 'title' => 'Dart Fundamental']);
+        $product = Product::factory()->bundle()->published()->create(['price' => 75000]);
+        $product->courses()->attach($mainCourse->id, ['is_bonus' => false]);
+        $product->courses()->attach($bonusCourse->id, ['is_bonus' => true]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.create', ['course' => $mainCourse->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('product.bonus_courses', 1)
+            ->where('product.bonus_courses.0.title', 'Dart Fundamental')
+        );
+    }
+
+    public function test_user_can_view_checkout_page_for_a_source_code_product(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->sourceCode()->published()->create([
+            'price' => 199000,
+            'source_code_path' => 'products/source-code/project.zip',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.create', ['product' => $product->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('course', null)
+            ->where('product.courses_count', 0)
+            ->where('product.price', 199000)
+        );
+    }
+
+    public function test_user_cannot_view_checkout_page_for_source_code_product_already_owned(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->sourceCode()->published()->create(['price' => 199000]);
+        $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+        $user->subscriptions()->create(['product_id' => $product->id, 'order_id' => $order->id]);
+
+        $response = $this->actingAs($user)
+            ->get(route('orders.create', ['product' => $product->slug]));
+
+        $response->assertRedirect(route('source-code.show', $product->slug));
+    }
+
+    public function test_free_source_code_order_redirects_to_source_code_show_page(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->sourceCode()->published()->create(['price' => 0]);
+
+        $response = $this->actingAs($user)
+            ->post(route('orders.store'), [
+                'product_id' => $product->id,
+            ]);
+
+        $response->assertRedirect(route('source-code.show', $product->slug));
+        $this->assertDatabaseHas('user_subscriptions', [
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+    }
+
     public function test_checkout_page_prefills_the_currently_active_voucher(): void
     {
         $user = User::factory()->create();
@@ -193,6 +261,29 @@ class UserPurchaseTest extends TestCase
         );
     }
 
+    public function test_paid_order_show_page_flags_bonus_courses_via_pivot(): void
+    {
+        $user = User::factory()->create();
+        $mainCourse = Course::factory()->create(['is_published' => true]);
+        $bonusCourse = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->bundle()->published()->create(['price' => 100000]);
+        $product->courses()->attach($mainCourse->id, ['is_bonus' => false]);
+        $product->courses()->attach($bonusCourse->id, ['is_bonus' => true]);
+
+        $order = Order::factory()->paid()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('orders.show', $order->id));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('order.product.courses.0.pivot.is_bonus', false)
+            ->where('order.product.courses.1.pivot.is_bonus', true)
+        );
+    }
+
     public function test_order_show_page_flags_a_valid_signed_return_from_xendit(): void
     {
         $user = User::factory()->create();
@@ -279,6 +370,34 @@ class UserPurchaseTest extends TestCase
                 'orders.data.0.product.courses.0.thumbnail',
                 Storage::disk('public')->url('courses/cover.jpg'),
             )
+        );
+    }
+
+    public function test_orders_index_keeps_thumbnail_correct_for_multiple_orders_of_the_same_product(): void
+    {
+        // Orders sharing the same product_id share the same Eloquent Product/Course
+        // instance under eager loading — this guards against the thumbnail URL getting
+        // mutated (and doubled up) once per order that references the same course.
+        $user = User::factory()->create();
+        $course = Course::factory()->create([
+            'is_published' => true,
+            'thumbnail' => 'courses/cover.jpg',
+        ]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+
+        Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+        Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+        Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+
+        $response = $this->actingAs($user)->get(route('orders.index'));
+
+        $expectedUrl = Storage::disk('public')->url('courses/cover.jpg');
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('orders.data.0.product.courses.0.thumbnail', $expectedUrl)
+            ->where('orders.data.1.product.courses.0.thumbnail', $expectedUrl)
+            ->where('orders.data.2.product.courses.0.thumbnail', $expectedUrl)
         );
     }
 

@@ -4,7 +4,6 @@ namespace App\Actions\PageView;
 
 use App\Models\PageView;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 
 class GetVisitStats
 {
@@ -14,34 +13,48 @@ class GetVisitStats
      *     total_visits: int,
      *     guest_visits: int,
      *     unique_logged_in_visitors: int,
-     *     visits: Collection<int, array{id: int, user_name: string, user_email: string, path: string, visited_at: string}>,
+     *     hourly: array<int, array{hour: int, total_visits: int, guest_visits: int, logged_in_visits: int}>,
      * }
      */
     public function handle(?string $date = null): array
     {
         $day = $date ? Carbon::parse($date)->startOfDay() : Carbon::today();
 
-        $loggedInViews = PageView::query()
+        $totalVisits = PageView::query()->whereDate('created_at', $day)->count();
+        $loggedInVisits = PageView::query()->whereDate('created_at', $day)->whereNotNull('user_id')->count();
+        $uniqueLoggedInVisitors = PageView::query()
             ->whereDate('created_at', $day)
             ->whereNotNull('user_id')
-            ->with('user')
-            ->latest('created_at')
-            ->get();
+            ->distinct('user_id')
+            ->count('user_id');
 
-        $totalVisits = PageView::query()->whereDate('created_at', $day)->count();
+        // Breakdown per jam, bukan daftar per kunjungan — supaya jumlah baris yang
+        // ditampilkan tetap tetap (maksimal 24), berapa pun banyaknya trafik hari itu.
+        // Dikelompokkan di PHP (bukan HOUR() SQL) supaya query-nya tetap portable
+        // antar driver database (MySQL di production, SQLite di test).
+        $rowsByHour = PageView::query()
+            ->whereDate('created_at', $day)
+            ->get(['created_at', 'user_id'])
+            ->groupBy(fn (PageView $view) => (int) $view->created_at->format('G'));
+
+        $hourly = collect(range(0, 23))->map(function (int $hour) use ($rowsByHour) {
+            $rows = $rowsByHour->get($hour, collect());
+            $loggedIn = $rows->whereNotNull('user_id')->count();
+
+            return [
+                'hour' => $hour,
+                'total_visits' => $rows->count(),
+                'guest_visits' => $rows->count() - $loggedIn,
+                'logged_in_visits' => $loggedIn,
+            ];
+        })->values()->all();
 
         return [
             'date' => $day->toDateString(),
             'total_visits' => $totalVisits,
-            'guest_visits' => $totalVisits - $loggedInViews->count(),
-            'unique_logged_in_visitors' => $loggedInViews->pluck('user_id')->unique()->count(),
-            'visits' => $loggedInViews->map(fn (PageView $view) => [
-                'id' => $view->id,
-                'user_name' => $view->user->name,
-                'user_email' => $view->user->email,
-                'path' => $view->path,
-                'visited_at' => $view->created_at->format('H:i'),
-            ]),
+            'guest_visits' => $totalVisits - $loggedInVisits,
+            'unique_logged_in_visitors' => $uniqueLoggedInVisitors,
+            'hourly' => $hourly,
         ];
     }
 }

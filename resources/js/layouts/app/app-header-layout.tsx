@@ -25,7 +25,9 @@ export default function AppHeaderLayout({
                 </div>
             )}
 
-            <AppContent variant="header">{children}</AppContent>
+            <div className="pb-16">
+                <AppContent variant="header">{children}</AppContent>
+            </div>
             <PublicFooter />
         </AppShell>
     );

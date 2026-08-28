@@ -40,7 +40,12 @@ class CourseController extends Controller
     public function store(CourseRequest $request): RedirectResponse
     {
         $course = app(CreateCourse::class)->handle($request->validated());
-        app(SyncCourseGallery::class)->handle($course, $request->file('gallery', []));
+        app(SyncCourseGallery::class)->handle(
+            $course,
+            $request->file('gallery', []),
+            [],
+            $request->validated('gallery_youtube_urls', []),
+        );
         app(SyncCourseTechnologies::class)->handle($course, $request->validated('technology_ids', []));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Course berhasil ditambahkan.']);
@@ -67,6 +72,7 @@ class CourseController extends Controller
             $course,
             $request->file('gallery', []),
             $request->validated('remove_gallery_ids', []),
+            $request->validated('gallery_youtube_urls', []),
         );
         app(SyncCourseTechnologies::class)->handle($course, $request->validated('technology_ids', []));
 

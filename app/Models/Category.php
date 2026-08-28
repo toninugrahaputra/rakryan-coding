@@ -25,6 +25,8 @@ class Category extends Model
 
     public function publishedCourses(): HasMany
     {
-        return $this->hasMany(Course::class)->where('is_published', true);
+        return $this->hasMany(Course::class)
+            ->where('is_published', true)
+            ->whereHas('products', fn ($q) => $q->where('is_published', true)->where('course_product.is_bonus', false));
     }
 }

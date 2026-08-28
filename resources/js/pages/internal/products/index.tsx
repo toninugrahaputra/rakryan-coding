@@ -28,7 +28,7 @@ type Product = {
     id: number;
     title: string;
     slug: string;
-    type: 'single' | 'bundle';
+    type: 'single' | 'bundle' | 'source_code';
     thumbnail: string | null;
     price: number;
     price_strikethrough: number | null;
@@ -103,7 +103,11 @@ export default function ProductsIndex({ products }: { products: PaginatedResourc
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline">
-                                                {product.type === 'single' ? 'Single' : 'Bundle'}
+                                                {product.type === 'single'
+                                                    ? 'Single'
+                                                    : product.type === 'bundle'
+                                                      ? 'Bundle'
+                                                      : 'Source Code'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

@@ -6,4 +6,5 @@ enum ProductType: string
 {
     case Single = 'single';
     case Bundle = 'bundle';
+    case SourceCode = 'source_code';
 }

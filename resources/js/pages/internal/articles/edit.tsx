@@ -43,7 +43,7 @@ export default function ArticlesEdit({ article }: { article: ArticleProp }) {
         e.preventDefault();
         setProcessing(true);
 
-        const { data: flushedContent, files: imageFiles } =
+        const { data: flushedContent, files: imageFiles, deletedUrls } =
             await editorRef.current!.flush();
 
         let finalContent = flushedContent;
@@ -77,6 +77,7 @@ export default function ArticlesEdit({ article }: { article: ArticleProp }) {
             excerpt: form.excerpt,
             content: finalContent,
             is_published: form.is_published,
+            deleted_images: deletedUrls,
         };
 
         if (thumbnailFile) {

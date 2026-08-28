@@ -80,7 +80,7 @@ export function CourseCard({
                         src={course.thumbnail}
                         alt={course.title}
                         loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-102"
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-102"
                     />
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">

@@ -27,6 +27,8 @@ class ArticleRequest extends FormRequest
             'content' => ['nullable', 'array'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
             'is_published' => ['boolean'],
+            'deleted_images' => ['nullable', 'array'],
+            'deleted_images.*' => ['nullable', 'string'],
         ];
     }
 }

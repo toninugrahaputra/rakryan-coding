@@ -17,11 +17,13 @@ class ProductShowResource extends JsonResource
             'description' => $this->description,
             'type' => $this->type->value,
             'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
+            'has_source_code_file' => (bool) $this->source_code_path,
             'price' => $this->price,
             'price_strikethrough' => $this->price_strikethrough,
             'is_published' => $this->is_published,
             'is_favourite' => $this->is_favourite,
-            'course_ids' => $this->whenLoaded('courses', fn () => $this->courses->pluck('id')->toArray()),
+            'course_ids' => $this->whenLoaded('courses', fn () => $this->courses->where('pivot.is_bonus', false)->pluck('id')->values()->toArray()),
+            'bonus_course_ids' => $this->whenLoaded('courses', fn () => $this->courses->where('pivot.is_bonus', true)->pluck('id')->values()->toArray()),
         ];
     }
 }

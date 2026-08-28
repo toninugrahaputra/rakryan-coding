@@ -5,7 +5,7 @@ import FilePondPluginImageResize from 'filepond-plugin-image-resize';
 import FilePondPluginImageTransform from 'filepond-plugin-image-transform';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import 'filepond/dist/filepond.min.css';
-import { X } from 'lucide-react';
+import { PlayCircle, X } from 'lucide-react';
 import { FilePond } from 'react-filepond';
 
 registerPlugin(
@@ -18,6 +18,7 @@ registerPlugin(
 type ExistingImage = {
     id: number;
     url: string;
+    type?: 'image' | 'video';
 };
 
 type Props = {
@@ -45,6 +46,11 @@ export default function GalleryUpload({
                     {visibleExisting.map((img) => (
                         <div key={img.id} className="relative overflow-hidden rounded-md border">
                             <img src={img.url} alt="Galeri" className="h-24 w-full object-cover" />
+                            {img.type === 'video' && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <PlayCircle className="h-8 w-8 text-white drop-shadow" />
+                                </div>
+                            )}
                             {onRemoveExisting && (
                                 <button
                                     type="button"

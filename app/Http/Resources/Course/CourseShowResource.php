@@ -56,6 +56,12 @@ class CourseShowResource extends JsonResource
             'price_strikethrough' => $cheapestProduct?->price_strikethrough ?? null,
             'is_free' => $cheapestProduct !== null && $cheapestProduct->price === 0,
             'has_product' => $cheapestProduct !== null,
+            'bonus_courses' => $cheapestProduct?->relationLoaded('courses')
+                ? $cheapestProduct->courses->map(fn ($course) => [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                ])->values()
+                : [],
             'rating' => $averageRating,
             'reviews_count' => $ratingCount,
             'completed_contents_count' => $completedCount,
@@ -74,7 +80,11 @@ class CourseShowResource extends JsonResource
             'gallery' => $this->whenLoaded('galleries', fn () => $this->galleries
                 ->map(fn ($gallery) => [
                     'id' => $gallery->id,
-                    'url' => Storage::disk('public')->url($gallery->path),
+                    'type' => $gallery->type,
+                    'url' => $gallery->type === 'video'
+                        ? "https://img.youtube.com/vi/{$gallery->youtube_id}/hqdefault.jpg"
+                        : Storage::disk('public')->url($gallery->path),
+                    'youtube_id' => $gallery->youtube_id,
                 ])
                 ->values()),
             'technologies' => TechnologyListResource::collection($this->whenLoaded('technologies')),

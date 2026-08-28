@@ -12,7 +12,7 @@ class EditorImageController extends Controller
     public function store(Request $request, string $context, string $identifier): JsonResponse
     {
         $request->validate([
-            'image' => ['required', 'image', 'max:4096'],
+            'image' => ['required', 'image', 'max:2048'],
         ]);
 
         $file = $request->file('image');

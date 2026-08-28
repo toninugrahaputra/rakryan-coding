@@ -6,6 +6,8 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -179,6 +181,86 @@ class ProductTest extends TestCase
         $response->assertSessionHasErrors(['course_ids']);
     }
 
+    public function test_admin_can_create_source_code_product_without_course(): void
+    {
+        Storage::fake('local');
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'E-Commerce Laravel Source Code',
+            'slug' => 'ecommerce-laravel-source-code',
+            'type' => 'source_code',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'source_code_file' => UploadedFile::fake()->create('project.zip', 1024, 'application/zip'),
+        ]);
+
+        $response->assertRedirect('/internal/products');
+        $this->assertDatabaseHas('products', ['slug' => 'ecommerce-laravel-source-code', 'type' => 'source_code']);
+
+        $product = Product::where('slug', 'ecommerce-laravel-source-code')->first();
+        $this->assertCount(0, $product->courses);
+        $this->assertNotNull($product->source_code_path);
+        Storage::disk('local')->assertExists($product->source_code_path);
+    }
+
+    public function test_source_code_product_rejects_zip_over_50mb(): void
+    {
+        Storage::fake('local');
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Big Project',
+            'slug' => 'big-project',
+            'type' => 'source_code',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'source_code_file' => UploadedFile::fake()->create('project.zip', 51300, 'application/zip'),
+        ]);
+
+        $response->assertSessionHasErrors(['source_code_file']);
+    }
+
+    public function test_source_code_product_requires_zip_file_on_create(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'No File Project',
+            'slug' => 'no-file-project',
+            'type' => 'source_code',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+        ]);
+
+        $response->assertSessionHasErrors(['source_code_file']);
+    }
+
+    public function test_admin_can_update_source_code_product_without_replacing_file(): void
+    {
+        Storage::fake('local');
+
+        $product = Product::factory()->sourceCode()->create([
+            'source_code_path' => 'products/source-code/existing.zip',
+        ]);
+        Storage::disk('local')->put('products/source-code/existing.zip', 'fake-zip-content');
+
+        $response = $this->actingAs($this->admin)->put("/internal/products/{$product->slug}", [
+            'title' => 'Updated Title',
+            'slug' => $product->slug,
+            'type' => 'source_code',
+            'price' => 149000,
+            'is_published' => true,
+            'is_favourite' => false,
+        ]);
+
+        $response->assertRedirect('/internal/products');
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'title' => 'Updated Title',
+            'source_code_path' => 'products/source-code/existing.zip',
+        ]);
+    }
+
     public function test_create_product_requires_unique_slug(): void
     {
         $course = Course::factory()->create();
@@ -196,6 +278,75 @@ class ProductTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['slug']);
+    }
+
+    public function test_admin_can_create_bundle_product_with_bonus_courses(): void
+    {
+        $mainCourse = Course::factory()->create();
+        $bonusCourses = Course::factory()->count(2)->create();
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Flutter Bundle',
+            'slug' => 'flutter-bundle',
+            'type' => 'bundle',
+            'price' => 75000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'course_ids' => [$mainCourse->id],
+            'bonus_course_ids' => $bonusCourses->pluck('id')->toArray(),
+        ]);
+
+        $response->assertRedirect('/internal/products');
+
+        $product = Product::where('slug', 'flutter-bundle')->first();
+        $this->assertCount(3, $product->courses);
+        $this->assertFalse($product->courses->firstWhere('id', $mainCourse->id)->pivot->is_bonus);
+        foreach ($bonusCourses as $bonusCourse) {
+            $this->assertTrue($product->courses->firstWhere('id', $bonusCourse->id)->pivot->is_bonus);
+        }
+    }
+
+    public function test_course_cannot_be_both_main_and_bonus_on_the_same_product(): void
+    {
+        $course = Course::factory()->create();
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Flutter Bundle',
+            'slug' => 'flutter-bundle',
+            'type' => 'bundle',
+            'price' => 75000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'course_ids' => [$course->id],
+            'bonus_course_ids' => [$course->id],
+        ]);
+
+        $response->assertSessionHasErrors(['bonus_course_ids']);
+    }
+
+    public function test_admin_can_update_product_bonus_courses(): void
+    {
+        $mainCourse = Course::factory()->create();
+        $bonusCourse = Course::factory()->create();
+        $product = Product::factory()->bundle()->create();
+        $product->courses()->attach($mainCourse->id, ['is_bonus' => false]);
+
+        $response = $this->actingAs($this->admin)->put("/internal/products/{$product->slug}", [
+            'title' => $product->title,
+            'slug' => $product->slug,
+            'type' => 'bundle',
+            'price' => $product->price,
+            'is_published' => true,
+            'is_favourite' => false,
+            'course_ids' => [$mainCourse->id],
+            'bonus_course_ids' => [$bonusCourse->id],
+        ]);
+
+        $response->assertRedirect('/internal/products');
+
+        $product->refresh();
+        $this->assertFalse($product->courses->firstWhere('id', $mainCourse->id)->pivot->is_bonus);
+        $this->assertTrue($product->courses->firstWhere('id', $bonusCourse->id)->pivot->is_bonus);
     }
 
     public function test_admin_can_update_product(): void

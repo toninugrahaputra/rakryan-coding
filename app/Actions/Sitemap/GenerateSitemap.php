@@ -23,7 +23,7 @@ class GenerateSitemap
 
         $courses = Course::query()
             ->where('is_published', true)
-            ->whereHas('products', fn ($q) => $q->where('is_published', true))
+            ->whereHas('products', fn ($q) => $q->where('is_published', true)->where('course_product.is_bonus', false))
             ->get(['slug', 'updated_at'])
             ->map(fn (Course $course) => [
                 'loc' => route('courses.show', $course),

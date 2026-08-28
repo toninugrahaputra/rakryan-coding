@@ -24,14 +24,16 @@ export default function ProductsCreate({ courses }: { courses: Course[] }) {
         title: '',
         slug: '',
         description: '',
-        type: 'single' as 'single' | 'bundle',
+        type: 'single' as 'single' | 'bundle' | 'source_code',
         price: '',
         price_strikethrough: '',
         is_published: false,
         is_favourite: false,
         course_ids: [] as number[],
+        bonus_course_ids: [] as number[],
     });
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+    const [sourceCodeFile, setSourceCodeFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -40,8 +42,11 @@ export default function ProductsCreate({ courses }: { courses: Course[] }) {
         setForm((prev) => ({ ...prev, title, slug: slugify(title) }));
     }
 
-    function handleTypeChange(type: 'single' | 'bundle') {
-        setForm((prev) => ({ ...prev, type, course_ids: [] }));
+    function handleTypeChange(type: 'single' | 'bundle' | 'source_code') {
+        setForm((prev) => ({ ...prev, type, course_ids: [], bonus_course_ids: [] }));
+        if (type !== 'source_code') {
+            setSourceCodeFile(null);
+        }
     }
 
     function handleSubmit(e: React.FormEvent) {
@@ -54,6 +59,7 @@ export default function ProductsCreate({ courses }: { courses: Course[] }) {
                 price: form.price === '' ? '' : Number(form.price),
                 price_strikethrough: form.price_strikethrough === '' ? null : Number(form.price_strikethrough),
                 thumbnail: thumbnailFile,
+                source_code_file: sourceCodeFile,
             },
             {
                 onError: (errs) => { setErrors(errs); setProcessing(false); },
@@ -151,26 +157,62 @@ export default function ProductsCreate({ courses }: { courses: Course[] }) {
                                 <SelectContent>
                                     <SelectItem value="single">Single (1 course)</SelectItem>
                                     <SelectItem value="bundle">Bundle (beberapa course)</SelectItem>
+                                    <SelectItem value="source_code">Source Code (tanpa course)</SelectItem>
                                 </SelectContent>
                             </Select>
                             {errors.type && <p className="text-destructive text-sm">{errors.type}</p>}
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            <Label>
-                                Course{form.type === 'bundle' ? 's' : ''}
-                                <span className="text-muted-foreground ml-1 text-xs">
-                                    {form.type === 'single' ? '(pilih 1)' : '(pilih beberapa)'}
-                                </span>
-                            </Label>
-                            <CourseSheetSelector
-                                courses={courses}
-                                value={form.course_ids}
-                                onChange={(ids) => setForm((p) => ({ ...p, course_ids: ids }))}
-                                type={form.type}
-                                error={errors.course_ids}
-                            />
-                        </div>
+                        {form.type === 'source_code' ? (
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="source_code_file">File Source Code (.zip, maks 50MB)</Label>
+                                <input
+                                    id="source_code_file"
+                                    type="file"
+                                    accept=".zip"
+                                    onChange={(e) => setSourceCodeFile(e.target.files?.[0] ?? null)}
+                                    className="border-input file:bg-primary file:text-primary-foreground flex w-full rounded-md border bg-transparent text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2 file:text-xs file:font-semibold"
+                                />
+                                {sourceCodeFile && (
+                                    <p className="text-muted-foreground text-xs">{sourceCodeFile.name}</p>
+                                )}
+                                {errors.source_code_file && <p className="text-destructive text-sm">{errors.source_code_file}</p>}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                <Label>
+                                    Course{form.type === 'bundle' ? 's' : ''}
+                                    <span className="text-muted-foreground ml-1 text-xs">
+                                        {form.type === 'single' ? '(pilih 1)' : '(pilih beberapa)'}
+                                    </span>
+                                </Label>
+                                <CourseSheetSelector
+                                    courses={courses}
+                                    value={form.course_ids}
+                                    onChange={(ids) => setForm((p) => ({ ...p, course_ids: ids }))}
+                                    type={form.type}
+                                    error={errors.course_ids}
+                                />
+                            </div>
+                        )}
+
+                        {form.type !== 'source_code' && (
+                            <div className="flex flex-col gap-2">
+                                <Label>
+                                    Course Bonus
+                                    <span className="text-muted-foreground ml-1 text-xs">
+                                        (gratis, tidak tampil di katalog)
+                                    </span>
+                                </Label>
+                                <CourseSheetSelector
+                                    courses={courses}
+                                    value={form.bonus_course_ids}
+                                    onChange={(ids) => setForm((p) => ({ ...p, bonus_course_ids: ids }))}
+                                    type="bundle"
+                                    error={errors.bonus_course_ids}
+                                />
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex items-center gap-3">

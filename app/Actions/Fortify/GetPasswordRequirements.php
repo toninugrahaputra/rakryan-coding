@@ -23,7 +23,7 @@ class GetPasswordRequirements
         }
 
         return [
-            'min' => 12,
+            'min' => 8,
             'letters' => true,
             'mixedCase' => true,
             'numbers' => true,

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Article;
 
+use App\Actions\Editor\DeleteEditorImages;
 use App\Models\Article;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,10 @@ class UpdateArticle
         }
 
         $article->update($fields);
+
+        if (! empty($data['deleted_images'])) {
+            app(DeleteEditorImages::class)->handle($data['deleted_images']);
+        }
     }
 
     private function replaceThumbnail(Article $article, mixed $file): ?string

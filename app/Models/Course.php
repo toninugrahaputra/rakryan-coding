@@ -39,7 +39,7 @@ class Course extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class);
+        return $this->belongsToMany(Product::class)->using(CourseProduct::class)->withPivot('is_bonus');
     }
 
     public function reviews(): HasMany

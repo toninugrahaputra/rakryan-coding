@@ -7,6 +7,7 @@ import {
     Copy,
     Image as ImageIcon,
     Newspaper,
+    PlayCircle,
     Ticket,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -16,6 +17,8 @@ import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import { Seo } from '@/components/seo';
+import { SourceCodeCard } from '@/components/source-code-card';
+import type { SourceCodeCardData } from '@/components/source-code-card';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { WhatsappFloatButton } from '@/components/whatsapp-float-button';
 import { useClipboard } from '@/hooks/use-clipboard';
@@ -45,7 +48,9 @@ interface Article {
 
 interface ProjectGalleryItem {
     id: number;
+    type: 'image' | 'video';
     url: string;
+    youtube_id: string | null;
     course_title: string | null;
     course_slug: string | null;
 }
@@ -63,6 +68,7 @@ interface Voucher {
 interface WelcomeProps {
     featuredCourses: Course[];
     articles: Article[];
+    sourceCodeProducts: SourceCodeCardData[];
     projectGallery: ProjectGalleryItem[];
     stats: {
         total_courses: number;
@@ -102,6 +108,7 @@ function formatVoucherDiscount(voucher: Voucher): string {
 export default function Welcome({
     featuredCourses = [],
     articles = [],
+    sourceCodeProducts = [],
     projectGallery = [],
     auth,
     vouchers = [],
@@ -420,6 +427,66 @@ export default function Welcome({
                         </div>
                     </section>
 
+                    {/* ─── SOURCE CODE PROJECT ──────── */}
+                    <section
+                        id="source-code"
+                        className="border-b border-border/40 bg-muted/20 py-20"
+                    >
+                        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                            <ScrollReveal
+                                animation="fade-up"
+                                className="mb-12 flex flex-col items-center gap-6 text-center"
+                            >
+                                <span className="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-eyebrow text-primary uppercase">
+                                    PRODUK BARU
+                                </span>
+                                <h2 className="text-title text-foreground">
+                                    Butuh source code siap pakai?
+                                </h2>
+                                <p className="mx-auto max-w-2xl text-body text-muted-foreground">
+                                    Selain belajar lewat modul teks, kamu juga
+                                    bisa langsung beli source code project siap
+                                    pakai — cocok buat referensi, modifikasi,
+                                    atau bahan tugas akhir.
+                                </p>
+                            </ScrollReveal>
+
+                            {sourceCodeProducts.length === 0 ? (
+                                <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border py-16 text-center">
+                                    <span className="text-3xl">🚧</span>
+                                    <p className="text-body-sm font-semibold text-foreground">
+                                        Coming Soon
+                                    </p>
+                                    <p className="max-w-md text-body-sm text-muted-foreground">
+                                        Belum ada source code project yang
+                                        tersedia saat ini. Pantau terus, segera
+                                        hadir!
+                                    </p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                        {sourceCodeProducts.map((product) => (
+                                            <SourceCodeCard
+                                                key={product.id}
+                                                product={product}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-8 flex justify-center">
+                                        <Link
+                                            href="/source-code"
+                                            className="group inline-flex items-center gap-1.5 text-button text-primary transition-colors hover:text-primary/80"
+                                        >
+                                            Lihat semua
+                                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </Link>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </section>
+
                     {/* ─── ARTIKEL (menggantikan Kategori) ──────── */}
                     <section
                         id="artikel"
@@ -563,6 +630,11 @@ export default function Welcome({
                                                     loading="lazy"
                                                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
+                                                {item.type === 'video' && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                                        <PlayCircle className="h-12 w-12 text-white drop-shadow-lg" />
+                                                    </div>
+                                                )}
                                                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 via-black/0 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                                     {item.course_title && (
                                                         <span className="line-clamp-1 text-caption font-bold text-white">
@@ -570,7 +642,9 @@ export default function Welcome({
                                                         </span>
                                                     )}
                                                     <span className="mt-0.5 text-caption font-medium text-white/70">
-                                                        Klik untuk perbesar
+                                                        {item.type === 'video'
+                                                            ? 'Klik untuk putar'
+                                                            : 'Klik untuk perbesar'}
                                                     </span>
                                                 </div>
                                             </button>
@@ -601,20 +675,42 @@ export default function Welcome({
                                 projectGallery[lightboxIndex] && (
                                     <div>
                                         <div className="relative">
-                                            <img
-                                                src={
-                                                    projectGallery[
-                                                        lightboxIndex
-                                                    ].url
-                                                }
-                                                alt={
-                                                    projectGallery[
-                                                        lightboxIndex
-                                                    ].course_title ??
-                                                    'Hasil project'
-                                                }
-                                                className="max-h-[80vh] w-full rounded-xl object-contain"
-                                            />
+                                            {projectGallery[lightboxIndex]
+                                                .type === 'video' ? (
+                                                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
+                                                    <iframe
+                                                        src={`https://www.youtube.com/embed/${
+                                                            projectGallery[
+                                                                lightboxIndex
+                                                            ].youtube_id
+                                                        }?autoplay=1&rel=0`}
+                                                        title={
+                                                            projectGallery[
+                                                                lightboxIndex
+                                                            ].course_title ??
+                                                            'Hasil project'
+                                                        }
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                        className="h-full w-full"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    src={
+                                                        projectGallery[
+                                                            lightboxIndex
+                                                        ].url
+                                                    }
+                                                    alt={
+                                                        projectGallery[
+                                                            lightboxIndex
+                                                        ].course_title ??
+                                                        'Hasil project'
+                                                    }
+                                                    className="max-h-[80vh] w-full rounded-xl object-contain"
+                                                />
+                                            )}
                                             {projectGallery.length > 1 && (
                                                 <>
                                                     <button

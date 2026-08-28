@@ -6,10 +6,12 @@ use App\Actions\Order\ApproveOrder;
 use App\Actions\Order\CancelOrder;
 use App\Actions\Order\CreateOrder;
 use App\Actions\User\HasPurchasedCourse;
+use App\Actions\User\HasPurchasedProduct;
 use App\Actions\Voucher\ApplyVoucher;
 use App\Actions\Voucher\GetActiveVoucherCode;
 use App\Actions\Voucher\RedeemVoucher;
 use App\Enums\OrderStatus;
+use App\Http\Resources\Technology\TechnologyListResource;
 use App\Models\Course;
 use App\Models\Order;
 use App\Models\Product;
@@ -30,11 +32,36 @@ class OrderController extends Controller
     public function create(Request $request): Response|RedirectResponse
     {
         $courseSlug = $request->query('course');
+        $productSlug = $request->query('product');
+
+        if ($productSlug) {
+            $product = Product::where('slug', $productSlug)->where('is_published', true)->firstOrFail();
+
+            if (app(HasPurchasedProduct::class)->handle($request->user(), $product)) {
+                return redirect()->route('source-code.show', $product->slug)->with('error', 'Anda sudah memiliki produk ini.');
+            }
+
+            return Inertia::render('orders/create', [
+                'course' => null,
+                'product' => [
+                    'id' => $product->id,
+                    'title' => $product->title,
+                    'thumbnail' => $product->thumbnail ? Storage::disk('public')->url($product->thumbnail) : null,
+                    'price' => $product->price,
+                    'price_strikethrough' => $product->price_strikethrough,
+                    'courses_count' => 0,
+                ],
+                'defaultVoucherCode' => app(GetActiveVoucherCode::class)->handle(),
+            ]);
+        }
+
         if (! $courseSlug) {
             return redirect()->route('courses.index')->with('error', 'Pilih course terlebih dahulu.');
         }
 
-        $course = Course::where('slug', $courseSlug)->where('is_published', true)->firstOrFail();
+        $course = Course::where('slug', $courseSlug)->where('is_published', true)
+            ->with('technologies')
+            ->firstOrFail();
 
         // Cek jika sudah membeli
         $hasPurchased = app(HasPurchasedCourse::class)->handle($request->user(), $course);
@@ -42,7 +69,7 @@ class OrderController extends Controller
             return redirect()->route('courses.show', $course->slug)->with('error', 'Anda sudah memiliki course ini.');
         }
 
-        $product = $course->products()->where('is_published', true)->orderBy('price')->first();
+        $product = $course->products()->where('is_published', true)->where('course_product.is_bonus', false)->orderBy('price')->first();
         if (! $product) {
             return redirect()->route('courses.show', $course->slug)->with('error', 'Course belum tersedia untuk dibeli.');
         }
@@ -56,13 +83,18 @@ class OrderController extends Controller
                 'tech_stack' => $course->tech_stack,
                 'read_duration' => $course->read_duration,
                 'contents_count' => $course->contents()->count(),
+                'technologies' => TechnologyListResource::collection($course->technologies)->resolve(),
             ],
             'product' => [
                 'id' => $product->id,
                 'title' => $product->title,
+                'thumbnail' => $product->thumbnail ? Storage::disk('public')->url($product->thumbnail) : null,
                 'price' => $product->price,
                 'price_strikethrough' => $product->price_strikethrough,
                 'courses_count' => $product->courses()->count(),
+                'bonus_courses' => $product->courses()->wherePivot('is_bonus', true)->get(['courses.id', 'courses.title'])
+                    ->map(fn (Course $bonusCourse) => ['id' => $bonusCourse->id, 'title' => $bonusCourse->title])
+                    ->values(),
             ],
             'defaultVoucherCode' => app(GetActiveVoucherCode::class)->handle(),
         ]);
@@ -141,8 +173,13 @@ class OrderController extends Controller
         }
 
         if ($netAmount === 0) {
-            return redirect()->route('courses.show', $product->courses->first()->slug)
-                ->with('success', 'Pendaftaran course gratis berhasil!');
+            if ($product->courses->isNotEmpty()) {
+                return redirect()->route('courses.show', $product->courses->first()->slug)
+                    ->with('success', 'Pendaftaran course gratis berhasil!');
+            }
+
+            return redirect()->route('source-code.show', $product->slug)
+                ->with('success', 'Pembelian berhasil! Source code siap diunduh.');
         }
 
         return redirect()->route('orders.show', $order->id);
@@ -155,10 +192,15 @@ class OrderController extends Controller
             ->orderByDesc('created_at')
             ->paginate(10)
             ->through(function (Order $order): Order {
+                // Order dengan product_id yang sama berbagi instance model Product/Course
+                // yang sama persis (Eloquent men-dedupe hasil eager load per foreign key).
+                // Guard str_starts_with mencegah path yang sudah dikonversi ke URL penuh
+                // dibungkus Storage::url() lagi saat instance yang sama diproses ulang
+                // untuk order lain — tanpa ini, URL-nya bakal menumpuk jadi rusak.
                 $order->product?->courses->each(function (Course $course): void {
-                    $course->thumbnail = $course->thumbnail
-                        ? Storage::disk('public')->url($course->thumbnail)
-                        : null;
+                    if ($course->thumbnail && ! str_starts_with($course->thumbnail, 'http')) {
+                        $course->thumbnail = Storage::disk('public')->url($course->thumbnail);
+                    }
                 });
 
                 return $order;

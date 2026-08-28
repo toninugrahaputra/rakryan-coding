@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { store } from '@/actions/App/Http/Controllers/Internal/CourseController';
 import GalleryUpload from '@/components/gallery-upload';
+import GalleryYoutubeInput from '@/components/gallery-youtube-input';
 import ThumbnailUpload from '@/components/thumbnail-upload';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,6 +22,8 @@ import { create, index } from '@/routes/internal/courses';
 type Category = { id: number; name: string };
 type Technology = { id: number; name: string; slug: string; logo_url: string | null };
 
+const MAX_GALLERY_ITEMS = 4;
+
 export default function CoursesCreate({ categories, technologies }: { categories: Category[]; technologies: Technology[] }) {
     const [form, setForm] = useState({
         title: '',
@@ -31,6 +34,7 @@ export default function CoursesCreate({ categories, technologies }: { categories
     });
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+    const [galleryYoutubeUrls, setGalleryYoutubeUrls] = useState<string[]>([]);
     const [technologyIds, setTechnologyIds] = useState<number[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
@@ -47,7 +51,13 @@ export default function CoursesCreate({ categories, technologies }: { categories
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setProcessing(true);
-        router.post(store.url(), { ...form, thumbnail: thumbnailFile, gallery: galleryFiles, technology_ids: technologyIds }, {
+        router.post(store.url(), {
+            ...form,
+            thumbnail: thumbnailFile,
+            gallery: galleryFiles,
+            gallery_youtube_urls: galleryYoutubeUrls,
+            technology_ids: technologyIds,
+        }, {
             onError: (errs) => {
  setErrors(errs); setProcessing(false);
 },
@@ -104,9 +114,24 @@ export default function CoursesCreate({ categories, technologies }: { categories
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label>Galeri hasil project (maks. 4 gambar)</Label>
+                            <Label>Galeri hasil project (maks. {MAX_GALLERY_ITEMS} item — gambar/video)</Label>
                             {errors.gallery && <p className="text-destructive text-sm">{errors.gallery}</p>}
-                            <GalleryUpload onFilesChange={setGalleryFiles} maxImages={4} />
+                            <GalleryUpload
+                                onFilesChange={setGalleryFiles}
+                                maxImages={MAX_GALLERY_ITEMS - galleryYoutubeUrls.length}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Video YouTube (opsional)</Label>
+                            {errors.gallery_youtube_urls && (
+                                <p className="text-destructive text-sm">{errors.gallery_youtube_urls}</p>
+                            )}
+                            <GalleryYoutubeInput
+                                urls={galleryYoutubeUrls}
+                                onChange={setGalleryYoutubeUrls}
+                                remainingSlots={MAX_GALLERY_ITEMS - galleryFiles.length - galleryYoutubeUrls.length}
+                            />
                         </div>
 
                         <div className="flex flex-col gap-2">

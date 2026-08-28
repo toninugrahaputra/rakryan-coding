@@ -76,6 +76,39 @@ class CourseShowPageTest extends TestCase
             ->assertRedirect(route('courses.show', $course->slug));
     }
 
+    public function test_course_show_page_lists_bonus_companion_courses(): void
+    {
+        $mainCourse = Course::factory()->create(['is_published' => true]);
+        $bonusCourse = Course::factory()->create(['is_published' => true, 'title' => 'Dart Fundamental']);
+        $product = Product::factory()->bundle()->published()->create(['price' => 75000]);
+        $product->courses()->attach($mainCourse->id, ['is_bonus' => false]);
+        $product->courses()->attach($bonusCourse->id, ['is_bonus' => true]);
+
+        $response = $this->get(route('courses.show', ['course' => $mainCourse->slug]));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('courses/show')
+            ->has('course.bonus_courses', 1)
+            ->where('course.bonus_courses.0.title', 'Dart Fundamental')
+        );
+    }
+
+    public function test_course_show_page_has_no_bonus_courses_when_none_attached(): void
+    {
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create();
+        $product->courses()->attach($course->id);
+
+        $response = $this->get(route('courses.show', ['course' => $course->slug]));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('courses/show')
+            ->has('course.bonus_courses', 0)
+        );
+    }
+
     public function test_course_show_page_lists_attached_technologies()
     {
         $course = Course::factory()->create(['is_published' => true]);

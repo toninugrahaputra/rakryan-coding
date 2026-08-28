@@ -35,7 +35,10 @@ class DashboardControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page->component('internal/dashboard')
-            && $page->has('stats'));
+            && $page->has('stats')
+            && $page->has('stats.visits_today.total_visits')
+            && $page->has('stats.visits_today.guest_visits')
+            && $page->has('stats.visits_today.unique_logged_in_visitors'));
     }
 
     public function test_non_admin_cannot_view_internal_dashboard(): void

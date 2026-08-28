@@ -131,6 +131,7 @@ class BoldInlineTool {
     private _btn: HTMLButtonElement | null = null;
     static get isInline() { return true; }
     static get title() { return 'Bold'; }
+    static get sanitize() { return { b: {} }; }
     render() {
         this._btn = document.createElement('button');
         this._btn.type = 'button';
@@ -154,6 +155,7 @@ class ItalicInlineTool {
     private _btn: HTMLButtonElement | null = null;
     static get isInline() { return true; }
     static get title() { return 'Italic'; }
+    static get sanitize() { return { i: {} }; }
     render() {
         this._btn = document.createElement('button');
         this._btn.type = 'button';
@@ -177,6 +179,7 @@ class UnderlineInlineTool {
     private _btn: HTMLButtonElement | null = null;
     static get isInline() { return true; }
     static get title() { return 'Underline'; }
+    static get sanitize() { return { u: {} }; }
     render() {
         this._btn = document.createElement('button');
         this._btn.type = 'button';
@@ -1172,8 +1175,14 @@ const EditorJsComponent = forwardRef<EditorJsRef, Props>(function EditorJsCompon
                                     if (decodedXsrf) headers['X-XSRF-TOKEN'] = decodedXsrf;
                                     const body = new FormData();
                                     body.append('image', file);
-                                    const res = await fetch(uploadUrl, { method: 'POST', headers, body });
-                                    return res.json();
+                                    const controller = new AbortController();
+                                    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+                                    try {
+                                        const res = await fetch(uploadUrl, { method: 'POST', headers, body, signal: controller.signal });
+                                        return await res.json();
+                                    } finally {
+                                        clearTimeout(timeoutId);
+                                    }
                                 },
                             },
                         },

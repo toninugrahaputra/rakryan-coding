@@ -62,9 +62,9 @@ class VisitControllerTest extends TestCase
         PageView::factory()->create(['user_id' => $visitor->id, 'path' => 'courses/laravel-dasar'])
             ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 30)])->save();
 
-        // Guest visit on the target date — counted, but not listed individually.
+        // Guest visit on the target date — counted in the same hour bucket.
         PageView::factory()->create(['user_id' => null, 'path' => '/'])
-            ->forceFill(['created_at' => $targetDate->copy()->setTime(14, 0)])->save();
+            ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 45)])->save();
 
         // Visit on a different date — must not leak into the target date's stats.
         PageView::factory()->create(['user_id' => $visitor->id, 'path' => 'articles'])
@@ -77,11 +77,45 @@ class VisitControllerTest extends TestCase
             ->where('stats.total_visits', 2)
             ->where('stats.guest_visits', 1)
             ->where('stats.unique_logged_in_visitors', 1)
-            ->where('stats.visits.0.user_name', 'Budi Santoso')
-            ->where('stats.visits.0.user_email', 'budi@example.com')
-            ->where('stats.visits.0.path', 'courses/laravel-dasar')
-            ->where('stats.visits.0.visited_at', '09:30')
+            ->where('stats.hourly.9.hour', 9)
+            ->where('stats.hourly.9.total_visits', 2)
+            ->where('stats.hourly.9.guest_visits', 1)
+            ->where('stats.hourly.9.logged_in_visits', 1)
+            ->where('stats.hourly.10.total_visits', 0)
+            ->has('stats.hourly', 24)
         );
+    }
+
+    public function test_admin_can_view_logged_in_visit_details(): void
+    {
+        $visitor = User::factory()->create(['name' => 'Budi Santoso', 'email' => 'budi@example.com']);
+        $targetDate = Carbon::parse('2026-08-10');
+
+        PageView::factory()->create(['user_id' => $visitor->id, 'path' => 'courses/laravel-dasar'])
+            ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 30)])->save();
+
+        // Guest visit on the same date — must not appear in the logged-in detail list.
+        PageView::factory()->create(['user_id' => null, 'path' => '/'])
+            ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 45)])->save();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/internal/visits/logged-in?date=2026-08-10');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonFragment([
+            'user_name' => 'Budi Santoso',
+            'user_email' => 'budi@example.com',
+            'path' => 'courses/laravel-dasar',
+            'visited_at' => '09:30',
+        ]);
+    }
+
+    public function test_non_admin_cannot_view_logged_in_visit_details(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/internal/visits/logged-in');
+
+        $response->assertStatus(403);
     }
 
     public function test_visits_page_rejects_invalid_date_format(): void

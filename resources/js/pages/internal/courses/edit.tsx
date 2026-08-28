@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { update } from '@/actions/App/Http/Controllers/Internal/CourseController';
 import GalleryUpload from '@/components/gallery-upload';
+import GalleryYoutubeInput from '@/components/gallery-youtube-input';
 import ThumbnailUpload from '@/components/thumbnail-upload';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,6 +22,8 @@ import { index } from '@/routes/internal/courses';
 type Category = { id: number; name: string };
 type Technology = { id: number; name: string; slug: string; logo_url: string | null };
 
+const MAX_GALLERY_ITEMS = 4;
+
 type CourseProp = {
     id: number;
     title: string;
@@ -29,7 +32,7 @@ type CourseProp = {
     thumbnail: string | null;
     category_id: number | null;
     is_published: boolean;
-    gallery?: Array<{ id: number; url: string }>;
+    gallery?: Array<{ id: number; url: string; type?: 'image' | 'video' }>;
     technologies?: Array<{ id: number; name: string; slug: string; logo_url: string | null }>;
 };
 
@@ -46,6 +49,7 @@ export default function CoursesEdit({ course, categories, technologies }: { cour
     const [thumbnailCleared, setThumbnailCleared] = useState(false);
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
     const [removedGalleryIds, setRemovedGalleryIds] = useState<number[]>([]);
+    const [galleryYoutubeUrls, setGalleryYoutubeUrls] = useState<string[]>([]);
     const [technologyIds, setTechnologyIds] = useState<number[]>(
         (course.technologies ?? []).map((tech) => tech.id),
     );
@@ -69,6 +73,7 @@ export default function CoursesEdit({ course, categories, technologies }: { cour
             ...form,
             gallery: galleryFiles,
             remove_gallery_ids: removedGalleryIds,
+            gallery_youtube_urls: galleryYoutubeUrls,
             technology_ids: technologyIds,
         };
 
@@ -142,14 +147,31 @@ export default function CoursesEdit({ course, categories, technologies }: { cour
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label>Galeri hasil project (maks. 4 gambar)</Label>
+                            <Label>Galeri hasil project (maks. {MAX_GALLERY_ITEMS} item — gambar/video)</Label>
                             {errors.gallery && <p className="text-destructive text-sm">{errors.gallery}</p>}
                             <GalleryUpload
                                 existingImages={course.gallery ?? []}
                                 removedIds={removedGalleryIds}
                                 onRemoveExisting={(id) => setRemovedGalleryIds((prev) => [...prev, id])}
                                 onFilesChange={setGalleryFiles}
-                                maxImages={4}
+                                maxImages={MAX_GALLERY_ITEMS - galleryYoutubeUrls.length}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Video YouTube (opsional)</Label>
+                            {errors.gallery_youtube_urls && (
+                                <p className="text-destructive text-sm">{errors.gallery_youtube_urls}</p>
+                            )}
+                            <GalleryYoutubeInput
+                                urls={galleryYoutubeUrls}
+                                onChange={setGalleryYoutubeUrls}
+                                remainingSlots={
+                                    MAX_GALLERY_ITEMS -
+                                    (course.gallery ?? []).filter((g) => !removedGalleryIds.includes(g.id)).length -
+                                    galleryFiles.length -
+                                    galleryYoutubeUrls.length
+                                }
                             />
                         </div>
 

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Actions\Article\GetLatestArticles;
 use App\Actions\Course\GetFeaturedCourses;
 use App\Actions\Course\GetRandomProjectGallery;
+use App\Actions\Product\GetPublishedSourceCodeProducts;
 use App\Actions\Seo\ShareSeoMeta;
 use App\Http\Resources\Article\ArticleListResource;
 use App\Http\Resources\Course\CourseListResource;
+use App\Http\Resources\Product\SourceCodeListResource;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\User;
@@ -25,11 +27,18 @@ class WelcomeController extends Controller
         // Artikel terbaru untuk section "Belajar dari Artikel"
         $articles = app(GetLatestArticles::class)->handle();
 
+        // Source code project untuk section "Butuh source code siap pakai?"
+        $sourceCodeProducts = app(GetPublishedSourceCodeProducts::class)->handle(3);
+
         // Galeri hasil project acak lintas course untuk section "Galeri Hasil Project"
         $projectGallery = app(GetRandomProjectGallery::class)->handle()
             ->map(fn ($gallery) => [
                 'id' => $gallery->id,
-                'url' => Storage::disk('public')->url($gallery->path),
+                'type' => $gallery->type,
+                'url' => $gallery->type === 'video'
+                    ? "https://img.youtube.com/vi/{$gallery->youtube_id}/hqdefault.jpg"
+                    : Storage::disk('public')->url($gallery->path),
+                'youtube_id' => $gallery->youtube_id,
                 'course_title' => $gallery->course?->title,
                 'course_slug' => $gallery->course?->slug,
             ]);
@@ -69,6 +78,7 @@ class WelcomeController extends Controller
         return Inertia::render('welcome', [
             'featuredCourses' => CourseListResource::collection($featuredCourses),
             'articles' => ArticleListResource::collection($articles),
+            'sourceCodeProducts' => SourceCodeListResource::collection($sourceCodeProducts),
             'projectGallery' => $projectGallery,
             'stats' => $stats,
             'vouchers' => $vouchers,

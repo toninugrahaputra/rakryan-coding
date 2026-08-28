@@ -1,6 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
 import {
-    Award,
     CheckCircle2,
     Code2,
     Play,
@@ -14,6 +13,7 @@ import {
     MessageCircle,
     Star,
     Lock,
+    PlayCircle,
     ShoppingCart,
     Youtube,
 } from 'lucide-react';
@@ -53,10 +53,16 @@ interface Course {
     price_strikethrough: number | null;
     is_free: boolean;
     has_product: boolean;
+    bonus_courses?: Array<{ id: number; title: string }>;
     rating?: number;
     reviews_count?: number;
     completed_contents_count?: number;
-    gallery?: Array<{ id: number; url: string }>;
+    gallery?: Array<{
+        id: number;
+        url: string;
+        type?: 'image' | 'video';
+        youtube_id?: string | null;
+    }>;
     technologies?: Array<{
         id: number;
         name: string;
@@ -408,10 +414,6 @@ function CourseDetailContent() {
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                                        Sertifikat penyelesaian course
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
                                         Konsultasi dengan Instruktur
                                     </li>
                                 </ul>
@@ -503,11 +505,6 @@ function CourseDetailContent() {
                                             icon: InfinityIcon,
                                             title: 'Akses Seumur Hidup',
                                             desc: 'Belajar kapan saja, ulang materi sepuasnya tanpa batas waktu.',
-                                        },
-                                        {
-                                            icon: Award,
-                                            title: 'Sertifikat Penyelesaian',
-                                            desc: 'Dapatkan sertifikat resmi setelah menyelesaikan semua modul.',
                                         },
                                         {
                                             icon: MessageCircle,
@@ -699,6 +696,35 @@ function CourseDetailContent() {
                                 )}
                             </div>
 
+                            {/* Bonus course gratis — hanya tampil kalau produk course ini punya companion course bonus */}
+                            {course.bonus_courses &&
+                                course.bonus_courses.length > 0 && (
+                                    <div className="border-t border-border/50 pt-8">
+                                        <div className="mb-6">
+                                            <h2 className="text-xl font-bold">
+                                                Beli Course Ini, Kamu Juga
+                                                Dapat Course Gratis
+                                            </h2>
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                Course tambahan berikut sudah
+                                                termasuk begitu kamu membeli
+                                                course ini
+                                            </p>
+                                        </div>
+                                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                                            <ol className="list-inside list-decimal space-y-1.5 text-sm text-foreground">
+                                                {course.bonus_courses.map(
+                                                    (bonus) => (
+                                                        <li key={bonus.id}>
+                                                            {bonus.title}
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ol>
+                                        </div>
+                                    </div>
+                                )}
+
                             {/* Galeri Hasil Project */}
                             {gallery.length > 0 && (
                                 <div className="border-t border-border/50 pt-8">
@@ -729,6 +755,11 @@ function CourseDetailContent() {
                                                     loading="lazy"
                                                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
+                                                {image.type === 'video' && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                                        <PlayCircle className="h-10 w-10 text-white drop-shadow-lg" />
+                                                    </div>
+                                                )}
                                                 <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
                                             </button>
                                         ))}
@@ -892,11 +923,23 @@ function CourseDetailContent() {
                     </DialogTitle>
                     {lightboxIndex !== null && gallery[lightboxIndex] && (
                         <div className="relative">
-                            <img
-                                src={gallery[lightboxIndex].url}
-                                alt={`Contoh hasil project ${course.title} ${lightboxIndex + 1}`}
-                                className="max-h-[88vh] w-full rounded-xl object-contain"
-                            />
+                            {gallery[lightboxIndex].type === 'video' ? (
+                                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${gallery[lightboxIndex].youtube_id}?autoplay=1&rel=0`}
+                                        title={`Contoh hasil project ${course.title} ${lightboxIndex + 1}`}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className="h-full w-full"
+                                    />
+                                </div>
+                            ) : (
+                                <img
+                                    src={gallery[lightboxIndex].url}
+                                    alt={`Contoh hasil project ${course.title} ${lightboxIndex + 1}`}
+                                    className="max-h-[88vh] w-full rounded-xl object-contain"
+                                />
+                            )}
                             {gallery.length > 1 && (
                                 <>
                                     <button

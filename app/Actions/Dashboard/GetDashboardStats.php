@@ -2,6 +2,8 @@
 
 namespace App\Actions\Dashboard;
 
+use App\Actions\PageView\GetVisitStats;
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\CourseContent;
@@ -9,7 +11,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Voucher;
-use App\Enums\OrderStatus;
 
 class GetDashboardStats
 {
@@ -17,12 +18,14 @@ class GetDashboardStats
     {
         $totalPendapatan = (int) Order::where('status', OrderStatus::Paid)->sum('net_amount');
 
+        $visitsToday = app(GetVisitStats::class)->handle();
+
         // Best selling packages (Product)
         $bestSelling = Product::withCount('userSubscriptions')
             ->orderByDesc('user_subscriptions_count')
             ->take(5)
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'title' => $p->title,
                 'sales_count' => $p->user_subscriptions_count,
                 'price' => (int) $p->price,
@@ -32,7 +35,7 @@ class GetDashboardStats
         $latestUsers = User::latest()
             ->take(5)
             ->get(['id', 'name', 'email', 'created_at'])
-            ->map(fn($u) => [
+            ->map(fn ($u) => [
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
@@ -44,7 +47,7 @@ class GetDashboardStats
             ->latest()
             ->take(5)
             ->get()
-            ->map(fn($o) => [
+            ->map(fn ($o) => [
                 'id' => $o->id,
                 'order_number' => $o->order_number,
                 'user_name' => $o->user?->name ?? 'User Terhapus',
@@ -105,6 +108,11 @@ class GetDashboardStats
             'pending_orders' => Order::where('status', OrderStatus::Pending)->count(),
             'total_materi' => CourseContent::count(),
             'total_pendapatan' => $totalPendapatan,
+            'visits_today' => [
+                'total_visits' => $visitsToday['total_visits'],
+                'guest_visits' => $visitsToday['guest_visits'],
+                'unique_logged_in_visitors' => $visitsToday['unique_logged_in_visitors'],
+            ],
             'best_selling' => $bestSelling->all(),
             'latest_users' => $latestUsers->all(),
             'latest_orders' => $latestOrders->all(),
@@ -112,4 +120,3 @@ class GetDashboardStats
         ];
     }
 }
-

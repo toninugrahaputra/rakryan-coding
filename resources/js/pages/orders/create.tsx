@@ -6,6 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 
+interface CourseTechnology {
+    id: number;
+    name: string;
+    logo_url: string | null;
+}
+
 interface Course {
     id: number;
     title: string;
@@ -14,18 +20,26 @@ interface Course {
     tech_stack: string | null;
     read_duration: string | null;
     contents_count: number;
+    technologies?: CourseTechnology[];
+}
+
+interface BonusCourse {
+    id: number;
+    title: string;
 }
 
 interface Product {
     id: number;
     title: string;
+    thumbnail: string | null;
     price: number;
     price_strikethrough: number | null;
     courses_count: number;
+    bonus_courses?: BonusCourse[];
 }
 
 interface OrdersCreateProps {
-    course: Course;
+    course: Course | null;
     product: Product;
     defaultVoucherCode: string | null;
 }
@@ -211,10 +225,10 @@ export default function OrdersCreate({
                                     </h3>
                                     <div className="flex gap-4">
                                         <div className="h-20 w-28 shrink-0 overflow-hidden rounded-lg border border-border/30 bg-muted">
-                                            {course.thumbnail ? (
+                                            {(course?.thumbnail ?? product.thumbnail) ? (
                                                 <img
-                                                    src={course.thumbnail}
-                                                    alt={course.title}
+                                                    src={course?.thumbnail ?? product.thumbnail ?? ''}
+                                                    alt={course?.title ?? product.title}
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (
@@ -225,19 +239,31 @@ export default function OrdersCreate({
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-[10px] font-bold tracking-wider text-primary uppercase">
-                                                PAKET • {product.courses_count}{' '}
-                                                MATERI
+                                                {course
+                                                    ? `PAKET • ${product.courses_count} MATERI`
+                                                    : 'SOURCE CODE'}
                                             </span>
                                             <h4 className="mt-0.5 truncate text-base leading-snug font-extrabold text-foreground">
                                                 {product.title}
                                             </h4>
                                             <p className="mt-1 text-xs text-muted-foreground">
-                                                {course.contents_count} bab
-                                                {course.read_duration
-                                                    ? ` • ${course.read_duration}`
-                                                    : ''}{' '}
-                                                • akses sampai lulus
+                                                {course
+                                                    ? `${course.contents_count} bab${course.read_duration ? ` • ${course.read_duration}` : ''} • akses sampai lulus`
+                                                    : 'Download ZIP setelah pembayaran lunas'}
                                             </p>
+                                            {product.bonus_courses &&
+                                                product.bonus_courses.length >
+                                                    0 && (
+                                                    <p className="mt-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                                        🎁 Bonus:{' '}
+                                                        {product.bonus_courses
+                                                            .map(
+                                                                (bonus) =>
+                                                                    bonus.title,
+                                                            )
+                                                            .join(', ')}
+                                                    </p>
+                                                )}
                                         </div>
                                         <div className="shrink-0 text-right">
                                             <span className="block text-sm font-extrabold text-foreground">
@@ -328,20 +354,81 @@ export default function OrdersCreate({
                                 <Card className="sticky top-24 border-border/60 bg-muted/15 shadow-sm">
                                     <CardContent className="space-y-6 p-5.5">
                                         {/* Logo Box */}
-                                        <div className="relative overflow-hidden rounded-xl bg-[#1e1b4b] p-4.5 text-center font-bold tracking-wider text-white">
-                                            <div className="absolute right-0 bottom-0 h-12 w-12 translate-x-4 translate-y-4 rounded-full bg-white/5" />
-                                            {course.tech_stack && (
-                                                <span className="block font-mono text-sm text-amber-400">
-                                                    &lt;{course.tech_stack}/&gt;
-                                                </span>
+                                        <div className="overflow-hidden rounded-xl bg-[#1e1b4b] text-center font-bold tracking-wider text-white">
+                                            {(course?.thumbnail ??
+                                                product.thumbnail) && (
+                                                <div className="relative h-16 w-full overflow-hidden">
+                                                    <img
+                                                        src={
+                                                            course?.thumbnail ??
+                                                            product.thumbnail ??
+                                                            ''
+                                                        }
+                                                        alt={product.title}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#1e1b4b] via-[#1e1b4b]/40 to-transparent" />
+                                                </div>
                                             )}
-                                            <span className="mt-0.5 block text-base font-extrabold">
-                                                {product.title}
-                                            </span>
+
+                                            <div className="relative p-4.5">
+                                                <div className="absolute right-0 bottom-0 h-12 w-12 translate-x-4 translate-y-4 rounded-full bg-white/5" />
+
+                                                {course?.technologies &&
+                                                course.technologies.length >
+                                                    0 ? (
+                                                    <div className="mb-2 flex items-center justify-center gap-1.5">
+                                                        {course.technologies.map(
+                                                            (tech) => (
+                                                                <span
+                                                                    key={
+                                                                        tech.id
+                                                                    }
+                                                                    title={
+                                                                        tech.name
+                                                                    }
+                                                                    className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10"
+                                                                >
+                                                                    {tech.logo_url ? (
+                                                                        <img
+                                                                            src={
+                                                                                tech.logo_url
+                                                                            }
+                                                                            alt={
+                                                                                tech.name
+                                                                            }
+                                                                            className="h-full w-full object-contain p-1"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-[10px] text-white/80">
+                                                                            {tech.name.charAt(
+                                                                                0,
+                                                                            )}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    course?.tech_stack && (
+                                                        <span className="block font-mono text-sm text-amber-400">
+                                                            &lt;
+                                                            {
+                                                                course.tech_stack
+                                                            }
+                                                            /&gt;
+                                                        </span>
+                                                    )
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Pricing Details */}
                                         <div className="space-y-3.5 border-b border-border/40 pb-4.5 text-xs sm:text-sm">
+                                            <h3 className="text-left text-sm font-bold text-foreground sm:text-base">
+                                                {product.title}
+                                            </h3>
                                             <div className="flex justify-between text-muted-foreground">
                                                 <span>Harga</span>
                                                 <span className="font-bold text-foreground">
