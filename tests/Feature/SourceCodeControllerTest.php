@@ -27,6 +27,20 @@ class SourceCodeControllerTest extends TestCase
             ->where('products.0.slug', $published->slug));
     }
 
+    public function test_index_filters_by_platform(): void
+    {
+        $web = Product::factory()->sourceCode()->published()->create(['platform' => 'web']);
+        Product::factory()->sourceCode()->published()->create(['platform' => 'mobile']);
+
+        $response = $this->get('/source-code?platform=web');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page->component('source-code/index')
+            ->has('products', 1)
+            ->where('products.0.slug', $web->slug)
+            ->where('filters.platform', 'web'));
+    }
+
     public function test_show_returns_published_source_code_product(): void
     {
         $product = Product::factory()->sourceCode()->published()->create();

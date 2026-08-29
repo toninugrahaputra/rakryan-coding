@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Internal;
 
+use App\Enums\ProductPlatform;
 use App\Enums\ProductType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,6 +30,7 @@ class ProductRequest extends FormRequest
             'slug' => ['required', 'string', 'max:255', Rule::unique('products', 'slug')->ignore($productSlug, 'slug')],
             'description' => ['nullable', 'string'],
             'type' => ['required', Rule::enum(ProductType::class)],
+            'platform' => [$isSourceCode ? 'required' : 'nullable', Rule::enum(ProductPlatform::class)],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
             'price' => ['required', 'integer', 'min:0'],
             'price_strikethrough' => ['nullable', 'integer', 'min:0', 'gt:price'],

@@ -15,6 +15,7 @@ class UpdateProduct
             'slug' => $data['slug'],
             'description' => $data['description'] ?? null,
             'type' => $data['type'],
+            'platform' => $data['platform'] ?? null,
             'price' => $data['price'],
             'price_strikethrough' => $data['price_strikethrough'] ?? null,
             'is_published' => $data['is_published'] ?? false,

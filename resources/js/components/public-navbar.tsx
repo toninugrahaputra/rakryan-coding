@@ -3,6 +3,7 @@ import {
     Bell,
     BookOpen,
     ChevronDown,
+    Code2,
     LayoutGrid,
     LogOut,
     Menu,
@@ -164,6 +165,11 @@ export function PublicNavbar() {
         { label: 'Mobile Development', href: '/courses?category=Mobile+Dev' },
     ];
 
+    const sourceCodeLinks = [
+        { label: 'Web Development', href: '/source-code?platform=web' },
+        { label: 'Mobile Development', href: '/source-code?platform=mobile' },
+    ];
+
     /**
      * Tujuan utama pengguna yang sudah login. Dipakai bersama oleh navbar desktop dan
      * menu sheet supaya keduanya tidak pernah menyimpang isinya.
@@ -270,6 +276,45 @@ export function PublicNavbar() {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             )}
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger
+                                    className={cn(
+                                        'flex items-center gap-1.5 py-1 text-body font-medium whitespace-nowrap outline-none transition-colors',
+                                        isActiveUrl('/source-code')
+                                            ? 'text-primary'
+                                            : 'text-[#000000] hover:text-primary dark:text-white dark:hover:text-primary',
+                                    )}
+                                >
+                                    {auth.user && (
+                                        <Code2 className="h-4 w-4" />
+                                    )}
+                                    Source Code
+                                    <ChevronDown className="h-3.5 w-3.5" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="min-w-52"
+                                >
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/source-code">
+                                            Semua Source Code
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    {sourceCodeLinks.map(
+                                        ({ label, href }) => (
+                                            <DropdownMenuItem
+                                                key={href}
+                                                asChild
+                                            >
+                                                <Link href={href}>
+                                                    {label}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        ),
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
                             <Link
                                 href="/articles"
@@ -503,6 +548,15 @@ export function PublicNavbar() {
                                     Katalog Courses
                                 </Link>
                             )}
+
+                            <Link
+                                href="/source-code"
+                                onClick={() => setMobileOpen(false)}
+                                className={sheetRowClass('/source-code')}
+                            >
+                                <Code2 className="h-4 w-4" />
+                                Source Code
+                            </Link>
 
                             <Link
                                 href="/articles"

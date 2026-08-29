@@ -6,6 +6,7 @@ use App\Actions\Product\GetPublishedSourceCodeProducts;
 use App\Actions\Product\GetSourceCodeProductBySlug;
 use App\Actions\Seo\ShareSeoMeta;
 use App\Actions\User\HasPurchasedProduct;
+use App\Enums\ProductPlatform;
 use App\Http\Resources\Product\SourceCodeListResource;
 use App\Http\Resources\Product\SourceCodeShowResource;
 use Illuminate\Http\Request;
@@ -14,9 +15,11 @@ use Inertia\Response;
 
 class SourceCodeController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $products = app(GetPublishedSourceCodeProducts::class)->handle();
+        $platform = ProductPlatform::tryFrom((string) $request->query('platform'));
+
+        $products = app(GetPublishedSourceCodeProducts::class)->handle(platform: $platform);
 
         app(ShareSeoMeta::class)->handle(
             'Source Code Project',
@@ -25,6 +28,9 @@ class SourceCodeController extends Controller
 
         return Inertia::render('source-code/index', [
             'products' => SourceCodeListResource::collection($products),
+            'filters' => [
+                'platform' => $platform?->value,
+            ],
         ]);
     }
 

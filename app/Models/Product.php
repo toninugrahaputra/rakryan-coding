@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductPlatform;
 use App\Enums\ProductType;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['title', 'slug', 'description', 'type', 'thumbnail', 'source_code_path', 'price', 'price_strikethrough', 'is_published', 'is_favourite'])]
+#[Fillable(['title', 'slug', 'description', 'type', 'platform', 'thumbnail', 'source_code_path', 'price', 'price_strikethrough', 'is_published', 'is_favourite'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -21,6 +22,7 @@ class Product extends Model
     {
         return [
             'type' => ProductType::class,
+            'platform' => ProductPlatform::class,
             'price' => 'integer',
             'price_strikethrough' => 'integer',
             'is_published' => 'boolean',

@@ -25,6 +25,7 @@ type ProductProp = {
     slug: string;
     description: string | null;
     type: 'single' | 'bundle' | 'source_code';
+    platform: 'web' | 'mobile' | null;
     thumbnail: string | null;
     has_source_code_file: boolean;
     price: number;
@@ -41,6 +42,7 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
         slug: product.slug,
         description: product.description ?? '',
         type: product.type,
+        platform: (product.platform ?? '') as '' | 'web' | 'mobile',
         price: String(product.price),
         price_strikethrough: product.price_strikethrough ? String(product.price_strikethrough) : '',
         is_published: product.is_published,
@@ -60,7 +62,7 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
     }
 
     function handleTypeChange(type: 'single' | 'bundle' | 'source_code') {
-        setForm((prev) => ({ ...prev, type, course_ids: [], bonus_course_ids: [] }));
+        setForm((prev) => ({ ...prev, type, course_ids: [], bonus_course_ids: [], platform: type === 'source_code' ? prev.platform : '' }));
         if (type !== 'source_code') {
             setSourceCodeFile(null);
         }
@@ -190,6 +192,25 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
                             </Select>
                             {errors.type && <p className="text-destructive text-sm">{errors.type}</p>}
                         </div>
+
+                        {form.type === 'source_code' && (
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="platform">Platform</Label>
+                                <Select
+                                    value={form.platform}
+                                    onValueChange={(val) => setForm((p) => ({ ...p, platform: val as 'web' | 'mobile' }))}
+                                >
+                                    <SelectTrigger id="platform">
+                                        <SelectValue placeholder="Pilih platform" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="web">Web Development</SelectItem>
+                                        <SelectItem value="mobile">Mobile Development</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.platform && <p className="text-destructive text-sm">{errors.platform}</p>}
+                            </div>
+                        )}
 
                         {form.type === 'source_code' ? (
                             <div className="flex flex-col gap-2">

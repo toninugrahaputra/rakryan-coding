@@ -16,6 +16,7 @@ class ProductShowResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'type' => $this->type->value,
+            'platform' => $this->platform?->value,
             'thumbnail' => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
             'has_source_code_file' => (bool) $this->source_code_path,
             'price' => $this->price,

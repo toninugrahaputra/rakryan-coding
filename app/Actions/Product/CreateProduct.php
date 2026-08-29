@@ -18,6 +18,7 @@ class CreateProduct
             'slug' => $data['slug'],
             'description' => $data['description'] ?? null,
             'type' => $data['type'],
+            'platform' => $data['platform'] ?? null,
             'thumbnail' => $this->storeThumbnail($data['thumbnail'] ?? null),
             'source_code_path' => $this->storeSourceCodeFile($data['source_code_file'] ?? null),
             'price' => $data['price'],
