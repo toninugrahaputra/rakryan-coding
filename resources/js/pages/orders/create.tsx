@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { CheckCircle2, Ticket, ArrowRight, ShieldCheck } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,6 @@ interface Product {
 interface OrdersCreateProps {
     course: Course | null;
     product: Product;
-    defaultVoucherCode: string | null;
 }
 
 function formatPrice(price: number): string {
@@ -59,8 +58,9 @@ function formatPrice(price: number): string {
 export default function OrdersCreate({
     course,
     product,
-    defaultVoucherCode,
 }: OrdersCreateProps) {
+    // Hanya prefill dari pilihan eksplisit user di halaman /vouchers ("Pakai sekarang").
+    // Tidak ada voucher default/aktif yang diterapkan otomatis tanpa aksi user.
     const [voucherCode, setVoucherCode] = useState(() => {
         const pending = sessionStorage.getItem('pending_voucher');
 
@@ -70,8 +70,7 @@ export default function OrdersCreate({
             return pending;
         }
 
-        // Voucher yang sedang aktif diatur dari /internal/vouchers, bukan hardcode di sini.
-        return defaultVoucherCode ?? '';
+        return '';
     });
     const [appliedVoucher, setAppliedVoucher] = useState<{
         code: string;
@@ -90,13 +89,6 @@ export default function OrdersCreate({
     const discount = appliedVoucher?.discount ?? 0;
     const basePriceAfterDiscount = Math.max(0, originalPrice - discount);
     const totalPrice = basePriceAfterDiscount;
-
-    // Terapkan voucher otomatis jika prefilled (tidak relevan untuk course gratis)
-    useEffect(() => {
-        if (!isFree && voucherCode) {
-            handleApplyVoucher();
-        }
-    }, []);
 
     async function handleApplyVoucher() {
         const codeToValidate = voucherCode.trim();

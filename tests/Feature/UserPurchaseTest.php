@@ -118,17 +118,13 @@ class UserPurchaseTest extends TestCase
         ]);
     }
 
-    public function test_checkout_page_prefills_the_currently_active_voucher(): void
+    public function test_checkout_page_never_exposes_a_default_voucher(): void
     {
         $user = User::factory()->create();
         $course = Course::factory()->create(['is_published' => true]);
         $product = Product::factory()->single()->published()->create(['price' => 100000]);
         $product->courses()->attach($course->id);
 
-        Voucher::factory()->flat(20000)->create([
-            'code' => 'PROMOLAMA',
-            'is_active' => false,
-        ]);
         Voucher::factory()->flat(20000)->create([
             'code' => 'PROMOAKTIF',
             'is_active' => true,
@@ -141,31 +137,41 @@ class UserPurchaseTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('defaultVoucherCode', 'PROMOAKTIF')
+            ->missing('defaultVoucherCode')
         );
     }
 
-    public function test_checkout_page_has_no_default_voucher_when_none_is_active(): void
+    public function test_order_is_not_discounted_unless_user_explicitly_submits_a_voucher_code(): void
     {
         $user = User::factory()->create();
-        $course = Course::factory()->create(['is_published' => true]);
         $product = Product::factory()->single()->published()->create(['price' => 100000]);
-        $product->courses()->attach($course->id);
 
-        Voucher::factory()->flat(20000)->create([
-            'code' => 'PROMOEXPIRED',
+        // Voucher aktif ada di sistem, tapi user tidak pernah mengirim voucher_code
+        // saat checkout — order harus dibuat dengan harga penuh, bukan otomatis didiskon.
+        Voucher::factory()->flat(100000)->create([
+            'code' => 'PROMOAKTIF',
             'is_active' => true,
-            'starts_at' => now()->subWeeks(2),
-            'ends_at' => now()->subWeek(),
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addWeek(),
         ]);
 
         $response = $this->actingAs($user)
-            ->get(route('orders.create', ['course' => $course->slug]));
+            ->post(route('orders.store'), [
+                'product_id' => $product->id,
+            ]);
 
-        $response->assertOk();
-        $response->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('defaultVoucherCode', null)
-        );
+        $response->assertRedirect();
+        $this->assertDatabaseHas('orders', [
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'discount_amount' => 0,
+            'net_amount' => 100000,
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseMissing('user_subscriptions', [
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
     }
 
     public function test_user_cannot_view_checkout_page_if_already_purchased(): void

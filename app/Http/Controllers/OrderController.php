@@ -8,7 +8,6 @@ use App\Actions\Order\CreateOrder;
 use App\Actions\User\HasPurchasedCourse;
 use App\Actions\User\HasPurchasedProduct;
 use App\Actions\Voucher\ApplyVoucher;
-use App\Actions\Voucher\GetActiveVoucherCode;
 use App\Actions\Voucher\RedeemVoucher;
 use App\Enums\OrderStatus;
 use App\Http\Resources\Technology\TechnologyListResource;
@@ -51,7 +50,6 @@ class OrderController extends Controller
                     'price_strikethrough' => $product->price_strikethrough,
                     'courses_count' => 0,
                 ],
-                'defaultVoucherCode' => app(GetActiveVoucherCode::class)->handle(),
             ]);
         }
 
@@ -96,7 +94,6 @@ class OrderController extends Controller
                     ->map(fn (Course $bonusCourse) => ['id' => $bonusCourse->id, 'title' => $bonusCourse->title])
                     ->values(),
             ],
-            'defaultVoucherCode' => app(GetActiveVoucherCode::class)->handle(),
         ]);
     }
 
