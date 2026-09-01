@@ -52,8 +52,10 @@ class XenditWebhookController extends Controller
             }
 
             // Order sudah dibatalkan/kedaluwarsa di sisi kita tapi tetap dibayar di Xendit —
-            // butuh peninjauan manual, tapi tetap balas 200 agar Xendit tidak retry terus-menerus.
+            // ditandai untuk peninjauan manual admin (lihat internal/orders), tetap balas 200
+            // agar Xendit tidak retry terus-menerus.
             if ($order->status !== OrderStatus::Pending) {
+                $order->update(['needs_payment_review' => true]);
                 Log::warning("Xendit Webhook: Order {$externalId} received PAID webhook while status is {$order->status->value}. Perlu peninjauan manual.");
 
                 return response()->json(['message' => 'Order not payable, manual review required']);

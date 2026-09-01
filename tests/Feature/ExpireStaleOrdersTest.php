@@ -31,7 +31,7 @@ class ExpireStaleOrdersTest extends TestCase
 
     public function test_command_marks_stale_pending_orders_as_expired(): void
     {
-        $staleOrder = $this->createPendingOrder(now()->subHour());
+        $staleOrder = $this->createPendingOrder(now()->subHours(3));
 
         $this->artisan('orders:expire-stale')->assertExitCode(0);
 
@@ -47,6 +47,27 @@ class ExpireStaleOrdersTest extends TestCase
         $this->assertEquals(OrderStatus::Pending, $freshOrder->fresh()->status);
     }
 
+    public function test_command_leaves_a_grace_period_after_valid_until_before_expiring(): void
+    {
+        // Baru lewat 30 menit dari batas waktu — dalam masa toleransi, belum
+        // di-expire, supaya webhook Xendit yang datang sedikit telat masih
+        // menemukan order ini Pending, bukan sudah Expired.
+        $justPastDeadline = $this->createPendingOrder(now()->subMinutes(30));
+
+        $this->artisan('orders:expire-stale')->assertExitCode(0);
+
+        $this->assertEquals(OrderStatus::Pending, $justPastDeadline->fresh()->status);
+    }
+
+    public function test_command_expires_orders_past_the_grace_period(): void
+    {
+        $wellPastDeadline = $this->createPendingOrder(now()->subHours(3));
+
+        $this->artisan('orders:expire-stale')->assertExitCode(0);
+
+        $this->assertEquals(OrderStatus::Expired, $wellPastDeadline->fresh()->status);
+    }
+
     public function test_command_does_not_touch_pending_orders_without_valid_until(): void
     {
         $orderWithoutDeadline = $this->createPendingOrder(null);
@@ -58,7 +79,7 @@ class ExpireStaleOrdersTest extends TestCase
 
     public function test_command_releases_voucher_usage_of_orders_it_expires(): void
     {
-        $staleOrder = $this->createPendingOrder(now()->subHour());
+        $staleOrder = $this->createPendingOrder(now()->subHours(3));
         $voucher = Voucher::factory()->flat(20000)->create(['usage_count' => 1, 'per_user_limit' => 1]);
         $usage = $voucher->usages()->create([
             'user_id' => $staleOrder->user_id,

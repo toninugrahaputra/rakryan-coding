@@ -13,7 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable([
     'user_id', 'product_id', 'items', 'order_number', 'provider', 'payment_reference',
     'channel_group', 'channel_code', 'channel_name', 'payment_fee', 'payment_code', 'payment_url',
-    'total_amount', 'discount_amount', 'net_amount', 'valid_until', 'status', 'paid_at', 'approved_by', 'payment_metadata',
+    'total_amount', 'discount_amount', 'net_amount', 'valid_until', 'status', 'paid_at', 'approved_by',
+    'payment_metadata', 'needs_payment_review',
 ])]
 class Order extends Model
 {
@@ -28,6 +29,7 @@ class Order extends Model
             'status' => OrderStatus::class,
             'valid_until' => 'datetime',
             'paid_at' => 'datetime',
+            'needs_payment_review' => 'boolean',
         ];
     }
 

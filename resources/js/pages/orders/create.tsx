@@ -472,8 +472,7 @@ export default function OrdersCreate({
                                                     <span className="cursor-pointer underline">
                                                         S&K
                                                     </span>{' '}
-                                                    kami. Garansi uang kembali 7
-                                                    hari.
+                                                    kami.
                                                 </>
                                             )}
                                         </p>

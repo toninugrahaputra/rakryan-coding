@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { Eye, Plus, Search, X } from 'lucide-react';
+import { AlertTriangle, Eye, Plus, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ type Order = {
     id: number;
     order_number: string;
     status: 'pending' | 'paid' | 'cancel' | 'expired';
+    needs_payment_review: boolean;
     user: { id: number; name: string; email: string } | null;
     product: { id: number; title: string } | null;
     channel_group: string;
@@ -36,7 +37,7 @@ type Order = {
     created_at: string;
 };
 
-type Filters = { search?: string; status?: string; channel_group?: string };
+type Filters = { search?: string; status?: string; channel_group?: string; needs_review?: string };
 
 function formatPrice(price: number): string {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
@@ -63,7 +64,7 @@ function navigate(filters: Filters) {
     router.get(index.url(), params, { preserveState: true, preserveScroll: true, replace: true });
 }
 
-export default function OrdersIndex({ orders, filters }: { orders: PaginatedResource<Order>; filters: Filters }) {
+export default function OrdersIndex({ orders, filters, needsReviewCount }: { orders: PaginatedResource<Order>; filters: Filters; needsReviewCount: number }) {
     const [search, setSearch] = useState(filters.search ?? '');
     const isFirstRender = useRef(true);
 
@@ -73,7 +74,7 @@ export default function OrdersIndex({ orders, filters }: { orders: PaginatedReso
         return () => clearTimeout(timer);
     }, [search]);
 
-    const hasFilters = !!(filters.search || filters.status || filters.channel_group);
+    const hasFilters = !!(filters.search || filters.status || filters.channel_group || filters.needs_review);
 
     return (
         <>
@@ -92,6 +93,23 @@ export default function OrdersIndex({ orders, filters }: { orders: PaginatedReso
                         </Link>
                     </Button>
                 </div>
+
+                {needsReviewCount > 0 && (
+                    <button
+                        onClick={() => navigate({ ...filters, needs_review: filters.needs_review ? undefined : '1' })}
+                        className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
+                            filters.needs_review
+                                ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                                : 'border-amber-300 bg-amber-50/60 hover:bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20 dark:hover:bg-amber-950/30'
+                        }`}
+                    >
+                        <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-500" />
+                        <span>
+                            <strong>{needsReviewCount}</strong> order butuh review manual — pembayaran Xendit masuk setelah order dibatalkan/kedaluwarsa.{' '}
+                            <span className="underline">{filters.needs_review ? 'Tampilkan semua' : 'Lihat'}</span>
+                        </span>
+                    </button>
+                )}
 
                 {/* Filter bar */}
                 <div className="flex flex-wrap items-center gap-3">
@@ -194,9 +212,14 @@ export default function OrdersIndex({ orders, filters }: { orders: PaginatedReso
                                         </TableCell>
                                         <TableCell>{formatPrice(order.total_amount)}</TableCell>
                                         <TableCell className="text-center">
-                                            <Badge variant={statusConfig[order.status].variant}>
-                                                {statusConfig[order.status].label}
-                                            </Badge>
+                                            <div className="flex items-center justify-center gap-1.5">
+                                                <Badge variant={statusConfig[order.status].variant}>
+                                                    {statusConfig[order.status].label}
+                                                </Badge>
+                                                {order.needs_payment_review && (
+                                                    <AlertTriangle className="size-3.5 text-amber-600 dark:text-amber-500" />
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-center">{order.created_at}</TableCell>
                                         <TableCell className="text-center">

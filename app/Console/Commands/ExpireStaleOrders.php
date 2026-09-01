@@ -14,6 +14,14 @@ use Illuminate\Console\Command;
 class ExpireStaleOrders extends Command
 {
     /**
+     * Grace period past valid_until before an order is actually marked expired —
+     * gives a Xendit "paid" webhook that lands slightly late (network hiccup, a
+     * payment confirmed right at the deadline) room to still land on a Pending
+     * order instead of racing this command and needing manual review.
+     */
+    private const GRACE_PERIOD_HOURS = 2;
+
+    /**
      * Execute the console command.
      */
     public function handle(ReleaseVoucherUsage $releaseVoucherUsage): int
@@ -21,7 +29,7 @@ class ExpireStaleOrders extends Command
         $staleOrders = Order::query()
             ->where('status', OrderStatus::Pending)
             ->whereNotNull('valid_until')
-            ->where('valid_until', '<', now())
+            ->where('valid_until', '<', now()->subHours(self::GRACE_PERIOD_HOURS))
             ->with('voucherUsage')
             ->get();
 

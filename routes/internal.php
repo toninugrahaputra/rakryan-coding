@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
         Route::patch('orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
         Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::patch('orders/{order}/dismiss-review', [OrderController::class, 'dismissReview'])->name('orders.dismiss-review');
 
         // Products
         Route::get('products', [ProductController::class, 'index'])->name('products.index');

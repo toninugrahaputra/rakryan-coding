@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Internal;
 
 use App\Actions\Order\ApproveOrder;
 use App\Actions\Order\CancelOrder;
+use App\Actions\Order\CountOrdersNeedingReview;
 use App\Actions\Order\CreateOrder;
 use App\Actions\Order\DeleteOrder;
+use App\Actions\Order\DismissPaymentReview;
 use App\Actions\Order\GetOrderByNumber;
 use App\Actions\Order\GetPaginatedOrders;
 use App\Actions\Order\UpdateOrder;
@@ -25,11 +27,12 @@ class OrderController extends Controller
 {
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'status', 'channel_group']);
+        $filters = $request->only(['search', 'status', 'channel_group', 'needs_review']);
 
         return Inertia::render('internal/orders/index', [
             'orders' => OrderListResource::collection(app(GetPaginatedOrders::class)->handle($filters)),
             'filters' => $filters,
+            'needsReviewCount' => app(CountOrdersNeedingReview::class)->handle(),
         ]);
     }
 
@@ -76,6 +79,16 @@ class OrderController extends Controller
         app(CancelOrder::class)->handle($order);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Order berhasil dibatalkan.']);
+
+        return redirect()->route('internal.orders.show', $order->order_number);
+    }
+
+    public function dismissReview(string $order): RedirectResponse
+    {
+        $order = app(GetOrderByNumber::class)->handle($order);
+        app(DismissPaymentReview::class)->handle($order);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Penandaan review pembayaran telah dihapus.']);
 
         return redirect()->route('internal.orders.show', $order->order_number);
     }

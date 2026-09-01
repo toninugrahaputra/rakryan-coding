@@ -13,6 +13,7 @@ class OrderListResource extends JsonResource
             'id' => $this->id,
             'order_number' => $this->order_number,
             'status' => $this->status->value,
+            'needs_payment_review' => $this->needs_payment_review,
             'user' => $this->whenLoaded('user', fn () => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,

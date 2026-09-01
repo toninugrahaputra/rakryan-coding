@@ -8,7 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class GetPaginatedOrders
 {
     /**
-     * @param  array{search?: string, status?: string, channel_group?: string}  $filters
+     * @param  array{search?: string, status?: string, channel_group?: string, needs_review?: string}  $filters
      */
     public function handle(array $filters = []): LengthAwarePaginator
     {
@@ -22,6 +22,7 @@ class GetPaginatedOrders
             })
             ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
             ->when($filters['channel_group'] ?? null, fn ($q, $v) => $q->where('channel_group', $v))
+            ->when($filters['needs_review'] ?? null, fn ($q) => $q->where('needs_payment_review', true))
             ->latest()
             ->paginate(15)
             ->withQueryString();

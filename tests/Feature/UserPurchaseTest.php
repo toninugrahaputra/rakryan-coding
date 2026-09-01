@@ -582,6 +582,8 @@ class UserPurchaseTest extends TestCase
         $response->assertOk();
         $this->assertEquals(OrderStatus::Cancel, $order->fresh()->status);
         $this->assertDatabaseCount('user_subscriptions', 0);
+        // Ditandai untuk peninjauan manual admin, bukan cuma dicatat di log.
+        $this->assertTrue($order->fresh()->needs_payment_review);
     }
 
     public function test_expired_webhook_marks_pending_order_as_expired(): void

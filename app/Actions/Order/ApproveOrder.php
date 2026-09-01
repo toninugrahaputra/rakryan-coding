@@ -16,9 +16,13 @@ class ApproveOrder
 
     public function handle(Order $order, User $approvedBy): Order
     {
-        if ($order->status !== OrderStatus::Pending) {
+        // Pending adalah jalur normal. Expired/Cancel tetap boleh disetujui secara
+        // manual lewat alur peninjauan pembayaran (order ternyata lunas di Xendit
+        // walau statusnya di sini sudah kadaluarsa/dibatalkan) — hanya order yang
+        // sudah Paid yang ditolak, supaya tidak ada approval ganda.
+        if ($order->status === OrderStatus::Paid) {
             throw ValidationException::withMessages([
-                'status' => 'Hanya order berstatus pending yang dapat disetujui.',
+                'status' => 'Order ini sudah disetujui sebelumnya.',
             ]);
         }
 
@@ -27,6 +31,7 @@ class ApproveOrder
                 'status' => OrderStatus::Paid,
                 'paid_at' => now(),
                 'approved_by' => $approvedBy->id,
+                'needs_payment_review' => false,
             ]);
 
             UserSubscription::firstOrCreate(

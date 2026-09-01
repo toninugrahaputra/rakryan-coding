@@ -152,6 +152,81 @@ class OrderControllerTest extends TestCase
         $this->assertDatabaseCount('user_subscriptions', 0);
     }
 
+    public function test_admin_can_approve_an_expired_order_flagged_for_payment_review(): void
+    {
+        $product = Product::factory()->create();
+        $buyer = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $buyer->id,
+            'product_id' => $product->id,
+            'status' => OrderStatus::Expired,
+            'needs_payment_review' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->patch("/internal/orders/{$order->order_number}/approve");
+
+        $response->assertRedirect("/internal/orders/{$order->order_number}");
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::Paid, $order->status);
+        $this->assertFalse($order->needs_payment_review);
+        $this->assertDatabaseHas('user_subscriptions', [
+            'user_id' => $buyer->id,
+            'product_id' => $product->id,
+        ]);
+    }
+
+    public function test_admin_can_dismiss_a_payment_review_flag_without_approving(): void
+    {
+        $order = Order::factory()->create([
+            'status' => OrderStatus::Expired,
+            'needs_payment_review' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->patch("/internal/orders/{$order->order_number}/dismiss-review");
+
+        $response->assertRedirect("/internal/orders/{$order->order_number}");
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::Expired, $order->status);
+        $this->assertFalse($order->needs_payment_review);
+        $this->assertDatabaseCount('user_subscriptions', 0);
+    }
+
+    public function test_non_admin_cannot_dismiss_a_payment_review_flag(): void
+    {
+        $order = Order::factory()->create(['status' => OrderStatus::Expired, 'needs_payment_review' => true]);
+
+        $response = $this->actingAs($this->user)->patch("/internal/orders/{$order->order_number}/dismiss-review");
+
+        $response->assertStatus(403);
+        $this->assertTrue($order->fresh()->needs_payment_review);
+    }
+
+    public function test_orders_index_exposes_the_count_of_orders_needing_review(): void
+    {
+        Order::factory()->create(['status' => OrderStatus::Expired, 'needs_payment_review' => true]);
+        Order::factory()->create(['status' => OrderStatus::Cancel, 'needs_payment_review' => true]);
+        Order::factory()->pending()->create();
+
+        $response = $this->actingAs($this->admin)->get('/internal/orders');
+
+        $response->assertInertia(fn ($page) => $page->where('needsReviewCount', 2));
+    }
+
+    public function test_orders_index_can_filter_to_only_orders_needing_review(): void
+    {
+        $flagged = Order::factory()->create(['status' => OrderStatus::Expired, 'needs_payment_review' => true]);
+        Order::factory()->pending()->create();
+
+        $response = $this->actingAs($this->admin)->get('/internal/orders?needs_review=1');
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('orders.data', 1)
+            ->where('orders.data.0.order_number', $flagged->order_number)
+        );
+    }
+
     public function test_admin_can_cancel_pending_order(): void
     {
         $order = Order::factory()->pending()->create();

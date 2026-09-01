@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,12 +11,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { approve, cancel, destroy, edit, index } from '@/actions/App/Http/Controllers/Internal/OrderController';
+import { approve, cancel, destroy, dismissReview, edit, index } from '@/actions/App/Http/Controllers/Internal/OrderController';
 
 type Order = {
     id: number;
     order_number: string;
     status: 'pending' | 'paid' | 'cancel' | 'expired';
+    needs_payment_review: boolean;
     user: { id: number; name: string; email: string } | null;
     product: { id: number; title: string; slug: string; thumbnail: string | null } | null;
     items: {
@@ -62,7 +64,7 @@ function Row({ label, value, mono = false }: { label: string; value: React.React
 }
 
 export default function OrdersShow({ order }: { order: Order }) {
-    const [confirmAction, setConfirmAction] = useState<'approve' | 'cancel' | 'delete' | null>(null);
+    const [confirmAction, setConfirmAction] = useState<'approve' | 'cancel' | 'delete' | 'dismiss' | null>(null);
     const [processing, setProcessing] = useState(false);
 
     const productName = order.items?.product_name ?? order.product?.title ?? '-';
@@ -89,6 +91,13 @@ export default function OrdersShow({ order }: { order: Order }) {
     function handleDelete() {
         setProcessing(true);
         router.delete(destroy(order.order_number).url, {
+            onFinish: () => { setProcessing(false); setConfirmAction(null); },
+        });
+    }
+
+    function handleDismiss() {
+        setProcessing(true);
+        router.patch(dismissReview(order.order_number).url, {}, {
             onFinish: () => { setProcessing(false); setConfirmAction(null); },
         });
     }
@@ -241,10 +250,34 @@ export default function OrdersShow({ order }: { order: Order }) {
                                     )}
                                 </div>
                             )}
-                            {(order.status === 'cancel' || order.status === 'expired') && (
+                            {(order.status === 'cancel' || order.status === 'expired') && !order.needs_payment_review && (
                                 <p className="text-muted-foreground text-sm">
                                     {order.status === 'cancel' ? 'Order ini telah dibatalkan.' : 'Order ini telah kadaluarsa.'}
                                 </p>
+                            )}
+                            {order.needs_payment_review && (
+                                <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+                                    <div className="flex items-start gap-2.5">
+                                        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-500" />
+                                        <div className="flex-1 text-sm">
+                                            <p className="font-medium text-amber-900 dark:text-amber-200">
+                                                Perlu review manual
+                                            </p>
+                                            <p className="mt-1 text-amber-800 dark:text-amber-300">
+                                                Xendit mengirim konfirmasi pembayaran untuk order ini setelah statusnya sudah{' '}
+                                                {order.status === 'cancel' ? 'dibatalkan' : 'kedaluwarsa'}. Cek dashboard Xendit untuk memastikan pembayaran ini nyata sebelum menyetujui.
+                                            </p>
+                                            <div className="mt-3 flex gap-2">
+                                                <Button size="sm" variant="outline" onClick={() => setConfirmAction('dismiss')}>
+                                                    Abaikan
+                                                </Button>
+                                                <Button size="sm" onClick={() => setConfirmAction('approve')}>
+                                                    Setujui &amp; Beri Akses
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -281,6 +314,23 @@ export default function OrdersShow({ order }: { order: Order }) {
                         <Button variant="outline" onClick={() => setConfirmAction(null)}>Tutup</Button>
                         <Button variant="destructive" onClick={handleCancel} disabled={processing}>
                             {processing ? 'Memproses...' : 'Ya, Batalkan'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={confirmAction === 'dismiss'} onOpenChange={(open) => !open && setConfirmAction(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Abaikan Review Pembayaran</DialogTitle>
+                        <DialogDescription>
+                            Order <strong>{order.order_number}</strong> tidak akan disetujui, dan penandaan "perlu review" akan dihapus. Gunakan ini kalau webhook Xendit yang masuk ternyata bukan pembayaran nyata (duplikat/percobaan lama).
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConfirmAction(null)}>Batal</Button>
+                        <Button variant="outline" onClick={handleDismiss} disabled={processing}>
+                            {processing ? 'Memproses...' : 'Ya, Abaikan'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
