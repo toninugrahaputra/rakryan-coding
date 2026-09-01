@@ -668,6 +668,28 @@ class UserPurchaseTest extends TestCase
         $this->assertEquals(OrderStatus::Cancel, $order->fresh()->status);
     }
 
+    public function test_cancelling_an_order_releases_its_voucher_usage(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+
+        $voucher = Voucher::factory()->flat(20000)->create(['usage_count' => 1, 'per_user_limit' => 1]);
+        $order = Order::factory()->pending()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+        $usage = $voucher->usages()->create([
+            'user_id' => $user->id,
+            'order_id' => $order->id,
+            'discount_amount' => 20000,
+        ]);
+
+        $this->actingAs($user)->patch(route('orders.cancel', $order->id));
+
+        $this->assertEquals(0, $voucher->fresh()->usage_count);
+        $this->assertDatabaseMissing('voucher_usages', ['id' => $usage->id]);
+    }
+
     public function test_user_cannot_cancel_another_users_order(): void
     {
         $user = User::factory()->create();

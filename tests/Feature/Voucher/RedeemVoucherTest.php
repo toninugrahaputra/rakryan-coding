@@ -196,6 +196,42 @@ class RedeemVoucherTest extends TestCase
         app(RedeemVoucher::class)->handle($voucher, $user, 10000);
     }
 
+    public function test_redeem_action_rejects_a_second_redemption_past_the_per_user_limit(): void
+    {
+        // Simulates the double-submit race: even though ApplyVoucher's earlier
+        // unlocked check might pass twice, RedeemVoucher must independently refuse
+        // a second redemption once the first has actually committed.
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->create(['per_user_limit' => 1]);
+        $firstOrder = Order::factory()->create();
+
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $firstOrder);
+
+        $this->expectException(ValidationException::class);
+
+        $secondOrder = Order::factory()->create();
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $secondOrder);
+    }
+
+    public function test_redeem_action_does_not_double_count_usage_past_the_per_user_limit(): void
+    {
+        $user = User::factory()->create();
+        $voucher = Voucher::factory()->create(['per_user_limit' => 1]);
+        $firstOrder = Order::factory()->create();
+
+        app(RedeemVoucher::class)->handle($voucher, $user, 10000, $firstOrder);
+
+        try {
+            $secondOrder = Order::factory()->create();
+            app(RedeemVoucher::class)->handle($voucher, $user, 10000, $secondOrder);
+        } catch (ValidationException) {
+            // expected — per-user limit already reached
+        }
+
+        $this->assertSame(1, $voucher->fresh()->usage_count);
+        $this->assertSame(1, $voucher->usages()->where('user_id', $user->id)->count());
+    }
+
     public function test_redeem_action_does_not_increment_usage_count_past_quota(): void
     {
         $user = User::factory()->create();
