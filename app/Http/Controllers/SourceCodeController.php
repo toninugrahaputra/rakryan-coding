@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Product\GetPublishedSourceCodeProducts;
 use App\Actions\Product\GetSourceCodeProductBySlug;
+use App\Actions\ProductGuide\GetPublishedProductGuides;
 use App\Actions\Seo\ShareSeoMeta;
 use App\Actions\User\HasPurchasedProduct;
 use App\Enums\ProductPlatform;
@@ -46,10 +47,17 @@ class SourceCodeController extends Controller
             $product->description,
         );
 
+        $guides = app(GetPublishedProductGuides::class)->handle($product);
+
         return Inertia::render('source-code/show', [
             'product' => new SourceCodeShowResource($product),
             'isPurchased' => $isPurchased,
             'isLoggedIn' => $user !== null,
+            'guides' => $guides->values()->map(fn ($g) => [
+                'title' => $g->title,
+                'slug' => $g->slug,
+                'order' => $g->order,
+            ]),
         ]);
     }
 }

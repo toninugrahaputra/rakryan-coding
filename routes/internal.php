@@ -8,6 +8,7 @@ use App\Http\Controllers\Internal\DashboardController;
 use App\Http\Controllers\Internal\EditorImageController;
 use App\Http\Controllers\Internal\OrderController;
 use App\Http\Controllers\Internal\ProductController;
+use App\Http\Controllers\Internal\ProductGuideController;
 use App\Http\Controllers\Internal\TechnologyController;
 use App\Http\Controllers\Internal\UserController;
 use App\Http\Controllers\Internal\VisitController;
@@ -80,6 +81,15 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::match(['put', 'patch'], 'products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        // Product guides (panduan instalasi — khusus produk source-code)
+        Route::get('products/{product}/guides', [ProductGuideController::class, 'index'])->name('products.guides.index');
+        Route::get('products/{product}/guides/create', [ProductGuideController::class, 'create'])->name('products.guides.create');
+        Route::post('products/{product}/guides', [ProductGuideController::class, 'store'])->name('products.guides.store');
+        Route::patch('products/{product}/guides/reorder', [ProductGuideController::class, 'reorder'])->name('products.guides.reorder');
+        Route::get('products/{product}/guides/{guide}/edit', [ProductGuideController::class, 'edit'])->name('products.guides.edit');
+        Route::match(['put', 'patch'], 'products/{product}/guides/{guide}', [ProductGuideController::class, 'update'])->name('products.guides.update');
+        Route::delete('products/{product}/guides/{guide}', [ProductGuideController::class, 'destroy'])->name('products.guides.destroy');
 
         // Vouchers
         Route::get('vouchers', [VoucherController::class, 'index'])->name('vouchers.index');

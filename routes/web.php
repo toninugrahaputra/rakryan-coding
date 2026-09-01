@@ -8,6 +8,7 @@ use App\Http\Controllers\CourseSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductGuideController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SourceCodeController;
@@ -26,6 +27,9 @@ Route::get('articles', [ArticleController::class, 'index'])->name('articles.inde
 Route::get('articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('source-code', [SourceCodeController::class, 'index'])->name('source-code.index');
 Route::get('source-code/{product}', [SourceCodeController::class, 'show'])->name('source-code.show');
+// Judul step panduan instalasi boleh dilihat siapa saja (dipakai sebagai daftar isi/"jualan"
+// di halaman produk); isi kontennya sendiri baru dikirim ke frontend kalau sudah dibeli.
+Route::get('source-code/{product}/guide/{guide}', [ProductGuideController::class, 'show'])->name('source-code.guide.show');
 
 // Guest bisa mengakses preview modul gratis (3 modul pertama course gratis) tanpa login.
 Route::get('courses/{course}/contents/{content}', [CourseContentController::class, 'show'])->name('courses.contents.show');

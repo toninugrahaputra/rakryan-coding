@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import { BookOpen, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { create, destroy, edit } from '@/actions/App/Http/Controllers/Internal/ProductController';
+import { AppPagination } from '@/components/app-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,9 +21,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { AppPagination } from '@/components/app-pagination';
-import { create, destroy, edit } from '@/actions/App/Http/Controllers/Internal/ProductController';
 import { index } from '@/routes/internal/products';
+import { index as guidesIndex } from '@/routes/internal/products/guides';
 import type { PaginatedResource } from '@/types/ui';
 
 type Product = {
@@ -46,7 +47,10 @@ export default function ProductsIndex({ products }: { products: PaginatedResourc
     const [confirmDelete, setConfirmDelete] = useState<Product | null>(null);
 
     function handleDelete() {
-        if (!confirmDelete) return;
+        if (!confirmDelete) {
+return;
+}
+
         router.delete(destroy(confirmDelete.slug).url, {
             onSuccess: () => setConfirmDelete(null),
         });
@@ -129,6 +133,13 @@ export default function ProductsIndex({ products }: { products: PaginatedResourc
                                         <TableCell className="text-center">{product.created_at}</TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center gap-2">
+                                                {product.type === 'source_code' && (
+                                                    <Button variant="outline" size="icon" asChild title="Kelola Panduan Instalasi">
+                                                        <Link href={guidesIndex(product.slug).url}>
+                                                            <BookOpen />
+                                                        </Link>
+                                                    </Button>
+                                                )}
                                                 <Button variant="outline" size="icon" asChild>
                                                     <Link href={edit(product.slug).url}>
                                                         <Pencil />

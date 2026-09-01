@@ -49,4 +49,9 @@ class Product extends Model
     {
         return $this->hasMany(UserSubscription::class);
     }
+
+    public function guides(): HasMany
+    {
+        return $this->hasMany(ProductGuide::class);
+    }
 }
