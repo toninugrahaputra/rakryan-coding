@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
     ArrowLeft,
-    CheckCircle2,
     Code2,
     Download,
     FileCode2,
@@ -235,40 +234,51 @@ export default function SourceCodeShow({
                                     </div>
                                 </div>
 
-                                {/* Panduan Instalasi */}
+                                {/* Panduan Instalasi — gaya penomoran sama seperti "Kurikulum Belajar" di halaman course */}
                                 {guides.length > 0 && (
                                     <div className="border-t border-border/50 pt-8">
                                         <h2 className="mb-1 text-xl font-bold">
                                             Panduan Instalasi
                                         </h2>
                                         <p className="mb-6 text-sm text-muted-foreground">
-                                            {isPurchased
-                                                ? 'Ikuti step demi step buat jalanin project ini di komputermu.'
-                                                : 'Judul step bisa dilihat siapa saja — isi lengkapnya terbuka setelah kamu beli produk ini.'}
+                                            {guides.length} step untuk
+                                            menjalankan project ini di
+                                            komputermu.
                                         </p>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {guides.map((step) => (
-                                                <Link
+                                                <div
                                                     key={step.slug}
-                                                    href={`/source-code/${product.slug}/guide/${step.slug}`}
-                                                    className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 p-3.5 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                                                    className="flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-card/50 p-4 transition-colors hover:bg-card/70"
                                                 >
-                                                    <div className="flex min-w-0 items-center gap-3">
-                                                        {isPurchased ? (
-                                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/80 text-xs font-bold">
-                                                                {step.order}
-                                                            </span>
-                                                        ) : (
-                                                            <Lock className="h-4 w-4 shrink-0 text-muted-foreground/60" />
-                                                        )}
-                                                        <span className="truncate text-sm font-semibold text-foreground">
-                                                            {step.title}
+                                                    <Link
+                                                        href={`/source-code/${product.slug}/guide/${step.slug}`}
+                                                        className="flex min-w-0 flex-1 items-center gap-3"
+                                                    >
+                                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                                                            {step.order}
                                                         </span>
-                                                    </div>
-                                                    {isPurchased && (
-                                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                                                        <h4 className="truncate text-sm leading-snug font-bold text-foreground sm:text-base">
+                                                            {step.title}
+                                                        </h4>
+                                                    </Link>
+
+                                                    {isPurchased ? (
+                                                        <Link
+                                                            href={`/source-code/${product.slug}/guide/${step.slug}`}
+                                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                                                        >
+                                                            Buka
+                                                        </Link>
+                                                    ) : (
+                                                        <div
+                                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                                                            title="Terkunci — beli dulu untuk membuka"
+                                                        >
+                                                            <Lock className="h-4 w-4" />
+                                                        </div>
                                                     )}
-                                                </Link>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
