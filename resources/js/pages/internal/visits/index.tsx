@@ -45,20 +45,48 @@ interface HourlyVisit {
     logged_in_visits: number;
 }
 
+interface DailyVisit {
+    date: string;
+    total_visits: number;
+    guest_visits: number;
+    logged_in_visits: number;
+}
+
+type VisitRange = 'day' | 'week' | 'month' | 'quarter';
+
 interface VisitsIndexProps {
     stats: {
-        date: string;
+        range: VisitRange;
+        date?: string;
+        start_date?: string;
+        end_date?: string;
         total_visits: number;
         guest_visits: number;
         unique_logged_in_visitors: number;
-        hourly: HourlyVisit[];
+        hourly?: HourlyVisit[];
+        daily?: DailyVisit[];
     };
 }
 
 const todayString = new Date().toISOString().split('T')[0];
 
+const rangeFilters: { label: string; value: VisitRange }[] = [
+    { label: 'Hari ini', value: 'day' },
+    { label: '7 Hari', value: 'week' },
+    { label: '30 Hari', value: 'month' },
+    { label: '3 Bulan', value: 'quarter' },
+];
+
 function formatHour(hour: number): string {
     return `${String(hour).padStart(2, '0')}:00`;
+}
+
+function formatDate(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
 export default function VisitsIndex({ stats }: VisitsIndexProps) {
@@ -66,10 +94,21 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
     const [detail, setDetail] = useState<LoggedInVisitsPage | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
 
+    const anchorDate = stats.date ?? stats.end_date ?? todayString;
+    const isDayRange = stats.range === 'day';
+
     function handleDateChange(date: string) {
         router.get(
             index.url(),
-            { date },
+            { date, range: stats.range },
+            { preserveState: true, preserveScroll: true },
+        );
+    }
+
+    function handleRangeChange(range: VisitRange) {
+        router.get(
+            index.url(),
+            { range, date: anchorDate },
             { preserveState: true, preserveScroll: true },
         );
     }
@@ -105,7 +144,7 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
             hint: 'Jumlah akun unik yang login',
             value: stats.unique_logged_in_visitors,
             icon: UserCheck,
-            onClick: openDetail,
+            onClick: isDayRange ? openDetail : undefined,
         },
         {
             label: 'Kunjungan Tamu',
@@ -115,8 +154,10 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
         },
     ];
 
+    const hourlyRows = stats.hourly ?? [];
+    const dailyRows = stats.daily ?? [];
     const maxHourlyVisits = Math.max(
-        ...stats.hourly.map((h) => h.total_visits),
+        ...(isDayRange ? hourlyRows : dailyRows).map((r) => r.total_visits),
         1,
     );
 
@@ -131,21 +172,50 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                             Kunjungan Website
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Pantau tren kunjungan website per jam untuk
-                            tanggal yang dipilih.
+                            {isDayRange
+                                ? 'Pantau tren kunjungan website per jam untuk tanggal yang dipilih.'
+                                : 'Pantau tren kunjungan website per hari untuk rentang yang dipilih.'}
                         </p>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="date">Tanggal</Label>
-                        <Input
-                            id="date"
-                            type="date"
-                            max={todayString}
-                            value={stats.date}
-                            onChange={(e) => handleDateChange(e.target.value)}
-                            className="w-40"
-                        />
+                    <div className="flex flex-wrap items-end gap-4">
+                        <div className="flex flex-col gap-2">
+                            <Label>Rentang</Label>
+                            <div className="flex flex-wrap gap-1 rounded-lg border bg-muted/40 p-1">
+                                {rangeFilters.map((filter) => (
+                                    <button
+                                        key={filter.value}
+                                        type="button"
+                                        onClick={() =>
+                                            handleRangeChange(filter.value)
+                                        }
+                                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                                            stats.range === filter.value
+                                                ? 'bg-background text-foreground shadow-sm'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        {filter.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="date">
+                                {isDayRange ? 'Tanggal' : 'Sampai tanggal'}
+                            </Label>
+                            <Input
+                                id="date"
+                                type="date"
+                                max={todayString}
+                                value={anchorDate}
+                                onChange={(e) =>
+                                    handleDateChange(e.target.value)
+                                }
+                                className="w-40"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -187,13 +257,15 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
 
                 <div>
                     <h2 className="mb-3 text-sm font-semibold text-foreground">
-                        Kunjungan per Jam
+                        {isDayRange ? 'Kunjungan per Jam' : 'Kunjungan per Hari'}
                     </h2>
                     <div className="overflow-x-auto rounded-xl border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Jam</TableHead>
+                                    <TableHead>
+                                        {isDayRange ? 'Jam' : 'Tanggal'}
+                                    </TableHead>
                                     <TableHead>Tren</TableHead>
                                     <TableHead className="text-center">
                                         Total
@@ -213,15 +285,43 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                                             colSpan={5}
                                             className="py-10 text-center text-muted-foreground"
                                         >
-                                            Belum ada kunjungan website di
-                                            tanggal ini.
+                                            {isDayRange
+                                                ? 'Belum ada kunjungan website di tanggal ini.'
+                                                : 'Belum ada kunjungan website di rentang ini.'}
                                         </TableCell>
                                     </TableRow>
-                                ) : (
-                                    stats.hourly.map((row) => (
+                                ) : isDayRange ? (
+                                    hourlyRows.map((row) => (
                                         <TableRow key={row.hour}>
                                             <TableCell className="font-mono text-xs">
                                                 {formatHour(row.hour)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="h-2 w-full max-w-40 overflow-hidden rounded-full bg-muted">
+                                                    <div
+                                                        className="h-full rounded-full bg-primary"
+                                                        style={{
+                                                            width: `${(row.total_visits / maxHourlyVisits) * 100}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center font-medium">
+                                                {row.total_visits}
+                                            </TableCell>
+                                            <TableCell className="text-center text-muted-foreground">
+                                                {row.guest_visits}
+                                            </TableCell>
+                                            <TableCell className="text-center text-muted-foreground">
+                                                {row.logged_in_visits}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    dailyRows.map((row) => (
+                                        <TableRow key={row.date}>
+                                            <TableCell className="font-mono text-xs">
+                                                {formatDate(row.date)}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="h-2 w-full max-w-40 overflow-hidden rounded-full bg-muted">
@@ -257,7 +357,7 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                         <DialogTitle>Pengunjung Terdaftar</DialogTitle>
                         <DialogDescription>
                             Daftar user login yang mengunjungi website pada{' '}
-                            {stats.date}
+                            {anchorDate}
                             {detail ? ` — total ${detail.total} kunjungan` : ''}
                             .
                         </DialogDescription>

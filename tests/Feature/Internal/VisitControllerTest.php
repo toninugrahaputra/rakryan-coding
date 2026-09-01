@@ -116,6 +116,82 @@ class VisitControllerTest extends TestCase
         );
     }
 
+    public function test_guest_visits_recorded_before_session_tracking_are_still_counted(): void
+    {
+        $targetDate = Carbon::parse('2026-08-10');
+
+        // Data lama, direkam sebelum kolom session_id ada — tidak bisa lagi
+        // di-unikkan, tapi tetap harus terhitung, bukan hilang jadi nol.
+        foreach (range(1, 3) as $i) {
+            PageView::factory()->create(['user_id' => null, 'session_id' => null, 'path' => '/'])
+                ->forceFill(['created_at' => $targetDate->copy()->setTime(9, $i)])->save();
+        }
+
+        $response = $this->actingAs($this->admin)->get('/internal/visits?date=2026-08-10');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.guest_visits', 3)
+            ->where('stats.total_visits', 3)
+        );
+    }
+
+    public function test_visits_page_accepts_a_week_range_and_returns_daily_breakdown(): void
+    {
+        $response = $this->actingAs($this->admin)->get('/internal/visits?range=week');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.range', 'week')
+            ->has('stats.daily', 7)
+            ->where('stats.end_date', Carbon::today()->toDateString())
+            ->where('stats.start_date', Carbon::today()->subDays(6)->toDateString())
+        );
+    }
+
+    public function test_visits_page_accepts_a_month_range_ending_on_a_chosen_date(): void
+    {
+        $response = $this->actingAs($this->admin)->get('/internal/visits?range=month&date=2026-08-10');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.range', 'month')
+            ->has('stats.daily', 30)
+            ->where('stats.end_date', '2026-08-10')
+            ->where('stats.start_date', '2026-07-12')
+        );
+    }
+
+    public function test_visits_page_accepts_a_quarter_range(): void
+    {
+        $response = $this->actingAs($this->admin)->get('/internal/visits?range=quarter');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.range', 'quarter')
+            ->has('stats.daily', 90)
+        );
+    }
+
+    public function test_week_range_aggregates_visitors_across_all_its_days(): void
+    {
+        $day1 = Carbon::today()->subDays(2);
+        $day2 = Carbon::today()->subDay();
+        $visitor = User::factory()->create();
+
+        // Akun yang sama login di dua hari berbeda dalam rentang — dihitung 1x
+        // per hari di breakdown harian, tapi tetap 1 pengunjung unik di total rentang.
+        PageView::factory()->create(['user_id' => $visitor->id, 'path' => '/'])
+            ->forceFill(['created_at' => $day1->copy()->setTime(9, 0)])->save();
+        PageView::factory()->create(['user_id' => $visitor->id, 'path' => '/'])
+            ->forceFill(['created_at' => $day2->copy()->setTime(9, 0)])->save();
+
+        $response = $this->actingAs($this->admin)->get('/internal/visits?range=week');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.unique_logged_in_visitors', 1)
+        );
+    }
+
     public function test_admin_can_view_logged_in_visit_details(): void
     {
         $visitor = User::factory()->create(['name' => 'Budi Santoso', 'email' => 'budi@example.com']);
