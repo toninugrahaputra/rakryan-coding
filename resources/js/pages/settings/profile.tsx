@@ -1,5 +1,6 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import InputError from '@/components/input-error';
@@ -45,6 +46,46 @@ export default function Profile({
         ? new Date(auth.user.birth_date).toISOString().split('T')[0]
         : '';
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(
+        auth.user.avatar_url ?? null,
+    );
+    const [removeAvatar, setRemoveAvatar] = useState(false);
+
+    // Blob URL dari file yang baru dipilih harus di-revoke saat diganti/di-unmount,
+    // supaya tidak bocor memori — URL dari server (avatar_url) tidak perlu di-revoke.
+    useEffect(() => {
+        return () => {
+            if (avatarPreview?.startsWith('blob:')) {
+                URL.revokeObjectURL(avatarPreview);
+            }
+        };
+    }, [avatarPreview]);
+
+    function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        setAvatarPreview(URL.createObjectURL(file));
+        setRemoveAvatar(false);
+    }
+
+    function handleRemoveAvatar() {
+        setAvatarPreview(null);
+        setRemoveAvatar(true);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
+
+    function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    }
+
     return (
         <>
             <Head title="Profile Settings" />
@@ -72,36 +113,69 @@ export default function Profile({
                                     </p>
                                 </div>
 
-                                {/* Avatar Upload box (Mock Visual) */}
+                                {/* Avatar Upload box */}
                                 <div className="flex items-center gap-4.5 rounded-2xl border border-border/40 bg-muted/20 p-4">
-                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#B99430] text-xl font-extrabold text-white shadow-inner">
-                                        {auth.user.name[0]?.toUpperCase()}
-                                    </div>
+                                    {avatarPreview ? (
+                                        <img
+                                            src={avatarPreview}
+                                            alt={auth.user.name}
+                                            className="h-16 w-16 shrink-0 rounded-full object-cover shadow-inner"
+                                        />
+                                    ) : (
+                                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#B99430] text-xl font-extrabold text-white shadow-inner">
+                                            {auth.user.name[0]?.toUpperCase()}
+                                        </div>
+                                    )}
                                     <div className="space-y-1">
                                         <span className="block text-xs font-bold text-foreground">
                                             Foto Profil
                                         </span>
                                         <span className="block text-[10px] text-muted-foreground">
-                                            Maksimal 2MB • Format JPG, PNG
+                                            Maksimal 2MB • Format JPG, PNG,
+                                            WEBP
                                         </span>
                                         <div className="mt-1 flex gap-2">
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                name="avatar"
+                                                accept="image/jpeg,image/png,image/webp"
+                                                className="hidden"
+                                                onChange={handleAvatarChange}
+                                            />
                                             <Button
                                                 type="button"
                                                 size="sm"
                                                 variant="outline"
                                                 className="h-7 rounded-lg text-[10px] font-bold"
+                                                onClick={() =>
+                                                    fileInputRef.current?.click()
+                                                }
                                             >
                                                 Unggah foto
                                             </Button>
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-7 rounded-lg text-[10px] font-bold text-destructive hover:bg-destructive/10"
-                                            >
-                                                Hapus
-                                            </Button>
+                                            {avatarPreview && (
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-7 rounded-lg text-[10px] font-bold text-destructive hover:bg-destructive/10"
+                                                    onClick={
+                                                        handleRemoveAvatar
+                                                    }
+                                                >
+                                                    Hapus
+                                                </Button>
+                                            )}
                                         </div>
+                                        {removeAvatar && (
+                                            <input
+                                                type="hidden"
+                                                name="remove_avatar"
+                                                value="1"
+                                            />
+                                        )}
+                                        <InputError message={errors.avatar} />
                                     </div>
                                 </div>
 
@@ -172,10 +246,15 @@ export default function Profile({
                                         </Label>
                                         <Input
                                             id="phone"
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            maxLength={20}
                                             className="mt-0.5 rounded-xl"
                                             defaultValue={auth.user.phone || ''}
                                             name="phone"
                                             placeholder="Contoh: 0812345678"
+                                            onChange={handlePhoneChange}
                                         />
                                         <InputError message={errors.phone} />
                                     </div>

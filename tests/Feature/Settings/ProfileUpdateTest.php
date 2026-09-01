@@ -4,6 +4,8 @@ namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileUpdateTest extends TestCase
@@ -59,6 +61,127 @@ class ProfileUpdateTest extends TestCase
             ->assertRedirect(route('profile.edit'));
 
         $this->assertNotNull($user->refresh()->email_verified_at);
+    }
+
+    public function test_user_can_upload_a_profile_photo()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('avatar.jpg'),
+        ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect(route('profile.edit'));
+
+        $user->refresh();
+        $this->assertNotNull($user->getRawOriginal('avatar_url'));
+        Storage::disk('public')->assertExists($user->getRawOriginal('avatar_url'));
+        // Accessor resolves the raw storage path into a browser-usable URL.
+        $this->assertStringContainsString('/storage/avatars/', $user->avatar_url);
+    }
+
+    public function test_uploading_a_new_photo_deletes_the_previous_one()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('first.jpg'),
+        ]);
+        $firstPath = $user->fresh()->getRawOriginal('avatar_url');
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('second.jpg'),
+        ]);
+        $secondPath = $user->fresh()->getRawOriginal('avatar_url');
+
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertExists($secondPath);
+    }
+
+    public function test_user_can_remove_their_profile_photo()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('avatar.jpg'),
+        ]);
+        $path = $user->fresh()->getRawOriginal('avatar_url');
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'remove_avatar' => '1',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        Storage::disk('public')->assertMissing($path);
+        $this->assertNull($user->fresh()->avatar_url);
+    }
+
+    public function test_avatar_upload_rejects_non_image_files()
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->create('resume.pdf', 100),
+        ]);
+
+        $response->assertSessionHasErrors('avatar');
+        $this->assertNull($user->fresh()->avatar_url);
+    }
+
+    public function test_phone_number_accepts_digits_only()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '081234567890',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertSame('081234567890', $user->fresh()->phone);
+    }
+
+    public function test_phone_number_rejects_non_numeric_characters()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '0812-3456-abc',
+        ]);
+
+        $response->assertSessionHasErrors('phone');
+    }
+
+    public function test_phone_number_can_be_left_blank()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '',
+        ]);
+
+        $response->assertSessionHasNoErrors();
     }
 
     public function test_user_can_delete_their_account()

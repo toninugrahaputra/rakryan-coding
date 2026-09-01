@@ -26,8 +26,11 @@ trait ProfileValidationRules
                     ? Rule::unique(User::class)
                     : Rule::unique(User::class)->ignore($userId),
             ],
-            'avatar_url' => ['nullable', 'string', 'max:2048'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
+            // Angka saja — no. HP/WhatsApp tidak boleh diisi huruf/simbol. `*` (bukan
+            // `+`) supaya string kosong (field dikosongkan lewat form) tetap lolos.
+            'phone' => ['nullable', 'regex:/^[0-9]*$/', 'max:20'],
             'bio' => ['nullable', 'string', 'max:1000'],
             'school' => ['nullable', 'string', 'max:255'],
             'major' => ['nullable', 'string', 'max:255'],

@@ -6,10 +6,12 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -35,6 +37,21 @@ class User extends Authenticatable implements PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
             'birth_date' => 'date',
         ];
+    }
+
+    /**
+     * `avatar_url` is stored as a relative path on the public disk for uploaded
+     * photos (e.g. "avatars/xyz.jpg"), but may also hold an already-absolute
+     * URL from an external source (e.g. Google's OAuth profile picture) — this
+     * resolves either into a URL the frontend can drop straight into <img src>.
+     */
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value && ! str_starts_with($value, 'http')
+                ? Storage::disk('public')->url($value)
+                : $value,
+        );
     }
 
     public function subscriptions(): HasMany
