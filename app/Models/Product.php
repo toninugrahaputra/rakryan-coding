@@ -54,4 +54,9 @@ class Product extends Model
     {
         return $this->hasMany(ProductGuide::class);
     }
+
+    public function galleries(): HasMany
+    {
+        return $this->hasMany(ProductGallery::class)->orderBy('order');
+    }
 }

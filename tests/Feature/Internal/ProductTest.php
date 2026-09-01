@@ -4,6 +4,7 @@ namespace Tests\Feature\Internal;
 
 use App\Models\Course;
 use App\Models\Product;
+use App\Models\ProductGallery;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -383,5 +384,116 @@ class ProductTest extends TestCase
 
         $response->assertRedirect('/internal/products');
         $this->assertSoftDeleted('products', ['id' => $product->id]);
+    }
+
+    public function test_admin_can_add_gallery_image_when_creating_source_code_product(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Toko Online Source Code',
+            'slug' => 'toko-online-source-code',
+            'type' => 'source_code',
+            'platform' => 'web',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'source_code_file' => UploadedFile::fake()->create('project.zip', 1024, 'application/zip'),
+            'gallery' => [UploadedFile::fake()->image('screenshot.jpg')],
+        ]);
+
+        $response->assertRedirect('/internal/products');
+        $product = Product::where('slug', 'toko-online-source-code')->first();
+        $this->assertSame(1, $product->galleries()->count());
+        $this->assertSame('image', $product->galleries()->first()->type);
+        Storage::disk('public')->assertExists($product->galleries()->first()->path);
+    }
+
+    public function test_admin_can_add_gallery_youtube_url(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Toko Online Source Code',
+            'slug' => 'toko-online-source-code',
+            'type' => 'source_code',
+            'platform' => 'web',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'source_code_file' => UploadedFile::fake()->create('project.zip', 1024, 'application/zip'),
+            'gallery_youtube_urls' => ['https://youtu.be/dQw4w9WgXcQ'],
+        ]);
+
+        $response->assertRedirect('/internal/products');
+        $this->assertDatabaseHas('product_galleries', [
+            'type' => 'video',
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+    }
+
+    public function test_invalid_gallery_youtube_url_is_rejected(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/internal/products', [
+            'title' => 'Toko Online Source Code',
+            'slug' => 'toko-online-source-code',
+            'type' => 'source_code',
+            'platform' => 'web',
+            'price' => 199000,
+            'is_published' => false,
+            'is_favourite' => false,
+            'source_code_file' => UploadedFile::fake()->create('project.zip', 1024, 'application/zip'),
+            'gallery_youtube_urls' => ['https://example.com/not-a-video'],
+        ]);
+
+        $response->assertSessionHasErrors(['gallery_youtube_urls.0']);
+        $this->assertDatabaseMissing('products', ['slug' => 'toko-online-source-code']);
+    }
+
+    public function test_gallery_image_and_video_count_is_capped_combined(): void
+    {
+        Storage::fake('public');
+
+        $product = Product::factory()->sourceCode()->create();
+        ProductGallery::factory()->count(3)->create(['product_id' => $product->id, 'type' => 'image']);
+
+        $this->actingAs($this->admin)->put("/internal/products/{$product->slug}", [
+            'title' => $product->title,
+            'slug' => $product->slug,
+            'type' => 'source_code',
+            'platform' => 'web',
+            'price' => $product->price,
+            'is_published' => $product->is_published,
+            'gallery_youtube_urls' => [
+                'https://youtu.be/dQw4w9WgXcQ',
+                'https://youtu.be/jNQXAC9IVRw',
+            ],
+        ]);
+
+        $this->assertSame(ProductGallery::MAX_PER_PRODUCT, $product->galleries()->count());
+    }
+
+    public function test_admin_can_remove_gallery_image(): void
+    {
+        Storage::fake('public');
+
+        $product = Product::factory()->sourceCode()->create();
+        $image = ProductGallery::factory()->create([
+            'product_id' => $product->id,
+            'type' => 'image',
+            'path' => 'products/galleries/existing.jpg',
+        ]);
+
+        $this->actingAs($this->admin)->put("/internal/products/{$product->slug}", [
+            'title' => $product->title,
+            'slug' => $product->slug,
+            'type' => 'source_code',
+            'platform' => 'web',
+            'price' => $product->price,
+            'is_published' => $product->is_published,
+            'remove_gallery_ids' => [$image->id],
+        ]);
+
+        $this->assertDatabaseMissing('product_galleries', ['id' => $image->id]);
     }
 }

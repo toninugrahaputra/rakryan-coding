@@ -38,6 +38,7 @@ class SourceCodeController extends Controller
     public function show(Request $request, string $product): Response
     {
         $product = app(GetSourceCodeProductBySlug::class)->handle($product);
+        $product->load('galleries');
 
         $user = $request->user();
         $isPurchased = $user && app(HasPurchasedProduct::class)->handle($user, $product);

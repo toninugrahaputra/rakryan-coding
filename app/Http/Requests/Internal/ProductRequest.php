@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Internal;
 
+use App\Actions\Course\ExtractYoutubeVideoId;
 use App\Enums\ProductPlatform;
 use App\Enums\ProductType;
+use App\Models\ProductGallery;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -41,6 +44,19 @@ class ProductRequest extends FormRequest
             'bonus_course_ids' => ['nullable', 'array'],
             'bonus_course_ids.*' => ['integer', Rule::exists('courses', 'id')->whereNull('deleted_at')],
             'source_code_file' => [$requiresSourceCodeFile ? 'required' : 'nullable', 'file', 'mimes:zip', 'max:51200'],
+            'gallery' => ['nullable', 'array', 'max:'.ProductGallery::MAX_PER_PRODUCT],
+            'gallery.*' => ['image', 'mimes:jpeg,png,webp', 'max:8192'],
+            'remove_gallery_ids' => ['nullable', 'array'],
+            'remove_gallery_ids.*' => ['integer'],
+            'gallery_youtube_urls' => ['nullable', 'array'],
+            'gallery_youtube_urls.*' => [
+                'string',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! app(ExtractYoutubeVideoId::class)->handle($value)) {
+                        $fail('Link YouTube tidak valid.');
+                    }
+                },
+            ],
         ];
     }
 

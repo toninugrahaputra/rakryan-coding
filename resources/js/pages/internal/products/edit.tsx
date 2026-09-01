@@ -1,6 +1,9 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { update } from '@/actions/App/Http/Controllers/Internal/ProductController';
 import { CourseSheetSelector } from '@/components/course-sheet-selector';
+import GalleryUpload from '@/components/gallery-upload';
+import GalleryYoutubeInput from '@/components/gallery-youtube-input';
 import ThumbnailUpload from '@/components/thumbnail-upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,11 +16,12 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { update } from '@/actions/App/Http/Controllers/Internal/ProductController';
 import { slugify } from '@/lib/slugify';
 import { edit, index } from '@/routes/internal/products';
 
 type Course = { id: number; title: string };
+
+const MAX_GALLERY_ITEMS = 4;
 
 type ProductProp = {
     id: number;
@@ -34,6 +38,7 @@ type ProductProp = {
     is_favourite: boolean;
     course_ids: number[];
     bonus_course_ids: number[];
+    gallery?: Array<{ id: number; url: string; type?: 'image' | 'video' }>;
 };
 
 export default function ProductsEdit({ product, courses }: { product: ProductProp; courses: Course[] }) {
@@ -53,6 +58,9 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
     const [thumbnailCleared, setThumbnailCleared] = useState(false);
     const [sourceCodeFile, setSourceCodeFile] = useState<File | null>(null);
+    const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+    const [removedGalleryIds, setRemovedGalleryIds] = useState<number[]>([]);
+    const [galleryYoutubeUrls, setGalleryYoutubeUrls] = useState<string[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -63,6 +71,7 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
 
     function handleTypeChange(type: 'single' | 'bundle' | 'source_code') {
         setForm((prev) => ({ ...prev, type, course_ids: [], bonus_course_ids: [], platform: type === 'source_code' ? prev.platform : '' }));
+
         if (type !== 'source_code') {
             setSourceCodeFile(null);
         }
@@ -77,6 +86,9 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
             price: form.price === '' ? '' : Number(form.price),
             price_strikethrough: form.price_strikethrough === '' ? null : Number(form.price_strikethrough),
             source_code_file: sourceCodeFile,
+            gallery: galleryFiles,
+            remove_gallery_ids: removedGalleryIds,
+            gallery_youtube_urls: galleryYoutubeUrls,
         };
 
         if (thumbnailFile) {
@@ -86,7 +98,9 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
         }
 
         router.put(update(product.slug).url, data, {
-            onError: (errs) => { setErrors(errs); setProcessing(false); },
+            onError: (errs) => {
+ setErrors(errs); setProcessing(false); 
+},
             onFinish: () => setProcessing(false),
         });
     }
@@ -229,7 +243,42 @@ export default function ProductsEdit({ product, courses }: { product: ProductPro
                                 ) : null}
                                 {errors.source_code_file && <p className="text-destructive text-sm">{errors.source_code_file}</p>}
                             </div>
-                        ) : (
+                        ) : null}
+
+                        {form.type === 'source_code' && (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    <Label>Galeri screenshot/demo (maks. {MAX_GALLERY_ITEMS} item — gambar/video)</Label>
+                                    {errors.gallery && <p className="text-destructive text-sm">{errors.gallery}</p>}
+                                    <GalleryUpload
+                                        existingImages={product.gallery ?? []}
+                                        removedIds={removedGalleryIds}
+                                        onRemoveExisting={(id) => setRemovedGalleryIds((prev) => [...prev, id])}
+                                        onFilesChange={setGalleryFiles}
+                                        maxImages={MAX_GALLERY_ITEMS - galleryYoutubeUrls.length}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label>Video YouTube (opsional)</Label>
+                                    {errors.gallery_youtube_urls && (
+                                        <p className="text-destructive text-sm">{errors.gallery_youtube_urls}</p>
+                                    )}
+                                    <GalleryYoutubeInput
+                                        urls={galleryYoutubeUrls}
+                                        onChange={setGalleryYoutubeUrls}
+                                        remainingSlots={
+                                            MAX_GALLERY_ITEMS -
+                                            (product.gallery ?? []).filter((g) => !removedGalleryIds.includes(g.id)).length -
+                                            galleryFiles.length -
+                                            galleryYoutubeUrls.length
+                                        }
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {form.type !== 'source_code' && (
                             <div className="flex flex-col gap-2">
                                 <Label>
                                     Course{form.type === 'bundle' ? 's' : ''}

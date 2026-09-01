@@ -7,6 +7,7 @@ use App\Actions\Product\DeleteProduct;
 use App\Actions\Product\GetCourseOptions;
 use App\Actions\Product\GetPaginatedProducts;
 use App\Actions\Product\GetProductBySlug;
+use App\Actions\Product\SyncProductGallery;
 use App\Actions\Product\UpdateProduct;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internal\ProductRequest;
@@ -34,7 +35,10 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request): RedirectResponse
     {
-        app(CreateProduct::class)->handle($request->validated());
+        $product = app(CreateProduct::class)->handle($request->validated());
+        app(SyncProductGallery::class)->handle(
+            $product, $request->file('gallery', []), [], $request->validated('gallery_youtube_urls', []),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Produk berhasil ditambahkan.']);
 
@@ -44,7 +48,7 @@ class ProductController extends Controller
     public function edit(string $product): Response
     {
         $product = app(GetProductBySlug::class)->handle($product);
-        $product->load('courses');
+        $product->load('courses', 'galleries');
 
         return Inertia::render('internal/products/edit', [
             'product' => new ProductShowResource($product),
@@ -56,6 +60,9 @@ class ProductController extends Controller
     {
         $product = app(GetProductBySlug::class)->handle($product);
         app(UpdateProduct::class)->handle($product, $request->validated());
+        app(SyncProductGallery::class)->handle(
+            $product, $request->file('gallery', []), $request->validated('remove_gallery_ids', []), $request->validated('gallery_youtube_urls', []),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Produk berhasil diperbarui.']);
 

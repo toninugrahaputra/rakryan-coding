@@ -1,23 +1,36 @@
 import { Link } from '@inertiajs/react';
 import {
     ArrowLeft,
+    ChevronLeft,
+    ChevronRight,
     Code2,
     Download,
     FileCode2,
+    Images,
     Infinity as InfinityIcon,
     Lock,
+    PlayCircle,
     ShoppingCart,
     Wrench,
 } from 'lucide-react';
+import { useState } from 'react';
 import { PublicFooter } from '@/components/public-footer';
 import { PublicNavbar } from '@/components/public-navbar';
 import { Seo } from '@/components/seo';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface GuideStep {
     title: string;
     slug: string;
     order: number;
+}
+
+interface GalleryItem {
+    id: number;
+    type?: 'image' | 'video';
+    url: string;
+    youtube_id?: string | null;
 }
 
 interface SourceCodeShowProps {
@@ -29,6 +42,7 @@ interface SourceCodeShowProps {
         thumbnail: string | null;
         price: number;
         price_strikethrough: number | null;
+        gallery?: GalleryItem[];
     };
     isPurchased: boolean;
     isLoggedIn: boolean;
@@ -70,6 +84,21 @@ export default function SourceCodeShow({
     isPurchased,
     guides = [],
 }: SourceCodeShowProps) {
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const gallery = product.gallery ?? [];
+
+    function showPrevImage() {
+        setLightboxIndex((idx) =>
+            idx === null ? null : (idx - 1 + gallery.length) % gallery.length,
+        );
+    }
+
+    function showNextImage() {
+        setLightboxIndex((idx) =>
+            idx === null ? null : (idx + 1) % gallery.length,
+        );
+    }
+
     return (
         <>
             <Seo
@@ -234,6 +263,48 @@ export default function SourceCodeShow({
                                     </div>
                                 </div>
 
+                                {/* Galeri Screenshot/Demo */}
+                                {gallery.length > 0 && (
+                                    <div className="border-t border-border/50 pt-8">
+                                        <div className="mb-6">
+                                            <h2 className="flex items-center gap-2 text-xl font-bold">
+                                                <Images className="h-5 w-5 text-primary" />
+                                                Galeri Project
+                                            </h2>
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                Contoh tampilan dari project
+                                                yang akan kamu dapatkan
+                                            </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {gallery.map((image, idx) => (
+                                                <button
+                                                    key={image.id}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setLightboxIndex(idx)
+                                                    }
+                                                    className="group relative aspect-video overflow-hidden rounded-xl border border-border/50"
+                                                >
+                                                    <img
+                                                        src={image.url}
+                                                        alt={`Contoh tampilan ${product.title} ${idx + 1}`}
+                                                        loading="lazy"
+                                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                    {image.type === 'video' && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                                            <PlayCircle className="h-10 w-10 text-white drop-shadow-lg" />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Panduan Instalasi — gaya penomoran sama seperti "Kurikulum Belajar" di halaman course */}
                                 {guides.length > 0 && (
                                     <div className="border-t border-border/50 pt-8">
@@ -290,6 +361,66 @@ export default function SourceCodeShow({
 
                 <PublicFooter />
             </div>
+
+            {/* Lightbox galeri */}
+            <Dialog
+                open={lightboxIndex !== null}
+                onOpenChange={(open) => !open && setLightboxIndex(null)}
+            >
+                <DialogContent
+                    className="w-[95vw] max-w-6xl border-0 bg-transparent p-0 shadow-none sm:max-w-6xl"
+                    closeClassName="-top-3 -right-3 sm:-right-6 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black opacity-100 shadow-md hover:bg-white hover:text-black"
+                    closeIconClassName="size-5"
+                >
+                    <DialogTitle className="sr-only">
+                        Galeri project {product.title}
+                    </DialogTitle>
+                    {lightboxIndex !== null && gallery[lightboxIndex] && (
+                        <div className="relative">
+                            {gallery[lightboxIndex].type === 'video' ? (
+                                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${gallery[lightboxIndex].youtube_id}?autoplay=1&rel=0`}
+                                        title={`Contoh tampilan ${product.title} ${lightboxIndex + 1}`}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className="h-full w-full"
+                                    />
+                                </div>
+                            ) : (
+                                <img
+                                    src={gallery[lightboxIndex].url}
+                                    alt={`Contoh tampilan ${product.title} ${lightboxIndex + 1}`}
+                                    className="max-h-[88vh] w-full rounded-xl object-contain"
+                                />
+                            )}
+                            {gallery.length > 1 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={showPrevImage}
+                                        aria-label="Gambar sebelumnya"
+                                        className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                    >
+                                        <ChevronLeft className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={showNextImage}
+                                        aria-label="Gambar berikutnya"
+                                        className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                    >
+                                        <ChevronRight className="h-5 w-5" />
+                                    </button>
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">
+                                        {lightboxIndex + 1} / {gallery.length}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

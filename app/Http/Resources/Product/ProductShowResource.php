@@ -25,6 +25,15 @@ class ProductShowResource extends JsonResource
             'is_favourite' => $this->is_favourite,
             'course_ids' => $this->whenLoaded('courses', fn () => $this->courses->where('pivot.is_bonus', false)->pluck('id')->values()->toArray()),
             'bonus_course_ids' => $this->whenLoaded('courses', fn () => $this->courses->where('pivot.is_bonus', true)->pluck('id')->values()->toArray()),
+            'gallery' => $this->whenLoaded('galleries', fn () => $this->galleries
+                ->map(fn ($gallery) => [
+                    'id' => $gallery->id,
+                    'type' => $gallery->type,
+                    'url' => $gallery->type === 'video'
+                        ? "https://img.youtube.com/vi/{$gallery->youtube_id}/hqdefault.jpg"
+                        : Storage::disk('public')->url($gallery->path),
+                    'youtube_id' => $gallery->youtube_id,
+                ])),
         ];
     }
 }

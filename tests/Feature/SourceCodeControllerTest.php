@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\ProductGallery;
 use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -123,5 +124,32 @@ class SourceCodeControllerTest extends TestCase
         $response = $this->get("/source-code/{$product->slug}/download");
 
         $response->assertRedirect('/login');
+    }
+
+    public function test_show_includes_gallery_items(): void
+    {
+        $product = Product::factory()->sourceCode()->published()->create();
+        ProductGallery::factory()->create([
+            'product_id' => $product->id,
+            'type' => 'image',
+            'path' => 'products/galleries/screenshot.jpg',
+            'order' => 1,
+        ]);
+        ProductGallery::factory()->create([
+            'product_id' => $product->id,
+            'type' => 'video',
+            'path' => null,
+            'youtube_id' => 'dQw4w9WgXcQ',
+            'order' => 2,
+        ]);
+
+        $response = $this->get("/source-code/{$product->slug}");
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.gallery', 2)
+            ->where('product.gallery.0.type', 'image')
+            ->where('product.gallery.1.type', 'video')
+            ->where('product.gallery.1.youtube_id', 'dQw4w9WgXcQ'));
     }
 }
