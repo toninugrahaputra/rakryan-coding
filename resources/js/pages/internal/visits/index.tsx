@@ -189,7 +189,7 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                     <h2 className="mb-3 text-sm font-semibold text-foreground">
                         Kunjungan per Jam
                     </h2>
-                    <div className="overflow-hidden rounded-xl border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
+                    <div className="overflow-x-auto rounded-xl border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -263,7 +263,7 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="overflow-hidden rounded-xl border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
+                    <div className="overflow-x-auto rounded-xl border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
                         <Table>
                             <TableHeader>
                                 <TableRow>

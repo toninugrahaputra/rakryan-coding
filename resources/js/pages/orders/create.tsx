@@ -184,26 +184,26 @@ export default function OrdersCreate({
                 <main className="flex-1 py-10">
                     <div className="mx-auto max-w-5xl px-6 lg:px-8">
                         {/* ─── Step progress bar indicator ─── */}
-                        <div className="mb-10 flex items-center justify-center gap-4 border-b border-border/40 pb-6 text-xs font-semibold sm:text-sm">
+                        <div className="mb-10 flex flex-wrap items-center justify-center gap-2 border-b border-border/40 pb-6 text-xs font-semibold sm:gap-4 sm:text-sm">
                             <div className="flex items-center gap-2 text-emerald-600">
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold">
                                     ✓
                                 </span>
-                                <span>Detail produk</span>
+                                <span className="hidden sm:inline">Detail produk</span>
                             </div>
-                            <div className="h-px w-12 bg-emerald-600/30" />
+                            <div className="h-px w-6 bg-emerald-600/30 sm:w-12" />
                             <div className="flex items-center gap-2 text-primary">
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                                     2
                                 </span>
-                                <span>Selesaikan Pembayaran</span>
+                                <span className="hidden sm:inline">Selesaikan Pembayaran</span>
                             </div>
-                            <div className="h-px w-12 bg-border" />
+                            <div className="h-px w-6 bg-border sm:w-12" />
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold">
                                     3
                                 </span>
-                                <span>Akses terbuka</span>
+                                <span className="hidden sm:inline">Akses terbuka</span>
                             </div>
                         </div>
 
