@@ -456,25 +456,9 @@ export default function OrdersCreate({
                                         </Button>
 
                                         <p className="text-center text-[10px] leading-relaxed text-muted-foreground">
-                                            {isFree ? (
-                                                <>
-                                                    Dengan klik Daftar, kamu
-                                                    setuju{' '}
-                                                    <span className="cursor-pointer underline">
-                                                        S&K
-                                                    </span>{' '}
-                                                    kami.
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Dengan klik Bayar, kamu
-                                                    setuju{' '}
-                                                    <span className="cursor-pointer underline">
-                                                        S&K
-                                                    </span>{' '}
-                                                    kami.
-                                                </>
-                                            )}
+                                            {isFree
+                                                ? 'Dengan klik Daftar, kamu setuju S&K kami.'
+                                                : 'Dengan klik Bayar, kamu setuju S&K kami.'}
                                         </p>
                                     </CardContent>
                                 </Card>

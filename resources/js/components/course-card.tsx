@@ -55,16 +55,18 @@ export function CourseCard({
             ? (course.category as any).name
             : course.category;
 
-    // Default prices based on standard mock prices in the PDF
-    const strikePriceVal = course.price_strikethrough ?? 249000;
-    const actualPriceVal = course.price ?? 149000;
-    const isFree = course.is_free || actualPriceVal === 0;
+    const isFree = course.is_free || course.price === 0;
 
-    // Hitung persentase diskon
+    // Hitung persentase diskon — hanya relevan kalau course punya produk beneran.
     const discountPercent =
-        strikePriceVal > actualPriceVal
+        course.has_product &&
+        course.price_strikethrough &&
+        course.price !== null &&
+        course.price_strikethrough > course.price
             ? Math.round(
-                  ((strikePriceVal - actualPriceVal) / strikePriceVal) * 100,
+                  ((course.price_strikethrough - course.price) /
+                      course.price_strikethrough) *
+                      100,
               )
             : 0;
 
@@ -153,14 +155,22 @@ export function CourseCard({
                             <span className="text-price text-emerald-600 dark:text-emerald-400">
                                 Gratis
                             </span>
+                        ) : !course.has_product ? (
+                            <span className="text-caption text-muted-foreground">
+                                Segera hadir
+                            </span>
                         ) : (
                             <>
                                 <div className="flex flex-col">
-                                    <span className="text-price-strike text-muted-foreground line-through">
-                                        {formatPrice(strikePriceVal)}
-                                    </span>
+                                    {course.price_strikethrough && (
+                                        <span className="text-price-strike text-muted-foreground line-through">
+                                            {formatPrice(
+                                                course.price_strikethrough,
+                                            )}
+                                        </span>
+                                    )}
                                     <span className="text-price text-foreground">
-                                        {formatPrice(actualPriceVal)}
+                                        {formatPrice(course.price ?? 0)}
                                     </span>
                                 </div>
                                 {discountPercent > 0 && (
@@ -180,6 +190,10 @@ export function CourseCard({
                     <div className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/15 bg-emerald-500/10 py-2 text-center text-button text-emerald-600">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Lanjutkan Belajar
+                    </div>
+                ) : !course.has_product ? (
+                    <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted py-2 text-center text-button text-muted-foreground">
+                        Segera Hadir
                     </div>
                 ) : !isLoggedIn ? (
                     // Tampilan saja yang diubah (icon + teks) — flow klik tetap ke halaman detail course seperti semula,
