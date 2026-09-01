@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\PageView;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -30,8 +31,18 @@ class TrackPageViewTest extends TestCase
 
         $this->assertDatabaseHas('page_views', [
             'user_id' => $user->id,
+            'session_id' => null,
             'path' => 'courses',
         ]);
+    }
+
+    public function test_visiting_a_page_as_guest_records_a_session_id(): void
+    {
+        $this->get('/');
+
+        $view = PageView::first();
+
+        $this->assertNotNull($view->session_id);
     }
 
     public function test_visiting_a_nonexistent_course_does_not_record_a_page_view(): void

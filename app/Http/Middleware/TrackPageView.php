@@ -51,7 +51,7 @@ class TrackPageView
         $response = $next($request);
 
         if ($this->shouldTrack($request, $response)) {
-            app(RecordPageView::class)->handle($request->user()?->id, $request->path());
+            app(RecordPageView::class)->handle($request->user()?->id, $request->session()->getId(), $request->path());
         }
 
         return $response;

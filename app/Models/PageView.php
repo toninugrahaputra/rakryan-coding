@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'path'])]
+#[Fillable(['user_id', 'session_id', 'path'])]
 class PageView extends Model
 {
     /** @use HasFactory<PageViewFactory> */

@@ -86,6 +86,36 @@ class VisitControllerTest extends TestCase
         );
     }
 
+    public function test_repeated_page_views_by_the_same_visitor_count_once(): void
+    {
+        $visitor = User::factory()->create();
+        $targetDate = Carbon::parse('2026-08-10');
+        $guestSession = 'guest-session-abc';
+
+        // Akun yang sama membuka 3 halaman berbeda — tetap 1 kunjungan.
+        foreach (['courses', 'courses/laravel-dasar', 'dashboard'] as $i => $path) {
+            PageView::factory()->create(['user_id' => $visitor->id, 'session_id' => null, 'path' => $path])
+                ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 10 + $i)])->save();
+        }
+
+        // Tamu (session sama) membuka 2 halaman berbeda — tetap 1 kunjungan.
+        foreach (['/', 'articles'] as $i => $path) {
+            PageView::factory()->create(['user_id' => null, 'session_id' => $guestSession, 'path' => $path])
+                ->forceFill(['created_at' => $targetDate->copy()->setTime(9, 20 + $i)])->save();
+        }
+
+        $response = $this->actingAs($this->admin)->get('/internal/visits?date=2026-08-10');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.total_visits', 2)
+            ->where('stats.guest_visits', 1)
+            ->where('stats.unique_logged_in_visitors', 1)
+            ->where('stats.hourly.9.total_visits', 2)
+            ->where('stats.hourly.9.guest_visits', 1)
+            ->where('stats.hourly.9.logged_in_visits', 1)
+        );
+    }
+
     public function test_admin_can_view_logged_in_visit_details(): void
     {
         $visitor = User::factory()->create(['name' => 'Budi Santoso', 'email' => 'budi@example.com']);
