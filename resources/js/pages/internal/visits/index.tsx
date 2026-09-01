@@ -135,20 +135,17 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
     const statCards = [
         {
             label: 'Total Kunjungan',
-            hint: 'Per akun/sesi unik, bukan per halaman diakses',
             value: stats.total_visits,
             icon: Eye,
         },
         {
             label: 'Pengunjung Terdaftar',
-            hint: 'Jumlah akun unik yang login',
             value: stats.unique_logged_in_visitors,
             icon: UserCheck,
             onClick: isDayRange ? openDetail : undefined,
         },
         {
             label: 'Kunjungan Tamu',
-            hint: 'Jumlah sesi tamu unik',
             value: stats.guest_visits,
             icon: Users,
         },
@@ -239,9 +236,6 @@ export default function VisitsIndex({ stats }: VisitsIndexProps) {
                                         </p>
                                         <p className="truncate text-xl font-bold text-foreground">
                                             {card.value}
-                                        </p>
-                                        <p className="truncate text-[10px] text-muted-foreground">
-                                            {card.hint}
                                         </p>
                                         {card.onClick && (
                                             <p className="text-[10px] text-primary">
