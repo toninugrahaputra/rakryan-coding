@@ -70,6 +70,34 @@ class GoogleAuthenticationTest extends TestCase
         $this->assertSame(1, User::where('email', $existing->email)->count());
     }
 
+    public function test_session_id_is_regenerated_after_google_login(): void
+    {
+        Socialite::fake('google', SocialiteUser::fake([
+            'id' => 'google-123',
+            'name' => 'Budi Santoso',
+            'email' => 'budi@example.com',
+        ]));
+
+        // Regression guard against session fixation: Laravel's SessionGuard::login()
+        // already calls session()->regenerate(true) internally (SessionGuard.php:588),
+        // so this doesn't need custom code here — this test just pins that behavior
+        // down for this controller in case that framework default ever changes.
+        // Simulate a session that already existed before login (e.g. the ID an
+        // attacker "planted" in the victim's browser), carrying the same cookie
+        // into the login request so it truly continues that session, not a fresh one.
+        $sessionCookieName = config('session.cookie');
+        $before = $this->get('/');
+        $sessionIdBeforeLogin = $this->app['session']->getId();
+        $cookie = collect($before->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === $sessionCookieName);
+
+        $this->withCookie($sessionCookieName, $cookie->getValue())
+            ->get(route('auth.google.callback'));
+        $sessionIdAfterLogin = $this->app['session']->getId();
+
+        $this->assertNotSame($sessionIdBeforeLogin, $sessionIdAfterLogin);
+    }
+
     public function test_existing_user_with_matching_email_gets_linked_to_google(): void
     {
         $existing = User::factory()->create(['email' => 'linked@example.com', 'google_id' => null]);

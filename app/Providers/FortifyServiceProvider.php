@@ -8,6 +8,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -64,6 +65,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->throttleUnprotectedRoutes();
     }
 
     /**
@@ -128,6 +130,48 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by(
                 ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
             );
+        });
+
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('forgot-password', function (Request $request) {
+            $throttleKey = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+
+            return Limit::perMinute(5)->by($throttleKey);
+        });
+
+        RateLimiter::for('reset-password', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+    }
+
+    /**
+     * Fortify's route file doesn't offer a `fortify.limiters` config hook for
+     * register/forgot-password/reset-password (unlike login/two-factor/passkeys),
+     * so their throttle middleware is attached here directly onto the already
+     * -registered named routes once every provider has booted.
+     */
+    private function throttleUnprotectedRoutes(): void
+    {
+        $this->app->booted(function () {
+            $routes = Route::getRoutes();
+
+            // Name lookups aren't populated incrementally in this app's minimal
+            // bootstrap (no classic RouteServiceProvider refreshing them) — without
+            // this, getByName() silently returns null for every route.
+            $routes->refreshNameLookups();
+
+            $limiters = [
+                'register.store' => 'register',
+                'password.email' => 'forgot-password',
+                'password.update' => 'reset-password',
+            ];
+
+            foreach ($limiters as $routeName => $limiter) {
+                $routes->getByName($routeName)?->middleware('throttle:'.$limiter);
+            }
         });
     }
 }

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
 
@@ -91,5 +92,30 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('email');
+    }
+
+    public function test_reset_link_request_is_rate_limited(): void
+    {
+        $user = User::factory()->create();
+
+        RateLimiter::increment(md5('forgot-password'.strtolower($user->email).'|127.0.0.1'), amount: 5);
+
+        $response = $this->post(route('password.email'), ['email' => $user->email]);
+
+        $response->assertTooManyRequests();
+    }
+
+    public function test_password_update_is_rate_limited(): void
+    {
+        RateLimiter::increment(md5('reset-password'.'127.0.0.1'), amount: 5);
+
+        $response = $this->post(route('password.update'), [
+            'token' => 'irrelevant-token',
+            'email' => 'someone@example.com',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertTooManyRequests();
     }
 }

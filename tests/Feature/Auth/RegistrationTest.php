@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Actions\Fortify\GetPasswordRequirements;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Fortify\Features;
@@ -127,6 +128,20 @@ class RegistrationTest extends TestCase
             ['type' => 'success', 'message' => 'Akun berhasil dibuat. Selamat datang di Rakryan Coding!'],
             session('inertia.flash_data')['toast'] ?? null,
         );
+    }
+
+    public function test_registration_is_rate_limited(): void
+    {
+        RateLimiter::increment(md5('register'.'127.0.0.1'), amount: 5);
+
+        $response = $this->post(route('register.store'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertTooManyRequests();
     }
 
     public function test_failed_registration_does_not_flash_a_toast()
