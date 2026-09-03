@@ -14,7 +14,9 @@ class VoucherController extends Controller
     {
         $userId = $request->user()->id;
 
-        // Dapatkan voucher tersedia (aktif, belum kedaluwarsa, kuota belum habis, belum pernah digunakan oleh user ini)
+        // Dapatkan voucher tersedia (aktif, belum kedaluwarsa, kuota belum habis, dan
+        // pemakaian user ini belum mencapai per_user_limit-nya). Difilter di PHP (bukan
+        // whereHas dengan angka statis) karena per_user_limit berbeda-beda tiap voucher.
         $availableVouchers = Voucher::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
@@ -22,16 +24,16 @@ class VoucherController extends Controller
             ->where(function ($q) {
                 $q->whereNull('quota')->orWhereColumn('usage_count', '<', 'quota');
             })
-            ->where(function ($q) use ($userId) {
-                $q->whereDoesntHave('usages', function ($sq) use ($userId) {
-                    $sq->where('user_id', $userId);
-                })
-                    ->orWhereHas('usages', function ($sq) use ($userId) {
-                        $sq->where('user_id', $userId)->whereNull('order_id');
-                    });
-            })
+            ->with(['usages' => fn ($q) => $q->where('user_id', $userId)])
             ->orderBy('ends_at')
-            ->get();
+            ->get()
+            ->filter(function (Voucher $voucher) {
+                $perUserLimit = $voucher->per_user_limit ?? 1;
+                $usedCount = $voucher->usages->whereNotNull('order_id')->count();
+
+                return $usedCount < $perUserLimit;
+            })
+            ->values();
 
         // Dapatkan voucher terpakai (pernah digunakan oleh user ini)
         $usedVouchers = Voucher::whereHas('usages', function ($q) use ($userId) {
@@ -85,12 +87,15 @@ class VoucherController extends Controller
 
         $userId = $request->user()->id;
 
-        // Cek apakah sudah terpakai
-        $hasUsed = $voucher->usages()->where('user_id', $userId)->whereNotNull('order_id')->exists();
-        if ($hasUsed) {
+        // Cek apakah sudah mencapai batas pemakaian per pengguna
+        $perUserLimit = $voucher->per_user_limit ?? 1;
+        $usedCount = $voucher->usages()->where('user_id', $userId)->whereNotNull('order_id')->count();
+        if ($usedCount >= $perUserLimit) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Anda sudah pernah menggunakan voucher ini.',
+                'message' => $perUserLimit > 1
+                    ? "Anda sudah mencapai batas pemakaian voucher ini ({$perUserLimit}x)."
+                    : 'Anda sudah pernah menggunakan voucher ini.',
             ]);
 
             return back();

@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\User\HasCompletedCourse;
 use App\Models\Course;
 use App\Models\Review;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
     public function store(Request $request, Course $course): RedirectResponse
     {
         $request->validate([
-            'rating'  => ['required', 'integer', 'min:1', 'max:5'],
-            'tags'    => ['nullable', 'array'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'tags' => ['nullable', 'array'],
             'comment' => ['nullable', 'string', 'max:500'],
         ]);
+
+        abort_unless(app(HasCompletedCourse::class)->handle($request->user(), $course), 403);
 
         // Cek jika user sudah pernah mengulas course ini
         $existing = Review::where('user_id', $request->user()->id)
@@ -24,21 +28,21 @@ class ReviewController extends Controller
 
         if ($existing) {
             $existing->update([
-                'rating'  => $request->rating,
-                'tags'    => $request->tags,
+                'rating' => $request->rating,
+                'tags' => $request->tags,
                 'comment' => $request->comment,
             ]);
         } else {
             Review::create([
-                'user_id'   => $request->user()->id,
+                'user_id' => $request->user()->id,
                 'course_id' => $course->id,
-                'rating'    => $request->rating,
-                'tags'      => $request->tags,
-                'comment'   => $request->comment,
+                'rating' => $request->rating,
+                'tags' => $request->tags,
+                'comment' => $request->comment,
             ]);
         }
 
-        \Inertia\Inertia::flash('toast', [
+        Inertia::flash('toast', [
             'type' => 'success',
             'message' => 'Ulasan Anda berhasil disimpan!',
         ]);

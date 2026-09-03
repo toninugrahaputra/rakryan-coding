@@ -7,6 +7,7 @@ use App\Actions\Course\GetFeaturedCourses;
 use App\Actions\Course\GetRandomProjectGallery;
 use App\Actions\Product\GetPublishedSourceCodeProducts;
 use App\Actions\Seo\ShareSeoMeta;
+use App\Actions\User\GetPurchasedCourses;
 use App\Http\Resources\Article\ArticleListResource;
 use App\Http\Resources\Course\CourseListResource;
 use App\Http\Resources\Product\SourceCodeListResource;
@@ -14,15 +15,23 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Voucher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class WelcomeController extends Controller
 {
-    public function __invoke(): mixed
+    public function __invoke(Request $request): mixed
     {
         // Get featured courses for showcase (6 course terbaru untuk Galeri Proyek)
         $featuredCourses = app(GetFeaturedCourses::class)->handle();
+
+        // Course ID yang sudah dibeli user (jika login), biar kartu course featured
+        // di landing page konsisten dengan katalog /courses (tombol "Lanjutkan Belajar").
+        $purchasedCourseIds = [];
+        if ($user = $request->user()) {
+            $purchasedCourseIds = app(GetPurchasedCourses::class)->handle($user)->pluck('id')->toArray();
+        }
 
         // Artikel terbaru untuk section "Belajar dari Artikel"
         $articles = app(GetLatestArticles::class)->handle();
@@ -78,6 +87,7 @@ class WelcomeController extends Controller
 
         return Inertia::render('welcome', [
             'featuredCourses' => CourseListResource::collection($featuredCourses),
+            'purchasedCourseIds' => $purchasedCourseIds,
             'articles' => ArticleListResource::collection($articles),
             'sourceCodeProducts' => SourceCodeListResource::collection($sourceCodeProducts),
             'projectGallery' => $projectGallery,

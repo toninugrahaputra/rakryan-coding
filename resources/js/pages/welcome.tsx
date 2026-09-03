@@ -67,6 +67,7 @@ interface Voucher {
 
 interface WelcomeProps {
     featuredCourses: Course[];
+    purchasedCourseIds?: number[];
     articles: Article[];
     sourceCodeProducts: SourceCodeCardData[];
     projectGallery: ProjectGalleryItem[];
@@ -107,6 +108,7 @@ function formatVoucherDiscount(voucher: Voucher): string {
 
 export default function Welcome({
     featuredCourses = [],
+    purchasedCourseIds = [],
     articles = [],
     sourceCodeProducts = [],
     projectGallery = [],
@@ -418,6 +420,9 @@ export default function Welcome({
                                             <CourseCard
                                                 course={course as any}
                                                 isLoggedIn={Boolean(auth.user)}
+                                                isPurchased={purchasedCourseIds.includes(
+                                                    course.id,
+                                                )}
                                                 showRating={false}
                                             />
                                         </ScrollReveal>
