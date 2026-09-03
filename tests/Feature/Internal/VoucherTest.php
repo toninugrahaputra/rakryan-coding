@@ -39,6 +39,54 @@ class VoucherTest extends TestCase
         $response->assertInertia(fn ($page) => $page->component('internal/vouchers/index'));
     }
 
+    public function test_voucher_index_flags_exhausted_quota_even_when_still_marked_active(): void
+    {
+        Voucher::factory()->create([
+            'is_active' => true,
+            'quota' => 5,
+            'usage_count' => 5,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get('/internal/vouchers');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('vouchers.data.0.is_active', true)
+            ->where('vouchers.data.0.is_quota_exhausted', true));
+    }
+
+    public function test_voucher_index_flags_expired_date_even_when_still_marked_active(): void
+    {
+        Voucher::factory()->create([
+            'is_active' => true,
+            'ends_at' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get('/internal/vouchers');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('vouchers.data.0.is_active', true)
+            ->where('vouchers.data.0.is_expired', true));
+    }
+
+    public function test_voucher_index_does_not_flag_active_voucher_with_remaining_quota(): void
+    {
+        Voucher::factory()->create([
+            'is_active' => true,
+            'quota' => 5,
+            'usage_count' => 2,
+            'ends_at' => now()->addDay(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get('/internal/vouchers');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('vouchers.data.0.is_quota_exhausted', false)
+            ->where('vouchers.data.0.is_expired', false));
+    }
+
     public function test_non_admin_cannot_view_vouchers(): void
     {
         $response = $this->actingAs($this->user)->get('/internal/vouchers');

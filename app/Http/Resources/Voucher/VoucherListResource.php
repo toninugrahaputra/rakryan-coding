@@ -23,6 +23,8 @@ class VoucherListResource extends JsonResource
             'applies_to_all_products' => $this->applies_to_all_products,
             'products_count' => $this->products_count,
             'is_active' => $this->is_active,
+            'is_quota_exhausted' => $this->quota !== null && $this->usage_count >= $this->quota,
+            'is_expired' => $this->ends_at !== null && $this->ends_at->isPast(),
             'starts_at' => $this->starts_at?->format('d-m-Y'),
             'ends_at' => $this->ends_at?->format('d-m-Y'),
             'created_at' => $this->created_at->format('d-m-Y'),

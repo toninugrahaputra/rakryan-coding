@@ -38,6 +38,8 @@ type Voucher = {
     applies_to_all_products: boolean;
     products_count: number;
     is_active: boolean;
+    is_quota_exhausted: boolean;
+    is_expired: boolean;
     starts_at: string | null;
     ends_at: string | null;
     created_at: string;
@@ -49,6 +51,22 @@ function formatPrice(price: number): string {
 
 function formatValue(voucher: Voucher): string {
     return voucher.type === 'percentage' ? `${voucher.value}%` : formatPrice(voucher.value);
+}
+
+function voucherStatus(voucher: Voucher): { label: string; variant: 'default' | 'secondary' } {
+    if (!voucher.is_active) {
+        return { label: 'Nonaktif', variant: 'secondary' };
+    }
+
+    if (voucher.is_quota_exhausted) {
+        return { label: 'Kuota Habis', variant: 'secondary' };
+    }
+
+    if (voucher.is_expired) {
+        return { label: 'Kedaluwarsa', variant: 'secondary' };
+    }
+
+    return { label: 'Aktif', variant: 'default' };
 }
 
 export default function VouchersIndex({ vouchers }: { vouchers: PaginatedResource<Voucher> }) {
@@ -135,8 +153,8 @@ export default function VouchersIndex({ vouchers }: { vouchers: PaginatedResourc
                                             {voucher.quota ? ` / ${voucher.quota}` : ''}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <Badge variant={voucher.is_active ? 'default' : 'secondary'}>
-                                                {voucher.is_active ? 'Aktif' : 'Nonaktif'}
+                                            <Badge variant={voucherStatus(voucher).variant}>
+                                                {voucherStatus(voucher).label}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-center">
