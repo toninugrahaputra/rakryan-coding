@@ -57,6 +57,7 @@ class WelcomeController extends Controller
             ->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+            ->where(fn ($q) => $q->whereNull('quota')->orWhereColumn('usage_count', '<', 'quota'))
             ->orderBy('ends_at')
             ->limit(1)
             ->get()

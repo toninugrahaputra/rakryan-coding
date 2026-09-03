@@ -14,10 +14,13 @@ class VoucherController extends Controller
     {
         $userId = $request->user()->id;
 
-        // Dapatkan voucher tersedia (aktif, belum kedaluwarsa, belum pernah digunakan oleh user ini)
+        // Dapatkan voucher tersedia (aktif, belum kedaluwarsa, kuota belum habis, belum pernah digunakan oleh user ini)
         $availableVouchers = Voucher::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('quota')->orWhereColumn('usage_count', '<', 'quota');
             })
             ->where(function ($q) use ($userId) {
                 $q->whereDoesntHave('usages', function ($sq) use ($userId) {
@@ -35,9 +38,11 @@ class VoucherController extends Controller
             $q->where('user_id', $userId)->whereNotNull('order_id');
         })->get();
 
-        // Dapatkan voucher kedaluwarsa (sudah tidak aktif atau sudah lewat ends_at, dan belum pernah dipakai)
+        // Dapatkan voucher kedaluwarsa (tidak aktif, sudah lewat ends_at, atau kuota sudah habis, dan belum pernah dipakai)
         $expiredVouchers = Voucher::where(function ($q) {
-            $q->where('is_active', false)->orWhere('ends_at', '<=', now());
+            $q->where('is_active', false)
+                ->orWhere('ends_at', '<=', now())
+                ->orWhereColumn('usage_count', '>=', 'quota');
         })->whereDoesntHave('usages', function ($q) use ($userId) {
             $q->where('user_id', $userId)->whereNotNull('order_id');
         })->get();
@@ -108,6 +113,16 @@ class VoucherController extends Controller
             Inertia::flash('toast', [
                 'type' => 'error',
                 'message' => 'Kode voucher sudah kedaluwarsa atau tidak aktif.',
+            ]);
+
+            return back();
+        }
+
+        // Cek apakah kuota sudah habis
+        if ($voucher->quota !== null && $voucher->usage_count >= $voucher->quota) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Kuota voucher sudah habis.',
             ]);
 
             return back();
