@@ -198,7 +198,7 @@ export default function Welcome({
         '@type': 'Organization',
         name: 'Rakryan Coding',
         url: origin,
-        logo: `${origin}/assets/images/logo-full.svg`,
+        logo: `${origin}/assets/images/logo-2.svg`,
         sameAs: [
             'https://instagram.com/rakryancoding',
             'https://tiktok.com/@rakryancoding',

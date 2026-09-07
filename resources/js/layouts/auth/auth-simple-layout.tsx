@@ -17,7 +17,7 @@ export default function AuthSimpleLayout({
                             className="flex flex-col items-center gap-2 font-medium"
                         >
                             <img
-                                src="/assets/images/logo-full.svg"
+                                src="/assets/images/logo-2.svg"
                                 alt="Rakryan Coding"
                                 className="h-11 w-auto"
                             />

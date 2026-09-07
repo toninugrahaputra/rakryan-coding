@@ -215,7 +215,7 @@ export function PublicNavbar() {
                             className="flex shrink-0 items-center transition-opacity hover:opacity-85"
                         >
                             <img
-                                src="/assets/images/logo-full.svg"
+                                src="/assets/images/logo-2.svg"
                                 alt="Rakryan Coding"
                                 className="h-11 w-auto sm:h-12"
                             />
@@ -511,7 +511,7 @@ export function PublicNavbar() {
                         {/* Header — pr-14 menyisakan ruang untuk tombol tutup bawaan SheetContent. */}
                         <div className="shrink-0 border-b border-border/50 px-5 py-4 pr-14">
                             <img
-                                src="/assets/images/logo-full.svg"
+                                src="/assets/images/logo-2.svg"
                                 alt="Rakryan Coding"
                                 className="h-10 w-auto"
                             />

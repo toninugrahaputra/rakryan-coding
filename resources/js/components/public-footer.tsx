@@ -46,7 +46,7 @@ export function PublicFooter() {
                             className="flex items-center transition-opacity hover:opacity-85"
                         >
                             <img
-                                src="/assets/images/logo-full.svg"
+                                src="/assets/images/logo-2.svg"
                                 alt="Rakryan Coding"
                                 loading="lazy"
                                 className="h-14 w-auto sm:h-16"
