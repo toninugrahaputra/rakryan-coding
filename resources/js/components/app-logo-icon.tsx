@@ -2,11 +2,10 @@ import type { SVGAttributes } from 'react';
 
 export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
     return (
-        <svg {...props} viewBox="0 0 159 312" xmlns="http://www.w3.org/2000/svg" fill="currentColor" fillRule="evenodd" aria-label="Rakryan Coding">
-            <polygon points="3,0 43,0 43,12 64,12 64,0 94,0 94,12 116,12 116,0 155,0 138,44 22,44" />
-            <path d="M0,62 H159 V163 H0 V124 H120 V101 H0 Z" />
-            <rect x="0" y="182" width="159" height="38" />
-            <polygon points="0,239 159,239 159,312 79,276 0,312" />
+        <svg {...props} viewBox="0 0 369.34 562.79" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-label="Rakryan Coding">
+            <path d="M76.15,348.92h-36.14v173.87h136.53l-100.39-173.87ZM57.25,496.04l19.83-19.86-19.83-19.83,9.5-9.5,29.34,29.34-29.34,29.36-9.5-9.5ZM95.15,505.54v-13.44h34.79v13.44h-34.79Z" />
+            <polygon points="269.45 40 243.76 115.58 65.69 115.58 40 40 98.39 40 98.39 60.83 132.6 60.83 132.6 40 176.85 40 176.85 60.83 211.04 60.83 211.04 40 269.45 40" />
+            <path d="M243.18,373.52l86.16,149.27h-97.63l-84.27-145.97-43.63-75.57h112.17c20.87,0,37.79-16.92,37.79-37.8,0-10.43-4.23-19.89-11.07-26.71-6.83-6.85-16.28-11.07-26.71-11.07H40v-75.57h175.98c62.6,0,113.36,50.76,113.36,113.36v.02c0,53.22-36.68,97.89-86.16,110.07Z" />
         </svg>
     );
 }
