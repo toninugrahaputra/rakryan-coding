@@ -205,7 +205,7 @@ export function PublicNavbar() {
 
     return (
         <>
-            <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+            <header className="sticky top-0 z-50 w-full [transform:translateZ(0)] border-b border-border/50 bg-background/80 backdrop-blur-xl">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4.5 lg:px-8">
                     {/* Left side: Logo + Nav links */}
                     <div className="flex items-center gap-12">

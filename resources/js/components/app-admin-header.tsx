@@ -214,7 +214,7 @@ export function AppAdminHeader({ breadcrumbs = [] }: Props) {
         <>
             {/* Bingkai header disamakan dengan PublicNavbar: menempel di atas, garis tepi
                 dan latar semi-transparan yang sama. */}
-            <div className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+            <div className="sticky top-0 z-50 w-full [transform:translateZ(0)] border-b border-border/50 bg-background/80 backdrop-blur-xl">
                 <div className="mx-auto flex max-w-7xl items-center px-6 py-4.5 lg:px-8">
                     {/* Menu mobile — hamburger di kanan & sheet dari kanan, disamakan
                         dengan navigasi sisi pengguna. Ditempatkan di akhir baris ini. */}
