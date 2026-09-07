@@ -40,7 +40,7 @@ export function Breadcrumbs({
     const parents = breadcrumbs.slice(0, -1);
 
     return (
-        <Breadcrumb>
+        <Breadcrumb className="min-w-0">
             <BreadcrumbList className="flex-nowrap sm:flex-wrap">
                 {collapsible && (
                     <>

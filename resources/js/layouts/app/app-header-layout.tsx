@@ -18,8 +18,8 @@ export default function AppHeaderLayout({
             {/* Breadcrumb sebelumnya dirender di dalam AppHeader; dipindah ke sini supaya
                 halaman yang mengirimkannya tidak kehilangan jejak navigasi. */}
             {breadcrumbs.length > 1 && (
-                <div className="flex w-full border-b border-sidebar-border/70">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                <div className="flex w-full min-w-0 border-b border-sidebar-border/70">
+                    <div className="mx-auto flex h-12 w-full min-w-0 items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>
