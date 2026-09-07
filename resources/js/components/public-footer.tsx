@@ -24,7 +24,15 @@ export function PublicFooter() {
     ];
 
     return (
-        <footer className="border-t border-border/50 bg-[#111116] py-14 text-[#b3b3ba]">
+        <footer className="relative bg-[#111116] py-14 text-[#b3b3ba]">
+            {/* Footer sengaja selalu gelap di kedua tema (teks putihnya butuh latar gelap),
+                jadi transisi dari warna halaman ke hitamnya dihaluskan lewat gradasi ini
+                alih-alih garis batas tegas yang kurang kelihatan di atas latar gelap. */}
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-16 -translate-y-full bg-gradient-to-b from-transparent to-[#111116]"
+            />
+
             <div className="mx-auto max-w-7xl space-y-12 px-6 lg:px-8">
                 {/* 5 kolom baru dipakai mulai xl (1280px). Sebelumnya lg (1024px), yang
                     persis selebar tablet portrait — di situ tiap kolom cuma ±163px sehingga

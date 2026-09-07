@@ -343,7 +343,7 @@ export default function OrdersCreate({
 
                             {/* Right Side: Sticky Checkout Pricing details card (4 cols) */}
                             <div className="lg:col-span-4">
-                                <Card className="sticky top-24 border-border/60 bg-muted/15 shadow-sm">
+                                <Card className="sticky top-24 border-border/60 shadow-sm">
                                     <CardContent className="space-y-6 p-5.5">
                                         {/* Logo Box */}
                                         <div className="overflow-hidden rounded-xl bg-[#1e1b4b] text-center font-bold tracking-wider text-white">
