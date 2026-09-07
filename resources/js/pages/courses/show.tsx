@@ -321,9 +321,9 @@ function CourseDetailContent() {
                     </div>
 
                     {/* Split layout: Content (Left) & Sticky Buy Card (Right). Order dipakai supaya card Investasi Belajar tampil di atas deskripsi saat mobile, tanpa mengubah susunan desktop. */}
-                    <div className="grid gap-8 lg:grid-cols-3">
+                    <div className="grid min-w-0 gap-8 lg:grid-cols-3">
                         {/* Header / Title */}
-                        <div className="order-1 lg:col-span-2">
+                        <div className="order-1 min-w-0 lg:col-span-2">
                             {course.category && (
                                 <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wider text-primary uppercase">
                                     {course.category}
@@ -361,7 +361,7 @@ function CourseDetailContent() {
                         </div>
 
                         {/* Right Column: Sticky Pricing & CTA Card */}
-                        <div className="order-2 lg:col-span-1 lg:row-span-2">
+                        <div className="order-2 min-w-0 lg:col-span-1 lg:row-span-2">
                             <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-5 shadow-lg">
                                 {/* Thumbnail */}
                                 <div className="relative mb-5 h-44 w-full overflow-hidden rounded-xl bg-muted">
@@ -477,7 +477,7 @@ function CourseDetailContent() {
                         )}
 
                         {/* Left Column: About & Curriculum */}
-                        <div className="order-3 space-y-8 lg:col-span-2">
+                        <div className="order-3 min-w-0 space-y-8 lg:col-span-2">
                             {/* About / Description */}
                             <div className="border-t border-border/50 pt-8">
                                 <h2 className="mb-4 text-xl font-bold">

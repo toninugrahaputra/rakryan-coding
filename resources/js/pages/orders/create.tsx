@@ -207,9 +207,9 @@ export default function OrdersCreate({
                             </div>
                         </div>
 
-                        <div className="grid items-start gap-8 lg:grid-cols-12">
+                        <div className="grid min-w-0 items-start gap-8 lg:grid-cols-12">
                             {/* Left Side: Order summary & voucher input (8 cols) */}
-                            <div className="space-y-6 lg:col-span-8">
+                            <div className="min-w-0 space-y-6 lg:col-span-8">
                                 {/* Order Summary */}
                                 <div className="rounded-2xl border border-border/50 bg-card p-5 shadow-xs">
                                     <h3 className="mb-4 text-sm font-bold tracking-wider text-muted-foreground uppercase">
@@ -342,7 +342,7 @@ export default function OrdersCreate({
                             </div>
 
                             {/* Right Side: Sticky Checkout Pricing details card (4 cols) */}
-                            <div className="lg:col-span-4">
+                            <div className="min-w-0 lg:col-span-4">
                                 <Card className="sticky top-24 border-border/60 shadow-sm">
                                     <CardContent className="space-y-6 p-5.5">
                                         {/* Logo Box */}
