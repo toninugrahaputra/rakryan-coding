@@ -215,60 +215,62 @@ export default function OrdersCreate({
                                     <h3 className="mb-4 text-sm font-bold tracking-wider text-muted-foreground uppercase">
                                         Ringkasan pesanan
                                     </h3>
-                                    <div className="flex gap-4">
-                                        <div className="h-20 w-28 shrink-0 overflow-hidden rounded-lg border border-border/30 bg-muted">
-                                            {(course?.thumbnail ?? product.thumbnail) ? (
-                                                <img
-                                                    src={course?.thumbnail ?? product.thumbnail ?? ''}
-                                                    alt={course?.title ?? product.title}
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center bg-primary/5 text-xs font-bold text-primary/30">
-                                                    &lt;Coder/&gt;
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <span className="text-[10px] font-bold tracking-wider text-primary uppercase">
-                                                {course
-                                                    ? `PAKET • ${product.courses_count} MATERI`
-                                                    : 'SOURCE CODE'}
-                                            </span>
-                                            <h4 className="mt-0.5 truncate text-base leading-snug font-extrabold text-foreground">
-                                                {product.title}
-                                            </h4>
-                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                {course
-                                                    ? `${course.contents_count} bab${course.read_duration ? ` • ${course.read_duration}` : ''} • akses sampai lulus`
-                                                    : 'Download ZIP setelah pembayaran lunas'}
-                                            </p>
-                                            {product.bonus_courses &&
-                                                product.bonus_courses.length >
-                                                    0 && (
-                                                    <p className="mt-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                                                        🎁 Bonus:{' '}
-                                                        {product.bonus_courses
-                                                            .map(
-                                                                (bonus) =>
-                                                                    bonus.title,
-                                                            )
-                                                            .join(', ')}
-                                                    </p>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex gap-3 sm:gap-4">
+                                            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border/30 bg-muted sm:h-20 sm:w-28">
+                                                {(course?.thumbnail ?? product.thumbnail) ? (
+                                                    <img
+                                                        src={course?.thumbnail ?? product.thumbnail ?? ''}
+                                                        alt={course?.title ?? product.title}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full items-center justify-center bg-primary/5 text-xs font-bold text-primary/30">
+                                                        &lt;Coder/&gt;
+                                                    </div>
                                                 )}
-                                        </div>
-                                        <div className="shrink-0 text-right">
-                                            <span className="block text-sm font-extrabold text-foreground">
-                                                {formatPrice(product.price)}
-                                            </span>
-                                            {product.price_strikethrough && (
-                                                <span className="mt-0.5 block text-[10px] text-muted-foreground line-through">
-                                                    {formatPrice(
-                                                        product.price_strikethrough,
-                                                    )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[10px] font-bold tracking-wider text-primary uppercase">
+                                                    {course
+                                                        ? `PAKET • ${product.courses_count} MATERI`
+                                                        : 'SOURCE CODE'}
                                                 </span>
-                                            )}
+                                                <h4 className="mt-0.5 truncate text-base leading-snug font-extrabold text-foreground">
+                                                    {product.title}
+                                                </h4>
+                                            </div>
+                                            <div className="shrink-0 text-right">
+                                                <span className="block text-sm font-extrabold text-foreground">
+                                                    {formatPrice(product.price)}
+                                                </span>
+                                                {product.price_strikethrough && (
+                                                    <span className="mt-0.5 block text-[10px] text-muted-foreground line-through">
+                                                        {formatPrice(
+                                                            product.price_strikethrough,
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {course
+                                                ? `${course.contents_count} bab${course.read_duration ? ` • ${course.read_duration}` : ''} • akses sampai lulus`
+                                                : 'Download ZIP setelah pembayaran lunas'}
+                                        </p>
+                                        {product.bonus_courses &&
+                                            product.bonus_courses.length >
+                                                0 && (
+                                                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                                    🎁 Bonus:{' '}
+                                                    {product.bonus_courses
+                                                        .map(
+                                                            (bonus) =>
+                                                                bonus.title,
+                                                        )
+                                                        .join(', ')}
+                                                </p>
+                                            )}
                                     </div>
                                 </div>
 
