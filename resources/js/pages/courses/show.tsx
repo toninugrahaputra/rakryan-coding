@@ -147,6 +147,13 @@ function CourseDetailContent() {
         course.contents.map((content, index) => [content.id, index]),
     );
 
+    // Batas preview course berbayar: sama seperti CourseContentController — maks 3 modul,
+    // di-cap 30% dari total modul supaya course pendek tidak keburu ke-preview mayoritas isinya.
+    const paidPreviewLimit = Math.min(
+        FREE_PREVIEW_LIMIT,
+        Math.ceil(course.contents.length * 0.3),
+    );
+
     // Group contents by section_name preserving chronological order
     const sections: Array<{ name: string | null; contents: Content[] }> = [];
     course.contents.forEach((content) => {
@@ -625,9 +632,18 @@ function CourseDetailContent() {
                                                                                 course.is_free &&
                                                                                 contentIndex <
                                                                                     FREE_PREVIEW_LIMIT;
+                                                                            // Course berbayar juga dapat preview, tapi wajib login — samakan
+                                                                            // dengan CourseContentController (lihat catatan di paidPreviewLimit).
+                                                                            const isPaidPreview =
+                                                                                !course.is_free &&
+                                                                                course.has_product &&
+                                                                                isLoggedIn &&
+                                                                                contentIndex <
+                                                                                    paidPreviewLimit;
                                                                             const canAccess =
                                                                                 isPurchased ||
-                                                                                isFreePreview;
+                                                                                isFreePreview ||
+                                                                                isPaidPreview;
 
                                                                             return canAccess ? (
                                                                                 <Link
