@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowRight, BookOpen, CheckCircle, ShoppingCart } from 'lucide-react';
+import { BookOpen, CheckCircle, ShoppingCart } from 'lucide-react';
 
 export interface CourseTechnology {
     id: number;
@@ -196,7 +196,7 @@ export function CourseCard({
                     </div>
                 ) : isFree ? (
                     <div className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-center text-button text-primary-foreground hover:bg-primary/95">
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ShoppingCart className="h-3.5 w-3.5" />
                         Daftar Gratis
                     </div>
                 ) : (
