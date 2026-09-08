@@ -116,7 +116,7 @@ class CourseFreePreviewTest extends TestCase
         );
     }
 
-    public function test_logged_in_user_without_purchase_is_blocked_on_paid_course(): void
+    public function test_logged_in_user_without_purchase_can_preview_first_modules_of_paid_course(): void
     {
         [$course, $contents] = $this->createCourseWithModules(price: 100000);
         $user = User::factory()->create();
@@ -124,6 +124,50 @@ class CourseFreePreviewTest extends TestCase
         $response = $this->actingAs($user)
             ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[0]->slug]));
 
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('courses/contents/show')
+            ->where('isPurchased', false)
+            ->where('isPreview', true)
+        );
+    }
+
+    public function test_logged_in_user_without_purchase_is_blocked_beyond_preview_limit_of_paid_course(): void
+    {
+        [$course, $contents] = $this->createCourseWithModules(price: 100000);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[3]->slug]));
+
         $response->assertRedirect(route('courses.show', $course->slug));
+    }
+
+    public function test_guest_is_still_redirected_to_login_within_preview_range_of_paid_course(): void
+    {
+        [$course, $contents] = $this->createCourseWithModules(price: 100000);
+
+        $response = $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[0]->slug]));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_paid_course_preview_is_capped_at_30_percent_for_short_courses(): void
+    {
+        [$course, $contents] = $this->createCourseWithModules(price: 100000, moduleCount: 5);
+        $user = User::factory()->create();
+
+        // cap = min(3, ceil(5 * 0.3)) = min(3, 2) = 2 modul, bukan flat 3.
+        $withinCap = $this->actingAs($user)
+            ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[1]->slug]));
+        $withinCap->assertOk();
+        $withinCap->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('isPurchased', false)
+            ->where('isPreview', true)
+        );
+
+        $beyondCap = $this->actingAs($user)
+            ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[2]->slug]));
+        $beyondCap->assertRedirect(route('courses.show', $course->slug));
     }
 }

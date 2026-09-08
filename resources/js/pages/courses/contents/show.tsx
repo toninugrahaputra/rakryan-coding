@@ -364,6 +364,15 @@ export default function CourseContentShow({
                                             Daftar Gratis untuk Lanjut Belajar ➔
                                         </Link>
                                     </Button>
+                                ) : !isPurchased && !isFree ? (
+                                    <Button
+                                        asChild
+                                        className="rounded-xl bg-[#B99430] px-8 py-3.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#725a15]"
+                                    >
+                                        <Link href={`/orders/create?course=${course.slug}`}>
+                                            Beli Sekarang untuk Lanjut Belajar ➔
+                                        </Link>
+                                    </Button>
                                 ) : content.is_completed ? (
                                     <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 px-6 text-xs font-bold text-emerald-600">
                                         <CheckCircle2 className="h-4.5 w-4.5" />

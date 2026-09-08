@@ -37,7 +37,19 @@ class CourseContentController extends Controller
 
         // Cari indeks konten saat ini
         $currentIndex = $contents->pluck('id')->search($content->id);
-        $isPreviewEligible = $isFree && $currentIndex < self::FREE_PREVIEW_LIMIT;
+
+        // Course berbayar juga dapat preview, tapi wajib login (beda dari course gratis yang
+        // preview-nya boleh diakses guest), hanya berlaku kalau course-nya benar-benar punya
+        // produk yang bisa dibeli (bukan course yang belum dikaitkan produk sama sekali), dan
+        // di-cap 30% dari total modul supaya course pendek tidak keburu ke-preview mayoritas isinya.
+        $paidPreviewLimit = min(self::FREE_PREVIEW_LIMIT, (int) ceil($contents->count() * 0.3));
+        $hasPurchasableProduct = $course->products()
+            ->where('is_published', true)
+            ->where('course_product.is_bonus', false)
+            ->exists();
+        $isPreviewEligible = $isFree
+            ? $currentIndex < self::FREE_PREVIEW_LIMIT
+            : ($user !== null && $hasPurchasableProduct && $currentIndex < $paidPreviewLimit);
 
         if (! $isPurchased && ! $isPreviewEligible) {
             // Guest diarahkan ke login (lalu kembali ke halaman ini).
@@ -79,7 +91,9 @@ class CourseContentController extends Controller
             'slug' => $c->slug,
             'order' => $c->order,
             'is_completed' => in_array($c->id, $completedIds),
-            'is_locked' => ! $isPurchased && ! ($isFree && $index < self::FREE_PREVIEW_LIMIT),
+            'is_locked' => ! $isPurchased && ! ($isFree
+                ? $index < self::FREE_PREVIEW_LIMIT
+                : ($user !== null && $hasPurchasableProduct && $index < $paidPreviewLimit)),
         ]);
 
         return Inertia::render('courses/contents/show', [

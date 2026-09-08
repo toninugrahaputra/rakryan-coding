@@ -99,6 +99,30 @@ class CourseProgressTest extends TestCase
         ]);
     }
 
+    public function test_user_previewing_a_paid_course_cannot_mark_module_complete(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['is_published' => true]);
+        $product = Product::factory()->single()->published()->create(['price' => 100000]);
+        $product->courses()->attach($course->id);
+        $content = CourseContent::factory()->for($course)->create(['order' => 1, 'is_published' => true]);
+
+        // Modul pertama ada dalam batas preview, jadi bisa dibaca meski belum beli.
+        $previewResponse = $this->actingAs($user)
+            ->get(route('courses.contents.show', [$course->slug, $content->slug]));
+        $previewResponse->assertOk();
+
+        // Tapi menandai selesai tetap harus 403 — preview bukan berarti progress-nya tercatat.
+        $completeResponse = $this->actingAs($user)
+            ->post(route('courses.contents.complete', [$course->slug, $content->slug]));
+
+        $completeResponse->assertStatus(403);
+        $this->assertDatabaseMissing('user_progress', [
+            'user_id' => $user->id,
+            'course_content_id' => $content->id,
+        ]);
+    }
+
     public function test_guest_hitting_complete_is_redirected_to_login(): void
     {
         $course = Course::factory()->create(['is_published' => true]);
