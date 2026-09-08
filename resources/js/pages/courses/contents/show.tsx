@@ -115,8 +115,9 @@ export default function CourseContentShow({
                             <span className="truncate">{course.title}</span>
                         </Link>
 
-                        {/* Progress Indicator bar — disembunyikan untuk guest yang belum punya progress */}
-                        {isLoggedIn ? (
+                        {/* Progress Indicator bar — hanya untuk yang sudah beli/klaim course ini;
+                            user yang login tapi masih preview tetap lihat badge Mode Preview. */}
+                        {isPurchased ? (
                             <div className="hidden items-center gap-4 text-base font-bold sm:flex">
                                 <span className="text-muted-foreground">
                                     Modul {progress.current_index}/

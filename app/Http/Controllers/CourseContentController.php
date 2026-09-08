@@ -60,12 +60,20 @@ class CourseContentController extends Controller
             // User login yang belum klaim course gratis diarahkan ke alur klaim (gratis, auto-approve).
             // User login yang belum membeli course berbayar diarahkan ke halaman detail untuk membeli.
             if ($isFree) {
-                return redirect()->route('orders.create', ['course' => $course->slug])
-                    ->with('info', 'Daftar dulu untuk membuka semua modul course gratis ini.');
+                Inertia::flash('toast', [
+                    'type' => 'info',
+                    'message' => 'Daftar course gratis ini dulu ya, biar bisa lanjut ke modul berikutnya.',
+                ]);
+
+                return redirect()->route('orders.create', ['course' => $course->slug]);
             }
 
-            return redirect()->route('courses.show', $course->slug)
-                ->with('error', 'Kamu belum membeli course ini.');
+            Inertia::flash('toast', [
+                'type' => 'info',
+                'message' => 'Kamu sudah mencapai batas modul preview. Beli course ini dulu untuk lanjut belajar, yuk!',
+            ]);
+
+            return redirect()->route('courses.show', $course->slug);
         }
 
         $prevContent = $currentIndex > 0 ? $contents[$currentIndex - 1] : null;

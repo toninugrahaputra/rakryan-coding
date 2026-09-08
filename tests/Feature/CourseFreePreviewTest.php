@@ -91,6 +91,10 @@ class CourseFreePreviewTest extends TestCase
         $lockedResponse = $this->actingAs($user)
             ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[3]->slug]));
         $lockedResponse->assertRedirect(route('orders.create', ['course' => $course->slug]));
+        $this->assertSame(
+            ['type' => 'info', 'message' => 'Daftar course gratis ini dulu ya, biar bisa lanjut ke modul berikutnya.'],
+            session('inertia.flash_data')['toast'] ?? null,
+        );
     }
 
     public function test_logged_in_user_who_has_claimed_free_course_gets_full_access(): void
@@ -141,6 +145,10 @@ class CourseFreePreviewTest extends TestCase
             ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[3]->slug]));
 
         $response->assertRedirect(route('courses.show', $course->slug));
+        $this->assertSame(
+            ['type' => 'info', 'message' => 'Kamu sudah mencapai batas modul preview. Beli course ini dulu untuk lanjut belajar, yuk!'],
+            session('inertia.flash_data')['toast'] ?? null,
+        );
     }
 
     public function test_guest_is_still_redirected_to_login_within_preview_range_of_paid_course(): void
