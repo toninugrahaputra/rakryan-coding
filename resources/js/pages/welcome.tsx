@@ -313,57 +313,6 @@ export default function Welcome({
                         </div>
                     </section>
 
-                    {/* ─── VOUCHER SECTION (full-width, di bawah Hero) ──── */}
-                    {vouchers.length > 0 && (
-                        <section
-                            id="paket"
-                            className="border-y border-border/40 bg-gradient-to-r from-[#1e1b4b] via-[#2e1065] to-[#1e1b4b] py-14"
-                        >
-                            <div className="mx-auto max-w-5xl px-4 lg:px-1">
-                                <ScrollReveal animation="scale-in">
-                                    <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md md:p-10">
-                                        <div className="pointer-events-none absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl" />
-                                        <div className="flex flex-col items-center gap-6 lg:flex-row lg:justify-between lg:text-left">
-                                            <div className="flex flex-col items-center gap-4 lg:flex-row lg:gap-6">
-                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eab308]/20 text-[#eab308] shadow-inner">
-                                                    <Ticket className="h-7 w-7" />
-                                                </div>
-                                                <div className="space-y-1.5 text-center lg:text-left">
-                                                    <p className="text-subtitle text-white uppercase">
-                                                        Voucher aktif ini
-                                                        spesial buat kamu
-                                                    </p>
-                                                    <p className="text-body-sm font-bold text-[#eab308]">
-                                                        {formatVoucherDiscount(
-                                                            vouchers[0],
-                                                        )}
-                                                        {vouchers[0].name
-                                                            ? ` — ${vouchers[0].name}`
-                                                            : ''}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={() =>
-                                                    copyVoucherCode(
-                                                        vouchers[0].code,
-                                                    )
-                                                }
-                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-button text-slate-950 uppercase shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
-                                            >
-                                                {copiedCode === vouchers[0].code
-                                                    ? 'Tersalin!'
-                                                    : vouchers[0].code}
-                                                <Copy className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </ScrollReveal>
-                            </div>
-                        </section>
-                    )}
-
                     {/* ─── GALERI PROJEK COURSE (6 course terbaru) ──────── */}
                     <section
                         id="materi"
@@ -431,6 +380,57 @@ export default function Welcome({
                             )}
                         </div>
                     </section>
+
+                    {/* ─── VOUCHER SECTION (full-width, di bawah daftar course) ──── */}
+                    {vouchers.length > 0 && (
+                        <section
+                            id="paket"
+                            className="border-y border-border/40 bg-gradient-to-r from-[#1e1b4b] via-[#2e1065] to-[#1e1b4b] py-14"
+                        >
+                            <div className="mx-auto max-w-5xl px-4 lg:px-1">
+                                <ScrollReveal animation="scale-in">
+                                    <div className="relative overflow-hidden rounded-3xl border border-[#eab308]/30 bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md md:p-10">
+                                        <div className="pointer-events-none absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#eab308]/10 blur-2xl" />
+                                        <div className="flex flex-col items-center gap-6 lg:flex-row lg:justify-between lg:text-left">
+                                            <div className="flex flex-col items-center gap-4 lg:flex-row lg:gap-6">
+                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eab308]/20 text-[#eab308] shadow-inner">
+                                                    <Ticket className="h-7 w-7" />
+                                                </div>
+                                                <div className="space-y-1.5 text-center lg:text-left">
+                                                    <p className="text-subtitle text-white uppercase">
+                                                        Voucher aktif ini
+                                                        spesial buat kamu
+                                                    </p>
+                                                    <p className="text-body-sm font-bold text-[#eab308]">
+                                                        {formatVoucherDiscount(
+                                                            vouchers[0],
+                                                        )}
+                                                        {vouchers[0].name
+                                                            ? ` — ${vouchers[0].name}`
+                                                            : ''}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() =>
+                                                    copyVoucherCode(
+                                                        vouchers[0].code,
+                                                    )
+                                                }
+                                                className="group relative flex shrink-0 items-center gap-2.5 rounded-2xl bg-[#eab308] px-6 py-3.5 font-mono text-button text-slate-950 uppercase shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#facc15] hover:shadow-lg hover:shadow-[#eab308]/20 active:translate-y-0 active:scale-98"
+                                            >
+                                                {copiedCode === vouchers[0].code
+                                                    ? 'Tersalin!'
+                                                    : vouchers[0].code}
+                                                <Copy className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </ScrollReveal>
+                            </div>
+                        </section>
+                    )}
 
                     {/* ─── SOURCE CODE PROJECT ──────── */}
                     <section
