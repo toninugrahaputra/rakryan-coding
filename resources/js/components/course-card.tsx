@@ -33,10 +33,6 @@ interface CourseCardProps {
 }
 
 function formatPrice(price: number): string {
-    if (price === 0) {
-        return 'Gratis';
-    }
-
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
@@ -151,10 +147,6 @@ export function CourseCard({
                                 <CheckCircle className="h-4 w-4 shrink-0" />
                                 <span>Siap Belajar</span>
                             </div>
-                        ) : isFree ? (
-                            <span className="text-price text-emerald-600 dark:text-emerald-400">
-                                Gratis
-                            </span>
                         ) : !course.has_product ? (
                             <span className="text-caption text-muted-foreground">
                                 Segera hadir
