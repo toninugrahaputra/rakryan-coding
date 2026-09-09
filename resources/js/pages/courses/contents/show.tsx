@@ -7,6 +7,7 @@ import {
     Clock,
     Menu,
     Moon,
+    PlayCircle,
     Sun,
     X,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ interface Lesson {
     order: number;
     is_completed: boolean;
     is_locked: boolean;
+    has_video: boolean;
 }
 
 interface Content {
@@ -30,8 +32,87 @@ interface Content {
     title: string;
     slug: string;
     content: any;
+    youtube_id: string | null;
     order: number;
     is_completed: boolean;
+}
+
+type FontSize = 'sm' | 'base' | 'lg';
+
+/**
+ * Di-key per content.id di pemanggilnya, jadi tab Teks/Video otomatis reset ke Teks
+ * tiap pindah modul tanpa perlu useEffect (remount = state awal fresh lagi).
+ */
+function ModuleContentPane({
+    content,
+    fontSize,
+    fontSizeClasses,
+}: {
+    content: Content;
+    fontSize: FontSize;
+    fontSizeClasses: Record<FontSize, string>;
+}) {
+    const [activeTab, setActiveTab] = useState<'teks' | 'video'>('teks');
+
+    return (
+        <>
+            {/* Tab Teks/Video — cuma muncul kalau modul ini punya video opsional */}
+            {content.youtube_id && (
+                <div className="flex gap-6 border-b border-border/40">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('teks')}
+                        className={`pb-2 text-sm font-bold transition-colors ${
+                            activeTab === 'teks'
+                                ? 'border-b-2 border-primary text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Teks
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('video')}
+                        className={`pb-2 text-sm font-bold transition-colors ${
+                            activeTab === 'video'
+                                ? 'border-b-2 border-primary text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Video
+                    </button>
+                </div>
+            )}
+
+            {/* Rich Content View Pane */}
+            {(!content.youtube_id || activeTab === 'teks') && (
+                <div
+                    className={`prose dark:prose-invert max-w-none rounded-3xl border border-border/50 bg-card p-6.5 leading-relaxed text-foreground shadow-xs ${fontSizeClasses[fontSize]}`}
+                >
+                    {content.content ? (
+                        <EditorJsRenderer data={content.content} />
+                    ) : (
+                        <p className="text-muted-foreground italic">
+                            Materi tidak dapat dimuat atau kosong.
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Video Pane */}
+            {content.youtube_id && activeTab === 'video' && (
+                <div className="aspect-video w-full overflow-hidden rounded-3xl border border-border/50 bg-black shadow-xs">
+                    <iframe
+                        src={`https://www.youtube.com/embed/${content.youtube_id}?rel=0`}
+                        title={content.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="h-full w-full"
+                    />
+                </div>
+            )}
+        </>
+    );
 }
 
 interface CourseContentShowProps {
@@ -69,7 +150,7 @@ export default function CourseContentShow({
     progress,
 }: CourseContentShowProps) {
     const [isCompleting, setIsCompleting] = useState(false);
-    const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
+    const [fontSize, setFontSize] = useState<FontSize>('base');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { appearance, updateAppearance } = useAppearance();
 
@@ -261,6 +342,8 @@ export default function CourseContentShow({
                                                 <Lock className="h-4 w-4 shrink-0 text-muted-foreground/60" />
                                             ) : lesson.is_completed ? (
                                                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                                            ) : lesson.has_video ? (
+                                                <PlayCircle className="h-4 w-4 shrink-0 text-primary" />
                                             ) : (
                                                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border/80 text-[9px] font-bold">
                                                     {lesson.order}
@@ -295,18 +378,12 @@ export default function CourseContentShow({
                             </div>
                         </div>
 
-                        {/* Rich Content View Pane */}
-                        <div
-                            className={`prose dark:prose-invert max-w-none rounded-3xl border border-border/50 bg-card p-6.5 leading-relaxed text-foreground shadow-xs ${fontSizeClasses[fontSize]}`}
-                        >
-                            {content.content ? (
-                                <EditorJsRenderer data={content.content} />
-                            ) : (
-                                <p className="text-muted-foreground italic">
-                                    Materi tidak dapat dimuat atau kosong.
-                                </p>
-                            )}
-                        </div>
+                        <ModuleContentPane
+                            key={content.id}
+                            content={content}
+                            fontSize={fontSize}
+                            fontSizeClasses={fontSizeClasses}
+                        />
 
                         {/* Bottom navigation buttons */}
                         <div className="space-y-6 border-t border-border/40 pt-6">

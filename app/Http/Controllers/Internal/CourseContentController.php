@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Internal;
 
+use App\Actions\Course\ExtractYoutubeVideoId;
 use App\Actions\Course\GetCourseBySlug;
 use App\Actions\CourseContent\CreateCourseContent;
 use App\Actions\CourseContent\DeleteCourseContent;
@@ -43,7 +44,13 @@ class CourseContentController extends Controller
     {
         $course = app(GetCourseBySlug::class)->handle($course);
 
-        app(CreateCourseContent::class)->handle($course, $request->validated());
+        $data = $request->validated();
+
+        if ($request->filled('youtube_url')) {
+            $data['youtube_id'] = app(ExtractYoutubeVideoId::class)->handle($data['youtube_url']);
+        }
+
+        app(CreateCourseContent::class)->handle($course, $data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten berhasil ditambahkan.']);
 
@@ -66,7 +73,16 @@ class CourseContentController extends Controller
         $course = app(GetCourseBySlug::class)->handle($course);
         $content = app(GetCourseContentBySlug::class)->handle($course, $content);
 
-        app(UpdateCourseContent::class)->handle($content, $course, $request->validated());
+        $data = $request->validated();
+
+        // Field dibiarkan kosong berarti "jangan diubah" — key youtube_id sengaja tidak
+        // dimasukkan sama sekali kalau admin tidak mengetik link baru, supaya video yang
+        // sudah ada tidak ikut terhapus tiap kali form disimpan.
+        if ($request->filled('youtube_url')) {
+            $data['youtube_id'] = app(ExtractYoutubeVideoId::class)->handle($data['youtube_url']);
+        }
+
+        app(UpdateCourseContent::class)->handle($content, $course, $data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Konten berhasil diperbarui.']);
 

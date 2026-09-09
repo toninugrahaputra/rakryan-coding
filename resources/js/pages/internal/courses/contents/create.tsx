@@ -25,6 +25,7 @@ export default function ContentsCreate({ course }: { course: Course }) {
         title: '',
         slug: '',
         content: null as OutputData | null,
+        youtube_url: '',
         sub_topics: '',
         is_published: false,
     });
@@ -57,6 +58,7 @@ export default function ContentsCreate({ course }: { course: Course }) {
             title: form.title,
             slug: form.slug,
             content: finalContent as any,
+            youtube_url: form.youtube_url,
             sub_topics: form.sub_topics,
             is_published: form.is_published,
         }, {
@@ -134,6 +136,17 @@ export default function ContentsCreate({ course }: { course: Course }) {
                                     rows={4}
                                 />
                                 {errors.sub_topics && <p className="text-destructive text-sm">{errors.sub_topics}</p>}
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="youtube_url">Link Video YouTube (opsional)</Label>
+                                <Input
+                                    id="youtube_url"
+                                    value={form.youtube_url}
+                                    onChange={(e) => setForm((p) => ({ ...p, youtube_url: e.target.value }))}
+                                    placeholder="https://youtu.be/xxxxxxxxxxx"
+                                />
+                                {errors.youtube_url && <p className="text-destructive text-sm">{errors.youtube_url}</p>}
                             </div>
 
                             <div className="flex items-center gap-3">

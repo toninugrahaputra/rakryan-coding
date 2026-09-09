@@ -67,6 +67,105 @@ class CourseContentControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_add_youtube_video_when_creating_course_content(): void
+    {
+        $response = $this->actingAs($this->admin)->post("/internal/courses/{$this->course->slug}/contents", [
+            'title' => 'Pengenalan HTML',
+            'slug' => 'pengenalan-html',
+            'content' => ['time' => 123, 'blocks' => [], 'version' => '2.26.5'],
+            'youtube_url' => 'https://youtu.be/dQw4w9WgXcQ',
+            'is_published' => false,
+        ]);
+
+        $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
+        $this->assertDatabaseHas('course_contents', [
+            'course_id' => $this->course->id,
+            'title' => 'Pengenalan HTML',
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+    }
+
+    public function test_invalid_youtube_url_is_rejected_for_course_content(): void
+    {
+        $response = $this->actingAs($this->admin)->post("/internal/courses/{$this->course->slug}/contents", [
+            'title' => 'Pengenalan HTML',
+            'slug' => 'pengenalan-html',
+            'content' => ['time' => 123, 'blocks' => [], 'version' => '2.26.5'],
+            'youtube_url' => 'https://example.com/not-a-video',
+            'is_published' => false,
+        ]);
+
+        $response->assertSessionHasErrors(['youtube_url']);
+        $this->assertDatabaseMissing('course_contents', ['slug' => 'pengenalan-html']);
+    }
+
+    public function test_course_content_without_video_stays_optional(): void
+    {
+        $response = $this->actingAs($this->admin)->post("/internal/courses/{$this->course->slug}/contents", [
+            'title' => 'Pengenalan HTML',
+            'slug' => 'pengenalan-html',
+            'content' => ['time' => 123, 'blocks' => [], 'version' => '2.26.5'],
+            'is_published' => false,
+        ]);
+
+        $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
+        $this->assertDatabaseHas('course_contents', [
+            'course_id' => $this->course->id,
+            'title' => 'Pengenalan HTML',
+            'youtube_id' => null,
+        ]);
+    }
+
+    public function test_admin_can_update_youtube_video_on_existing_content(): void
+    {
+        $content = CourseContent::factory()->create([
+            'course_id' => $this->course->id,
+            'youtube_id' => 'oldVideoId1',
+        ]);
+
+        $response = $this->actingAs($this->admin)->put(
+            "/internal/courses/{$this->course->slug}/contents/{$content->slug}",
+            [
+                'title' => $content->title,
+                'slug' => $content->slug,
+                'content' => $content->content,
+                'youtube_url' => 'https://youtu.be/dQw4w9WgXcQ',
+                'is_published' => $content->is_published,
+            ]
+        );
+
+        $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
+        $this->assertDatabaseHas('course_contents', [
+            'id' => $content->id,
+            'youtube_id' => 'dQw4w9WgXcQ',
+        ]);
+    }
+
+    public function test_leaving_youtube_field_blank_on_update_keeps_existing_video(): void
+    {
+        $content = CourseContent::factory()->create([
+            'course_id' => $this->course->id,
+            'youtube_id' => 'existingVideo1',
+        ]);
+
+        $response = $this->actingAs($this->admin)->put(
+            "/internal/courses/{$this->course->slug}/contents/{$content->slug}",
+            [
+                'title' => 'Judul Baru',
+                'slug' => $content->slug,
+                'content' => $content->content,
+                'is_published' => $content->is_published,
+            ]
+        );
+
+        $response->assertRedirect("/internal/courses/{$this->course->slug}/contents");
+        $this->assertDatabaseHas('course_contents', [
+            'id' => $content->id,
+            'title' => 'Judul Baru',
+            'youtube_id' => 'existingVideo1',
+        ]);
+    }
+
     public function test_admin_can_update_content(): void
     {
         $content = CourseContent::factory()->create([

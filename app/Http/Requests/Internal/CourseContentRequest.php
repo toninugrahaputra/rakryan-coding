@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Internal;
 
+use App\Actions\Course\ExtractYoutubeVideoId;
 use App\Actions\Course\GetCourseBySlug;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,6 +36,15 @@ class CourseContentRequest extends FormRequest
                     ->ignore($contentSlug, 'slug'),
             ],
             'content' => ['nullable', 'array'],
+            'youtube_url' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! app(ExtractYoutubeVideoId::class)->handle($value)) {
+                        $fail('Link YouTube tidak valid.');
+                    }
+                },
+            ],
             'sub_topics' => ['nullable', 'string'],
             'is_published' => ['boolean'],
             'deleted_images' => ['nullable', 'array'],

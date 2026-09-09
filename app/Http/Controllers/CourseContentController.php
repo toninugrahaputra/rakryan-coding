@@ -102,6 +102,7 @@ class CourseContentController extends Controller
             'is_locked' => ! $isPurchased && ! ($isFree
                 ? $index < self::FREE_PREVIEW_LIMIT
                 : ($user !== null && $hasPurchasableProduct && $index < $paidPreviewLimit)),
+            'has_video' => $c->youtube_id !== null,
         ]);
 
         return Inertia::render('courses/contents/show', [
@@ -115,6 +116,7 @@ class CourseContentController extends Controller
                 'title' => $content->title,
                 'slug' => $content->slug,
                 'content' => $content->content,
+                'youtube_id' => $content->youtube_id,
                 'order' => $content->order,
                 'is_completed' => $isCompleted,
             ],

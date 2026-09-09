@@ -28,14 +28,22 @@ class UpdateCourseContent
                     $folderRenamed = true;
                 }
 
-                $content->update([
+                $fields = [
                     'section_name' => $data['section_name'] ?? null,
                     'title' => $data['title'],
                     'slug' => $newSlug,
                     'content' => $contentJson,
                     'sub_topics' => $data['sub_topics'] ?? null,
                     'is_published' => $data['is_published'] ?? false,
-                ]);
+                ];
+
+                // Kolom link YouTube baru diisi kalau admin memang mengetik link baru — dibiarkan
+                // kosong di form berarti "jangan diubah", bukan "hapus video yang sudah ada".
+                if (array_key_exists('youtube_id', $data)) {
+                    $fields['youtube_id'] = $data['youtube_id'];
+                }
+
+                $content->update($fields);
 
                 if (! empty($deletedImageUrls)) {
                     app(DeleteEditorImages::class)->handle($deletedImageUrls);

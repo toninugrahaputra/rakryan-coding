@@ -15,6 +15,7 @@ class CourseContentShowResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'content' => $this->content,
+            'youtube_id' => $this->youtube_id,
             'sub_topics' => $this->sub_topics,
             'order' => $this->order,
             'is_published' => $this->is_published,

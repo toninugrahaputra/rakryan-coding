@@ -178,4 +178,32 @@ class CourseFreePreviewTest extends TestCase
             ->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[2]->slug]));
         $beyondCap->assertRedirect(route('courses.show', $course->slug));
     }
+
+    public function test_content_show_page_exposes_youtube_id_when_present(): void
+    {
+        [$course, $contents] = $this->createCourseWithModules(price: 0);
+        $contents[0]->update(['youtube_id' => 'dQw4w9WgXcQ']);
+
+        $response = $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[0]->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('content.youtube_id', 'dQw4w9WgXcQ')
+            ->where('lessons.0.has_video', true)
+            ->where('lessons.1.has_video', false)
+        );
+    }
+
+    public function test_content_show_page_youtube_id_is_null_when_absent(): void
+    {
+        [$course, $contents] = $this->createCourseWithModules(price: 0);
+
+        $response = $this->get(route('courses.contents.show', ['course' => $course->slug, 'content' => $contents[0]->slug]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('content.youtube_id', null)
+            ->where('lessons.0.has_video', false)
+        );
+    }
 }

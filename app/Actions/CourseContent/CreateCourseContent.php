@@ -20,6 +20,7 @@ class CreateCourseContent
                     'title' => $data['title'],
                     'slug' => $data['slug'],
                     'content' => $data['content'] ?? null,
+                    'youtube_id' => $data['youtube_id'] ?? null,
                     'sub_topics' => $data['sub_topics'] ?? null,
                     'is_published' => $data['is_published'] ?? false,
                     'order' => $course->contents()->max('order') + 1,
