@@ -137,12 +137,12 @@ export function PublicFooter() {
                                     tidak muat sebaris — beda dengan `break-all` yang memotong
                                     di tengah kata meski kurang beberapa piksel saja. */}
                                 <a
-                                    href="mailto:hello@rakryancoding.id"
+                                    href="mailto:rakryan.coding@gmail.com"
                                     className="flex items-start gap-2 text-body font-medium text-white transition-colors hover:text-primary"
                                 >
                                     <Mail className="mt-1 h-4 w-4 shrink-0" />
                                     <span className="break-words">
-                                        hello@rakryancoding.id
+                                        rakryan.coding@gmail.com
                                     </span>
                                 </a>
                             </li>
