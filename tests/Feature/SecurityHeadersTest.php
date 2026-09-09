@@ -16,6 +16,18 @@ class SecurityHeadersTest extends TestCase
         $this->assertNotNull($response->headers->get('Content-Security-Policy'));
     }
 
+    public function test_csp_allows_youtube_embeds(): void
+    {
+        $response = $this->get('/');
+
+        $csp = $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString(
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+            $csp,
+        );
+    }
+
     public function test_csp_excludes_vite_dev_server_outside_local_environment(): void
     {
         $this->app['env'] = 'production';

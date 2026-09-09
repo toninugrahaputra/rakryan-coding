@@ -55,6 +55,7 @@ class SecurityHeaders
             "img-src 'self' data: blob: https: http:",
             $fontSrc,
             $connectSrc,
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
             "object-src 'none'",
             "base-uri 'self'",
             "frame-ancestors 'self'",
