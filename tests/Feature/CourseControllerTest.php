@@ -62,4 +62,44 @@ class CourseControllerTest extends TestCase
             ->where('courses.data.0.title', 'Main Bundle Course')
         );
     }
+
+    public function test_public_courses_index_can_be_sorted_by_price_ascending(): void
+    {
+        $expensive = Course::factory()->create(['title' => 'Expensive Course', 'is_published' => true]);
+        $expensive->products()->attach(Product::factory()->published()->create(['price' => 300000]));
+
+        $cheap = Course::factory()->create(['title' => 'Cheap Course', 'is_published' => true]);
+        $cheap->products()->attach(Product::factory()->published()->create(['price' => 50000]));
+
+        $free = Course::factory()->create(['title' => 'Free Course', 'is_published' => true]);
+        $free->products()->attach(Product::factory()->published()->create(['price' => 0]));
+
+        $response = $this->get('/courses?sort=price-asc');
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('courses/index')
+            ->has('courses.data', 3)
+            ->where('courses.data.0.title', 'Free Course')
+            ->where('courses.data.1.title', 'Cheap Course')
+            ->where('courses.data.2.title', 'Expensive Course')
+        );
+    }
+
+    public function test_public_courses_index_can_be_sorted_by_price_descending(): void
+    {
+        $expensive = Course::factory()->create(['title' => 'Expensive Course', 'is_published' => true]);
+        $expensive->products()->attach(Product::factory()->published()->create(['price' => 300000]));
+
+        $cheap = Course::factory()->create(['title' => 'Cheap Course', 'is_published' => true]);
+        $cheap->products()->attach(Product::factory()->published()->create(['price' => 50000]));
+
+        $response = $this->get('/courses?sort=price-desc');
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('courses/index')
+            ->has('courses.data', 2)
+            ->where('courses.data.0.title', 'Expensive Course')
+            ->where('courses.data.1.title', 'Cheap Course')
+        );
+    }
 }

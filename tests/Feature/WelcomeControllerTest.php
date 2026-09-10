@@ -97,6 +97,33 @@ class WelcomeControllerTest extends TestCase
             ->where('featuredCourses.0.slug', $course->slug));
     }
 
+    public function test_featured_courses_mix_up_to_three_paid_and_three_free(): void
+    {
+        for ($i = 1; $i <= 4; $i++) {
+            $course = Course::factory()->create(['title' => "Paid Course {$i}", 'is_published' => true]);
+            $product = Product::factory()->single()->published()->create(['price' => 100000]);
+            $product->courses()->attach($course->id);
+        }
+
+        for ($i = 1; $i <= 4; $i++) {
+            $course = Course::factory()->create(['title' => "Free Course {$i}", 'is_published' => true]);
+            $product = Product::factory()->single()->published()->create(['price' => 0]);
+            $product->courses()->attach($course->id);
+        }
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->has('featuredCourses', 6));
+
+        $titles = collect($response->inertiaPage()['props']['featuredCourses'])->pluck('title');
+        $paidCount = $titles->filter(fn ($title) => str_starts_with($title, 'Paid Course'))->count();
+        $freeCount = $titles->filter(fn ($title) => str_starts_with($title, 'Free Course'))->count();
+
+        $this->assertSame(3, $paidCount);
+        $this->assertSame(3, $freeCount);
+    }
+
     public function test_purchased_course_ids_are_shared_for_featured_courses(): void
     {
         $user = User::factory()->create();

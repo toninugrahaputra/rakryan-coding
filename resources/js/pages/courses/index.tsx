@@ -33,6 +33,8 @@ const SORT_OPTIONS = [
     { value: 'oldest', label: 'Terlama' },
     { value: 'title-az', label: 'Judul A–Z' },
     { value: 'title-za', label: 'Judul Z–A' },
+    { value: 'price-asc', label: 'Harga Terendah' },
+    { value: 'price-desc', label: 'Harga Tertinggi' },
 ];
 
 /** Konten katalog yang digunakan baik oleh guest maupun user login */
