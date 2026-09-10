@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\VerifyEmailCodeController;
 use App\Http\Controllers\CourseContentController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSearchController;
@@ -39,7 +40,16 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Halaman input kode verifikasi email — sengaja cuma pakai 'auth' (bukan
+// 'email.code.verified'), karena inilah tujuan redirect middleware itu sendiri.
+// Kalau ikut di-guard juga, user yang belum verifikasi akan looping redirect.
+Route::middleware('auth')->group(function () {
+    Route::get('verify-email-code', [VerifyEmailCodeController::class, 'show'])->name('verification.code.notice');
+    Route::post('verify-email-code', [VerifyEmailCodeController::class, 'store'])->middleware('throttle:verify-email-code')->name('verification.code.store');
+    Route::post('verify-email-code/resend', [VerifyEmailCodeController::class, 'resend'])->middleware('throttle:resend-email-code')->name('verification.code.resend');
+});
+
+Route::middleware(['auth', 'email.code.verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('courses/{course}/contents/{content}/complete', [CourseContentController::class, 'complete'])->name('courses.contents.complete');
 

@@ -68,13 +68,15 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.code.notice'));
     }
 
     /**
      * Guest yang mencoba membuka halaman terkunci (mis. checkout) dilempar ke login,
-     * dan tujuannya disimpan sebagai `url.intended`. Setelah mendaftar ia harus kembali
-     * ke sana, bukan terdampar di beranda dan harus mengulang langkahnya dari awal.
+     * dan tujuannya disimpan sebagai `url.intended`. Setelah mendaftar ia dulu diminta
+     * verifikasi kode email (belum langsung ke tujuan) — `url.intended` tetap tersimpan
+     * di session dan baru dikonsumsi setelah kode dikonfirmasi. Alur lengkap sampai
+     * kembali ke halaman asal diuji di EmailVerificationCodeTest.
      */
     public function test_registration_returns_the_guest_to_the_page_they_were_sent_away_from()
     {
@@ -96,10 +98,11 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect($intended);
+        $response->assertRedirect(route('verification.code.notice'));
+        $this->assertSame($intended, session('url.intended'));
     }
 
-    public function test_registration_falls_back_to_dashboard_without_an_intended_page()
+    public function test_registration_falls_back_to_the_code_verification_page(): void
     {
         Role::create(['name' => 'user']);
 
@@ -110,7 +113,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.code.notice'));
     }
 
     public function test_successful_registration_flashes_a_success_toast()

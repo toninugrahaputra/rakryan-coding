@@ -163,7 +163,8 @@ return [
     'features' => [
         Features::registration(),
         Features::resetPasswords(),
-        Features::emailVerification(),
+        // Verifikasi email tidak pakai fitur bawaan Fortify (link) — diganti alur
+        // kode 6-digit custom (lihat app/Actions/Auth, VerifyEmailCodeController).
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

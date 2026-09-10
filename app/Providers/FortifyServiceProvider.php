@@ -49,10 +49,12 @@ class FortifyServiceProvider extends ServiceProvider
                     'message' => 'Akun berhasil dibuat. Selamat datang di Rakryan Coding!',
                 ]);
 
-                // Guest yang tadinya diarahkan ke login/daftar dari halaman terkunci
-                // (mis. checkout atau modul berbayar) dikembalikan ke sana, sama seperti
-                // perilaku LoginResponse. Dashboard hanya dipakai kalau tidak ada tujuan.
-                return redirect()->intended(route('dashboard'));
+                // Belum langsung ke tujuan (dashboard atau halaman yang tadinya dikunci,
+                // mis. checkout) — wajib verifikasi kode email dulu. `url.intended` di
+                // session tetap tersimpan, baru dikonsumsi oleh VerifyEmailCodeController
+                // setelah kode dikonfirmasi, jadi perilaku "kembali ke halaman asal" tetap
+                // jalan, cuma ketunda satu langkah.
+                return redirect()->route('verification.code.notice');
             }
         });
     }
@@ -94,10 +96,6 @@ class FortifyServiceProvider extends ServiceProvider
         ]));
 
         Fortify::requestPasswordResetLinkView(fn (Request $request) => Inertia::render('auth/forgot-password', [
-            'status' => $request->session()->get('status'),
-        ]));
-
-        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
             'status' => $request->session()->get('status'),
         ]));
 

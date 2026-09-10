@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailCodeVerified;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventBackHistoryCache;
@@ -18,7 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['role' => RoleMiddleware::class]);
+        $middleware->alias([
+            'role' => RoleMiddleware::class,
+            'email.code.verified' => EnsureEmailCodeVerified::class,
+        ]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 

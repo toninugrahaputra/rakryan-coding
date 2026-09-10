@@ -19,7 +19,7 @@ use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::middleware(['auth', 'verified', 'role:admin'])
+Route::middleware(['auth', 'email.code.verified', 'role:admin'])
     ->prefix('internal')
     ->name('internal.')
     ->group(function () {

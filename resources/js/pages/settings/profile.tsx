@@ -1,5 +1,4 @@
 import { Form, Head, usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
@@ -8,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SettingsLayout from '@/layouts/settings-layout';
-import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -32,13 +30,7 @@ type PageProps = {
     };
 };
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
-    mustVerifyEmail: boolean;
-    status?: string;
-}) {
+export default function Profile() {
     const { auth } = usePage<PageProps>().props;
 
     // Helper to format date for input field
@@ -272,27 +264,6 @@ export default function Profile({
                                     <InputError message={errors.bio} />
                                 </div>
 
-                                {mustVerifyEmail &&
-                                    auth.user.email_verified_at === null && (
-                                        <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-3.5 text-xs text-amber-800 dark:text-amber-300">
-                                            Alamat email kamu belum
-                                            terverifikasi.{' '}
-                                            <Link
-                                                href={send()}
-                                                as="button"
-                                                className="font-bold underline hover:opacity-85"
-                                            >
-                                                Kirim ulang email verifikasi
-                                            </Link>
-                                            {status ===
-                                                'verification-link-sent' && (
-                                                <div className="mt-1.5 font-bold text-emerald-600">
-                                                    Link verifikasi baru telah
-                                                    dikirim ke alamat emailmu.
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
                             </div>
 
                             {/* ─── SECTION 2: DATA SEKOLAH ─── */}
