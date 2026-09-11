@@ -121,6 +121,64 @@ class UserControllerTest extends TestCase
         $this->assertTrue($this->user->fresh()->hasRole('admin'));
     }
 
+    public function test_users_index_exposes_onboarding_data(): void
+    {
+        $onboarded = User::factory()->create([
+            'region' => 'Jawa Barat',
+            'info_source' => 'TikTok',
+            'status' => 'working',
+        ]);
+        $onboarded->assignRole('user');
+
+        $pending = User::factory()->pendingOnboarding()->create();
+        $pending->assignRole('user');
+
+        $response = $this->actingAs($this->admin)->get('/internal/users');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('users.data', function ($users) use ($onboarded, $pending) {
+                $onboardedRow = collect($users)->firstWhere('id', $onboarded->id);
+                $pendingRow = collect($users)->firstWhere('id', $pending->id);
+
+                return $onboardedRow['onboarding']['region'] === 'Jawa Barat'
+                    && $onboardedRow['onboarding']['onboarded_at'] !== null
+                    && $pendingRow['onboarding']['onboarded_at'] === null;
+            })
+        );
+    }
+
+    public function test_admin_can_view_onboarding_data_on_edit_page(): void
+    {
+        $onboardedUser = User::factory()->create([
+            'region' => 'Jawa Barat',
+            'info_source' => 'TikTok',
+            'status' => 'working',
+            'additional_notes' => 'Semoga makin banyak course JS.',
+        ]);
+        $onboardedUser->assignRole('user');
+
+        $response = $this->actingAs($this->admin)->get("/internal/users/{$onboardedUser->id}/edit");
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('user.onboarding.region', 'Jawa Barat')
+            ->where('user.onboarding.info_source', 'TikTok')
+            ->where('user.onboarding.status', 'working')
+            ->where('user.onboarding.additional_notes', 'Semoga makin banyak course JS.')
+        );
+    }
+
+    public function test_edit_page_shows_pending_onboarding_state(): void
+    {
+        $pending = User::factory()->pendingOnboarding()->create();
+        $pending->assignRole('user');
+
+        $response = $this->actingAs($this->admin)->get("/internal/users/{$pending->id}/edit");
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('user.onboarding.onboarded_at', null)
+        );
+    }
+
     public function test_admin_can_delete_user(): void
     {
         $targetUser = User::factory()->create();

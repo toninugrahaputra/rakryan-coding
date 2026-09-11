@@ -14,6 +14,13 @@ class UserShowResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->getRoleNames()->first(),
+            'onboarding' => [
+                'region' => $this->region,
+                'info_source' => $this->info_source,
+                'status' => $this->status,
+                'additional_notes' => $this->additional_notes,
+                'onboarded_at' => $this->onboarded_at?->format('d-m-Y H:i'),
+            ],
         ];
     }
 }

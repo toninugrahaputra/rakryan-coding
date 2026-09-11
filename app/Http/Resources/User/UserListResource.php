@@ -15,6 +15,13 @@ class UserListResource extends JsonResource
             'email' => $this->email,
             'roles' => $this->getRoleNames(),
             'created_at' => $this->created_at->format('d-m-Y'),
+            'onboarding' => [
+                'region' => $this->region,
+                'info_source' => $this->info_source,
+                'status' => $this->status,
+                'additional_notes' => $this->additional_notes,
+                'onboarded_at' => $this->onboarded_at?->format('d-m-Y H:i'),
+            ],
         ];
     }
 }

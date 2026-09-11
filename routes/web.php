@@ -8,6 +8,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductGuideController;
 use App\Http\Controllers\ReviewController;
@@ -49,7 +50,15 @@ Route::middleware('auth')->group(function () {
     Route::post('verify-email-code/resend', [VerifyEmailCodeController::class, 'resend'])->middleware('throttle:resend-email-code')->name('verification.code.resend');
 });
 
+// Halaman onboarding demografi — sengaja tidak ikut di-guard middleware 'onboarded'
+// (hanya 'auth' + 'email.code.verified'), karena inilah tujuan redirect middleware
+// itu sendiri. Kalau ikut di-guard juga, user yang belum onboarding akan looping.
 Route::middleware(['auth', 'email.code.verified'])->group(function () {
+    Route::get('onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'email.code.verified', 'onboarded'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('courses/{course}/contents/{content}/complete', [CourseContentController::class, 'complete'])->name('courses.contents.complete');
 
